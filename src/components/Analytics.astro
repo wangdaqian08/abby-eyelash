@@ -1,0 +1,31 @@
+---
+// GA4 + conversion events (docs/GEO-STRATEGY.md §4). Renders nothing until a GA4 ID is set
+// (PUBLIC_GA4_ID build env, or site.google.ga4Id). Events:
+//   click on any [data-track="<event>"] → gtag event <event> {link_url, page_location, lang}
+//   window CustomEvents booking_start {service} / booking_submitted {service, option, value, currency}
+import { site } from '../data/site';
+const raw = import.meta.env.PUBLIC_GA4_ID || site.google.ga4Id;
+const id = /^G-[A-Z0-9]+$/.test(raw) ? raw : ''; // only a well-formed measurement ID ever reaches the page
+if (raw && !id) console.warn(`[Analytics] ignoring malformed GA4 id "${raw}"`);
+---
+{id && (
+  <>
+    <script async src={`https://www.googletagmanager.com/gtag/js?id=${id}`}></script>
+    <script is:inline define:vars={{ id }}>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', id);
+      const lang = document.documentElement.lang;
+      document.addEventListener('click', (e) => {
+        const el = e.target.closest && e.target.closest('[data-track]');
+        if (el) gtag('event', el.dataset.track, { link_url: el.href, page_location: location.href, lang });
+      });
+      addEventListener('booking_start', (e) => gtag('event', 'booking_start', { service: e.detail.service, lang }));
+      addEventListener('booking_submitted', (e) => {
+        const d = e.detail;
+        gtag('event', 'booking_submitted', { service: d.service, option: d.option, value: d.value, currency: d.currency, lang });
+      });
+    </script>
+  </>
+)}

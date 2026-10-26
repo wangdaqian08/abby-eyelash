@@ -1,0 +1,30 @@
+---
+// Real 404 (GEO-STRATEGY #17). Cloudflare Pages serves dist/404.html with status 404 for unknown URLs.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { services } from '../data/services';
+import { localePath } from '../lib/i18n';
+
+const copy = {
+  en: { h: 'Page not found', p: "This page doesn't exist or has moved. Try one of these instead:", home: 'Home', book: 'Book an appointment' },
+  zh: { h: '页面不存在', p: '该页面不存在或已移动。你可以前往：', home: '首页', book: '在线预约' },
+} as const;
+---
+
+<BaseLayout lang="en" title="Page not found | Abby Eyelash" description="This page doesn't exist. Find our lash and nail services in Burwood or book online." noindex>
+  <section class="mx-auto grid max-w-6xl gap-16 px-6 pt-40 pb-24 md:grid-cols-2">
+    {(['en', 'zh'] as const).map((lang) => (
+      <div lang={lang === 'zh' ? 'zh-Hans' : 'en-AU'}>
+        <p class="text-sm tracking-widest text-muted uppercase">404</p>
+        <h1 class="mt-2 font-serif text-4xl">{copy[lang].h}</h1>
+        <p class="mt-4 text-muted">{copy[lang].p}</p>
+        <ul class="mt-6 space-y-2">
+          <li><a class="text-primary underline" href={localePath(lang, '/')}>{copy[lang].home}</a></li>
+          {services.map((s) => (
+            <li><a class="text-primary underline" href={localePath(lang, `/${s.slug}/`)}>{s.name[lang]}</a></li>
+          ))}
+          <li><a class="text-primary underline" href={localePath(lang, '/book/')} data-track="book_click">{copy[lang].book}</a></li>
+        </ul>
+      </div>
+    ))}
+  </section>
+</BaseLayout>

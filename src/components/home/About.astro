@@ -1,0 +1,62 @@
+---
+import { Picture } from 'astro:assets';
+import { services, type Lang } from '../../data/services';
+import { site } from '../../data/site';
+import { common, fill } from '../../i18n/common';
+import SectionHeading from '../ui/SectionHeading.astro';
+// PLACEHOLDER photos — replace with Abby and her studio.
+import p1 from '../../assets/home/placeholder-about-1.jpg';
+import p2 from '../../assets/home/placeholder-about-2.jpg';
+import p3 from '../../assets/home/placeholder-about-3.jpg';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = common[lang].about;
+const a = site.abby;
+const vars = { name: site.name, owner: site.owner, suburb: lang === 'zh' ? '宝活' : site.address.locality };
+// Facts come only from site.ts; empty values hide their line (D4).
+const facts = [
+  a.yearsExperience ? fill(t.years, { n: a.yearsExperience }) : '',
+  a.certifications.length ? `${t.certifications} ${a.certifications.join(lang === 'zh' ? '、' : ', ')}` : '',
+  a.products.length ? `${t.products} ${a.products.join(lang === 'zh' ? '、' : ', ')}` : '',
+].filter(Boolean);
+const stats = [
+  a.yearsExperience ? [`${a.yearsExperience}+`, t.statYears] : null,
+  [String(services.length), t.statServices],
+  [String(site.hours.length), t.statDays],
+].filter((s): s is string[] => !!s);
+const img = { formats: ['avif', 'webp'] as const, loading: 'lazy' as const, class: 'size-full object-cover' };
+---
+<section id="about" class="py-16 md:py-24">
+  <div class="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16">
+    <div data-reveal class="grid grid-cols-2 gap-3">
+      <div class="col-span-2 aspect-[4/3] overflow-hidden bg-surface-2">
+        <Picture src={p1} alt={t.photo1} widths={[480, 800, 1100]} sizes="(min-width: 1024px) 34rem, 100vw" {...img} />
+      </div>
+      <div class="aspect-[4/3] overflow-hidden bg-surface-2">
+        <Picture src={p2} alt={t.photo2} widths={[320, 640]} sizes="(min-width: 1024px) 17rem, 50vw" {...img} />
+      </div>
+      <div class="aspect-[4/3] overflow-hidden bg-surface-2">
+        <Picture src={p3} alt={t.photo3} widths={[320, 640]} sizes="(min-width: 1024px) 17rem, 50vw" {...img} />
+      </div>
+    </div>
+
+    <div data-reveal>
+      <SectionHeading lang={lang} eyebrow={t.eyebrow} title={t.title} accent={t.accent} />
+      <p class="mt-6 text-muted">{fill(t.p1, vars)}</p>
+      {facts.length > 0 && (
+        <ul class="mt-6 space-y-2 text-muted">
+          {facts.map((f) => <li class="flex gap-3"><span aria-hidden="true" class="text-accent">✦</span><span>{f}</span></li>)}
+        </ul>
+      )}
+      <dl class="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-8">
+        {stats.map(([n, label]) => (
+          <div class="flex flex-col-reverse">
+            <dt class:list={['mt-1 text-muted', lang === 'en' ? 'text-xs uppercase tracking-[0.15em]' : 'text-sm']}>{label}</dt>
+            <dd class="font-serif text-3xl text-primary">{n}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+</section>

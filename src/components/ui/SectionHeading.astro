@@ -1,0 +1,23 @@
+---
+// Eyebrow + "Line one / *italic accent phrase*" heading (MASTER §2).
+import type { Lang } from '../../data/services';
+import Eyebrow from './Eyebrow.astro';
+interface Props {
+  lang: Lang;
+  eyebrow: string;
+  title: string;
+  accent: string;
+  /** Heading level; the home hero uses its own h1. */
+  as?: 'h1' | 'h2';
+  /** Light text for --primary bands. */
+  inverse?: boolean;
+  class?: string;
+}
+const { lang, eyebrow, title, accent, as: Tag = 'h2', inverse, class: cls } = Astro.props;
+---
+<div class={cls}>
+  <Eyebrow lang={lang} class={inverse ? 'text-on-primary/90!' : undefined}>{eyebrow}</Eyebrow>
+  <Tag class:list={['mt-4 text-4xl leading-[1.2] md:text-5xl', inverse && '[&_em]:text-on-primary']}>
+    {title}<br /><em>{accent}</em>
+  </Tag>
+</div>

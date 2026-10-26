@@ -1,0 +1,50 @@
+---
+import { services, type Lang } from '../../data/services';
+import { common, priceLine } from '../../i18n/common';
+import { localePath } from '../../lib/i18n';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = common[lang].services;
+// Demo colour-fill hover + lift; focus-visible gets the same state (MASTER §4).
+const card = 'group relative flex flex-col bg-surface p-8 transition duration-300 ease-brand hover:z-10 hover:-translate-y-1 hover:bg-primary hover:shadow-lift focus-visible:z-10 focus-visible:-translate-y-1 focus-visible:bg-primary focus-visible:shadow-lift';
+const onFill = 'transition-colors duration-300 group-hover:text-on-primary group-focus-visible:text-on-primary';
+const small = lang === 'en' ? 'text-xs uppercase tracking-[0.2em]' : 'text-sm';
+---
+<section id="services" class="bg-surface-2 py-16 md:py-24">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div data-reveal class="grid gap-8 md:grid-cols-2 md:items-end md:gap-16">
+      <SectionHeading lang={lang} eyebrow={t.eyebrow} title={t.title} accent={t.accent} />
+      <p class="max-w-md text-muted md:justify-self-end">{t.intro}</p>
+    </div>
+
+    <ul data-reveal class="mt-12 grid gap-px border border-border bg-border sm:grid-cols-2 lg:grid-cols-3 md:mt-16">
+      {services.map((s) => (
+        <li class="flex">
+          <a href={localePath(lang, s.slug)} class:list={[card, 'w-full']}>
+            <span aria-hidden="true" class="text-accent transition-colors duration-300 group-hover:text-on-primary/90 group-focus-visible:text-on-primary/90">✦</span>
+            <h3 class:list={['mt-6 text-xl', onFill]}>{s.name[lang]}</h3>
+            <p class:list={['mt-3 flex-1 text-muted', onFill, 'group-hover:text-on-primary/90 group-focus-visible:text-on-primary/90']}>{s.summary[lang]}</p>
+            <p class:list={['mt-6 font-medium tabular-nums', onFill]}>{priceLine(s, lang)}</p>
+            <span class:list={['mt-4 inline-flex items-center gap-2 text-accent-ink', small, onFill]}>
+              {t.details}
+              <span aria-hidden="true" class="transition-transform duration-200 group-hover:translate-x-1">→</span>
+            </span>
+          </a>
+        </li>
+      ))}
+      <li class="flex">
+        <a href={localePath(lang, '/book')} data-track="book_click" class:list={[card, 'w-full bg-surface-2/60']}>
+          <span aria-hidden="true" class="text-accent transition-colors duration-300 group-hover:text-on-primary/90 group-focus-visible:text-on-primary/90">✦</span>
+          <h3 class:list={['mt-6 text-xl', onFill]}><em class="group-hover:text-on-primary group-focus-visible:text-on-primary">{t.ctaTitle}</em></h3>
+          <p class:list={['mt-3 flex-1 text-muted', onFill]}>{t.ctaBody}</p>
+          <span class:list={['mt-6 inline-flex items-center gap-2 text-accent-ink', small, onFill]}>
+            {t.ctaLink}
+            <span aria-hidden="true" class="transition-transform duration-200 group-hover:translate-x-1">→</span>
+          </span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>

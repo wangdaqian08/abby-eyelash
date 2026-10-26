@@ -1,0 +1,27 @@
+---
+// EN | 中文 — links to the same page in the other language.
+import type { Lang } from '../../data/services';
+import { localePath, neutralPath } from '../../lib/i18n';
+interface Props { lang: Lang; class?: string }
+const { lang, class: cls } = Astro.props;
+const path = neutralPath(Astro.url.pathname);
+const items = [
+  { l: 'en' as const, label: 'EN', hreflang: 'en-AU', name: 'English' },
+  { l: 'zh' as const, label: '中文', hreflang: 'zh-Hans', name: '简体中文' },
+];
+---
+<nav aria-label={lang === 'zh' ? '语言' : 'Language'} class:list={['flex items-center text-sm', cls]}>
+  {items.map((it, i) => (
+    <>
+      {i > 0 && <span aria-hidden="true" class="text-border">|</span>}
+      <a
+        href={localePath(it.l, path)}
+        hreflang={it.hreflang}
+        lang={it.hreflang}
+        aria-label={it.name}
+        aria-current={it.l === lang ? 'true' : undefined}
+        class:list={['inline-flex min-h-11 min-w-11 items-center justify-center px-1 transition-colors duration-200', it.l === lang ? 'font-medium text-fg' : 'text-muted hover:text-fg']}
+      >{it.label}</a>
+    </>
+  ))}
+</nav>

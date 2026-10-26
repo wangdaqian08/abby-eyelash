@@ -1,0 +1,78 @@
+// Service-page UI copy (EN + Simplified Chinese). Long-form copy lives in src/data/service-content.ts.
+import type { Lang } from '../data/services';
+
+const en = {
+  home: 'Home',
+  breadcrumb: 'Breadcrumb',
+  eyebrow: 'Abby Eyelash · Burwood',
+  book: 'Book this service',
+  bookShort: 'Book now',
+  call: 'Call or text',
+  priceEyebrow: 'Prices',
+  priceTitle: ['Price & ', 'duration.'] as [string, string],
+  colOption: 'Option',
+  colDuration: 'Time',
+  colPrice: 'Price (AUD)',
+  minutes: (n: number) => `${n} min`,
+  price: (n: number, from?: boolean) => (from ? `from $${n}` : `$${n}`),
+  updated: 'Prices updated: ',
+  faqEyebrow: 'FAQ',
+  faqTitle: ['Your questions, ', 'answered.'] as [string, string],
+  locEyebrow: 'Visit',
+  locTitle: ['Find the studio ', 'in Burwood.'] as [string, string],
+  address: 'Address',
+  hours: 'Opening hours',
+  phone: 'Phone',
+  wechat: 'WeChat',
+  // OWNER-REVIEW PLACEHOLDER: confirm walking time/landmarks once the real street address is known.
+  findUs: 'A short walk from Burwood station and Westfield Burwood. Exact directions are sent with your booking confirmation.',
+  map: 'Open in Google Maps',
+  review: 'Leave us a review on Google',
+  days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  to: '–',
+  closed: 'Closed',
+  relatedEyebrow: 'More services',
+  relatedTitle: ['Also at ', 'Abby Eyelash.'] as [string, string],
+  ctaTitle: ['Ready when ', 'you are.'] as [string, string],
+  ctaBody: 'Choose a time online and Abby will confirm by phone or SMS.',
+};
+
+type Strings = typeof en;
+
+const zh: Strings = {
+  home: '首页',
+  breadcrumb: '页面路径',
+  eyebrow: 'Abby Eyelash · 宝活 Burwood',
+  book: '预约此项目',
+  bookShort: '立即预约',
+  call: '电话 / 短信',
+  priceEyebrow: '价格',
+  priceTitle: ['价格与', '时长'],
+  colOption: '项目',
+  colDuration: '时长',
+  colPrice: '价格（澳元）',
+  minutes: (n: number) => `${n} 分钟`,
+  price: (n: number, from?: boolean) => (from ? `$${n} 起` : `$${n}`),
+  updated: '价格更新日期：',
+  faqEyebrow: '常见问题',
+  faqTitle: ['你可能想问的', '问题'],
+  locEyebrow: '到店',
+  locTitle: ['工作室位于', '宝活 Burwood'],
+  address: '地址',
+  hours: '营业时间',
+  phone: '电话',
+  wechat: '微信',
+  // OWNER-REVIEW PLACEHOLDER: confirm walking time/landmarks once the real street address is known.
+  findUs: '步行可达 Burwood 火车站和 Westfield Burwood。确认预约时会把详细路线发给你。',
+  map: '在 Google 地图中打开',
+  review: '在 Google 上给我们留下评价',
+  days: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
+  to: '至',
+  closed: '休息',
+  relatedEyebrow: '更多项目',
+  relatedTitle: ['Abby Eyelash 的', '其他项目'],
+  ctaTitle: ['选一个', '适合你的时间'],
+  ctaBody: '在线选择时间，Abby 会通过电话或短信与你确认。',
+};
+
+export const serviceStrings: Record<Lang, Strings> = { en, zh };

@@ -1,0 +1,12 @@
+---
+// Star rating; decorative stars + a text label for screen readers.
+interface Props { rating: number; label: string; class?: string }
+const { rating, label, class: cls } = Astro.props;
+---
+<span role="img" aria-label={label} class:list={['inline-flex gap-0.5', cls ?? 'text-accent-ink']}>
+  {[1, 2, 3, 4, 5].map((n) => (
+    <svg viewBox="0 0 20 20" class:list={['size-4', n > Math.round(rating) && 'opacity-30']} aria-hidden="true" fill="currentColor">
+      <path d="M10 1.5l2.6 5.5 6 .8-4.4 4.1 1.1 5.9L10 14.9l-5.3 2.9 1.1-5.9L1.4 7.8l6-.8z" />
+    </svg>
+  ))}
+</span>

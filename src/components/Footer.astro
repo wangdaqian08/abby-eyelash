@@ -1,0 +1,80 @@
+---
+// Site footer: NAP (identical text everywhere, from site.ts), hours, contact, socials, service links, language switch.
+import { services, type Lang } from '../data/services';
+import { site } from '../data/site';
+import { common, hoursRows, mapsUrl, napAddress, telHref } from '../i18n/common';
+import { localePath } from '../lib/i18n';
+import LangSwitch from './ui/LangSwitch.astro';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = common[lang].footer;
+const head = ['font-medium text-fg', lang === 'en' ? 'text-xs uppercase tracking-[0.2em]' : 'text-sm'];
+const link = 'inline-flex min-h-11 items-center text-muted transition-colors duration-200 hover:text-fg sm:min-h-9';
+---
+<footer class="border-t border-border bg-surface-2/50 text-sm">
+  <div class="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:gap-16">
+    <div>
+      <p class="font-serif text-2xl text-primary">{site.name}</p>
+      <p class:list={[head, "mt-6"]}>{t.visit}</p>
+      <address class="mt-3 not-italic text-muted">
+        <a href={mapsUrl(site)} data-track="map_click" target="_blank" rel="noopener" class="underline-offset-4 hover:text-fg hover:underline">{napAddress(site)}</a>
+      </address>
+    </div>
+
+    <div>
+      <p class:list={head}>{t.services}</p>
+      <ul class="mt-2">
+        {services.map((s) => <li><a href={localePath(lang, s.slug)} class={link}>{s.name[lang]}</a></li>)}
+        <li><a href={localePath(lang, '/book')} data-track="book_click" class={link.replace('text-muted', 'text-primary')}>{t.bookOnline} →</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <p class:list={head}>{t.hours}</p>
+      <dl class="mt-3 space-y-2 text-muted">
+        {hoursRows(site.hours, lang).map((r) => (
+          <div class="flex flex-wrap justify-between gap-x-4"><dt class="whitespace-nowrap">{r.days}</dt><dd class="whitespace-nowrap tabular-nums">{r.time}</dd></div>
+        ))}
+      </dl>
+    </div>
+
+    <div>
+      <p class:list={head}>{t.contact}</p>
+      <ul class="mt-2">
+        <li><a href={telHref(site.phone)} data-track="call_click" class={link}>{site.phoneDisplay}</a></li>
+        <li><a href={`mailto:${site.email}`} class={link}>{site.email}</a></li>
+      </ul>
+      <p class:list={[head, "mt-6"]}>{t.follow}</p>
+      <ul class="mt-2">
+        <li><a href={site.social.instagram} data-track="social_click" target="_blank" rel="noopener" class={link}>Instagram</a></li>
+        <li><a href={site.social.xiaohongshu} data-track="social_click" target="_blank" rel="noopener" class={link}>{lang === 'zh' ? '小红书' : 'Xiaohongshu (RED)'}</a></li>
+        <li>
+          <button type="button" data-copy={site.social.wechatId} data-copied={t.copied} data-track="social_click" aria-label={`${t.copyWechat}: ${site.social.wechatId}`} class:list={[link, 'text-left']}>
+            {t.wechat}: <span class="ml-1 text-fg">{site.social.wechatId}</span><span data-copy-status class="ml-2 text-accent-ink" aria-live="polite"></span>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="border-t border-border">
+    <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-4 text-xs text-muted sm:flex-row sm:px-6">
+      <p>© {new Date().getFullYear()} {site.name} · {napAddress(site)}</p>
+      <LangSwitch lang={lang} />
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(b.dataset.copy!);
+        const s = b.querySelector('[data-copy-status]')!;
+        s.textContent = b.dataset.copied!;
+        setTimeout(() => (s.textContent = ''), 2000);
+      } catch {}
+    }),
+  );
+</script>

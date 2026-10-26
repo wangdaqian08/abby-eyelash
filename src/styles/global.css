@@ -1,0 +1,134 @@
+@import 'tailwindcss';
+@import '@fontsource/playfair-display/500.css';
+@import '@fontsource/playfair-display/500-italic.css';
+@import '@fontsource/playfair-display/400-italic.css';
+@import '@fontsource-variable/dm-sans';
+
+/* Theme tokens — see design-system/MASTER.md §1. Only place raw hex is allowed. */
+:root,
+[data-theme='mocha'] {
+  --bg: #faf6f2;
+  --surface: #fffcf9;
+  --surface-2: #f1e7de;
+  --fg: #2e211c;
+  --muted: #6e5a50;
+  --primary: #7a5a4c;
+  --on-primary: #fffcf9;
+  --accent: #b8927a;
+  --accent-ink: #7e5b47;
+}
+[data-theme='rose'] {
+  --bg: #fbf6f4;
+  --surface: #fffbfa;
+  --surface-2: #f5e6e3;
+  --fg: #2e1a1e;
+  --muted: #75545b;
+  --primary: #9e5562;
+  --on-primary: #fffbfa;
+  --accent: #c9a27e;
+  --accent-ink: #80603d;
+}
+[data-theme='sage'] {
+  --bg: #f6f5ef;
+  --surface: #fcfbf7;
+  --surface-2: #e7eae0;
+  --fg: #1f2a22;
+  --muted: #56635a;
+  --primary: #56705c;
+  --on-primary: #fcfbf7;
+  --accent: #a9b59a;
+  --accent-ink: #55644a;
+}
+[data-theme='plum'] {
+  --bg: #faf7f4;
+  --surface: #fff9f6;
+  --surface-2: #f2e8e0;
+  --fg: #1e1215;
+  --muted: #7a5566;
+  --primary: #7d3f5e;
+  --on-primary: #faf7f4;
+  --accent: #c4856a;
+  --accent-ink: #8e5239;
+}
+:root {
+  --border: color-mix(in srgb, var(--primary) 16%, transparent);
+  --ring: var(--primary);
+  --danger: #b42318;
+  --shadow-sm: 0 1px 2px rgb(46 33 28 / 0.06);
+  --shadow-lift: 0 12px 32px -12px rgb(46 33 28 / 0.22);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --header-h: 65px;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-border: var(--border);
+  --color-danger: var(--danger);
+  --shadow-lift: var(--shadow-lift);
+  --font-serif: 'Playfair Display', 'Noto Serif SC', 'Songti SC', serif;
+  --font-sans: 'DM Sans Variable', 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, sans-serif;
+  --ease-brand: var(--ease);
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+    color: var(--fg);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    text-wrap: balance;
+  }
+  h1 em, h2 em, h3 em {
+    font-style: italic;
+    color: var(--primary);
+  }
+  :lang(zh) h1 em, :lang(zh) h2 em, :lang(zh) h3 em {
+    font-style: normal;
+  }
+  [id] {
+    scroll-margin-top: calc(var(--header-h) + 16px);
+  }
+  a, button, [role='button'], summary, label[for], select {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Scroll reveal: content stays visible without JS (crawlers, AI fetchers). */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 400ms var(--ease), transform 400ms var(--ease);
+}
+.js [data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .js [data-reveal] { opacity: 1; transform: none; }
+}

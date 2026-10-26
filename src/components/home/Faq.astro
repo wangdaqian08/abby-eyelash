@@ -1,0 +1,21 @@
+---
+import type { Lang } from '../../data/services';
+import { site } from '../../data/site';
+import { common, fill, homeFaq, napAddress } from '../../i18n/common';
+import SectionHeading from '../ui/SectionHeading.astro';
+import FaqList from '../ui/FaqList.astro';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = common[lang].faq;
+const items = homeFaq[lang].map(({ q, a }) => ({ q, a: fill(a, { phone: site.phoneDisplay, address: napAddress(site) }) }));
+---
+<section id="faq" class="py-16 md:py-24">
+  <div class="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_1.6fr] lg:gap-16">
+    <div data-reveal class="lg:sticky lg:top-[calc(var(--header-h)+3rem)] lg:self-start">
+      <SectionHeading lang={lang} eyebrow={t.eyebrow} title={t.title} accent={t.accent} />
+      <p class="mt-6 max-w-sm text-muted">{t.intro}</p>
+    </div>
+    <FaqList items={items} />
+  </div>
+</section>

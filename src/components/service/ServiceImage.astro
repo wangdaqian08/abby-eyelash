@@ -1,0 +1,41 @@
+---
+// Shows public/images/services/<name>.(avif|webp|jpg|png) when the owner adds it; otherwise a token-coloured placeholder.
+// shortcut: plain <img> (public/ files aren't optimised by astro:assets); move photos to src/assets + <Image> once real ones arrive.
+import { readdirSync } from 'node:fs';
+
+interface Props {
+  name: string;
+  alt: string;
+  class?: string;
+  eager?: boolean;
+}
+const { name, alt, class: cls = '', eager = false } = Astro.props;
+
+let file: string | undefined;
+try {
+  file = readdirSync('public/images/services').find((n) => new RegExp(`^${name}\\.(avif|webp|jpe?g|png)$`, 'i').test(n));
+} catch {}
+---
+
+{
+  file ? (
+    <img
+      src={`/images/services/${file}`}
+      alt={alt}
+      width="960"
+      height="1200"
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+      class:list={['h-full w-full object-cover', cls]}
+    />
+  ) : (
+    <div role="img" aria-label={alt} class:list={['relative overflow-hidden bg-surface-2', cls]}>
+      <div class="absolute inset-4 border border-border" />
+      <div
+        class="absolute inset-0 opacity-60"
+        style="background-image: repeating-linear-gradient(135deg, transparent 0 22px, var(--border) 22px 23px)"
+      />
+      <span aria-hidden="true" class="absolute inset-0 flex items-center justify-center font-serif text-5xl text-accent">✦</span>
+    </div>
+  )
+}

@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BookingApp from '../../components/booking/BookingApp.astro';
+import { bookingStrings } from '../../i18n/booking';
+const t = bookingStrings.zh;
+---
+
+<BaseLayout lang="zh" title={t.metaTitle} description={t.metaDescription}>
+  <BookingApp lang="zh" />
+</BaseLayout>

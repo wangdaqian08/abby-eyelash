@@ -1,0 +1,80 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import SeoHead, { type Props as SeoProps } from '../components/seo/SeoHead.astro';
+import Analytics from '../components/Analytics.astro';
+import ThemePreview from '../components/ThemePreview.astro';
+import playfair500 from '@fontsource/playfair-display/files/playfair-display-latin-500-normal.woff2?url';
+import playfair500i from '@fontsource/playfair-display/files/playfair-display-latin-500-italic.woff2?url';
+
+type Props = SeoProps;
+const props = Astro.props;
+const { lang, title, description } = props;
+---
+
+<!doctype html>
+<html lang={lang === 'zh' ? 'zh-Hans' : 'en-AU'} data-theme="mocha">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- Headline fonts preloaded: a late swap re-wraps H1s and causes layout shift. -->
+    <link rel="preload" href={playfair500} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={playfair500i} as="font" type="font/woff2" crossorigin />
+    {
+      lang === 'zh' && (
+        <>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+          {/* Google Fonts slices CJK by unicode-range, so only glyphs used on the page download. */}
+          <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500&family=Noto+Serif+SC:wght@500&display=swap"
+          />
+        </>
+      )
+    }
+    <script is:inline>
+      // Theme preview (pre-launch only): ?theme=rose persists in localStorage. Remove once a theme is chosen.
+      try {
+        const q = new URLSearchParams(location.search).get('theme');
+        if (q) localStorage.setItem('theme', q);
+        const t = localStorage.getItem('theme');
+        if (t) document.documentElement.dataset.theme = t;
+      } catch {}
+      document.documentElement.classList.add('js');
+    </script>
+    <SeoHead {...props} />
+    <Analytics />
+    <slot name="head" />
+  </head>
+  <body class="bg-bg text-fg antialiased">
+    <a
+      href="#main"
+      class="sr-only z-[60] bg-primary px-4 py-3 text-on-primary focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+      >{lang === 'zh' ? '跳到主要内容' : 'Skip to content'}</a
+    >
+    <Header lang={lang} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+    <ThemePreview />
+    <script>
+      const io = new IntersectionObserver(
+        (entries) =>
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add('is-visible');
+              io.unobserve(e.target);
+            }
+          }),
+        { rootMargin: '0px 0px -10% 0px' },
+      );
+      document.querySelectorAll('[data-reveal]').forEach((el) => io.observe(el));
+    </script>
+  </body>
+</html>

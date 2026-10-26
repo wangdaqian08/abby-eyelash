@@ -1,0 +1,20 @@
+---
+// Home page body, shared by / and /zh/ (same structure, per-language copy).
+import type { Lang } from '../../data/services';
+import Hero from './Hero.astro';
+import Services from './Services.astro';
+import About from './About.astro';
+import Gallery from './Gallery.astro';
+import Reviews from './Reviews.astro';
+import Faq from './Faq.astro';
+import Contact from './Contact.astro';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+---
+<Hero lang={lang} />
+<Services lang={lang} />
+<About lang={lang} />
+<Gallery lang={lang} />
+<Reviews lang={lang} />
+<Faq lang={lang} />
+<Contact lang={lang} />

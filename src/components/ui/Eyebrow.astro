@@ -1,0 +1,6 @@
+---
+import type { Lang } from '../../data/services';
+interface Props { lang: Lang; class?: string }
+const { lang, class: cls } = Astro.props;
+---
+<p class:list={['font-medium text-accent-ink', lang === 'en' ? 'text-xs uppercase tracking-[0.25em]' : 'text-sm', cls]}><slot /></p>

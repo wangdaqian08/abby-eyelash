@@ -1,0 +1,60 @@
+---
+// Canonical, hreflang, robots, Open Graph/Twitter and JSON-LD (docs/GEO-STRATEGY.md #5, #11, #12, #13).
+import type { Lang } from '../../data/services';
+import { site } from '../../data/site';
+import { localePath } from '../../lib/i18n';
+import { abs, buildGraph, LOCALE, pagePath } from '../../lib/schema';
+
+export interface Props {
+  lang: Lang;
+  title: string;
+  description: string;
+  /** Extra page-specific JSON-LD nodes (Service, BreadcrumbList…). Must mirror visible content. */
+  schema?: Record<string, unknown>[];
+  /** Absolute or root-relative OG image. */
+  image?: string;
+  /** ISO date of the last real content change. */
+  updated?: string;
+  noindex?: boolean;
+}
+const { lang, title, description, schema, image = '/og-default.jpg', updated, noindex } = Astro.props;
+const base = Astro.site!;
+const path = pagePath(Astro.url.pathname);
+const canonical = abs(base, localePath(lang, path));
+const ogImage = abs(base, image);
+const other: Lang = lang === 'zh' ? 'en' : 'zh';
+const ogLocale = { en: 'en_AU', zh: 'zh_CN' };
+// Escape "<" so content can never close the script element.
+const jsonLd = JSON.stringify(
+  buildGraph({ site: base, lang, pathname: Astro.url.pathname, title, image: ogImage, updated, extra: schema }),
+).replace(/</g, '\\u003c');
+---
+{/* Never add nosnippet / max-snippet / noarchive / nocache (GEO-STRATEGY #5). */}
+<meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large'} />
+{!noindex && (
+  <>
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang={LOCALE.en} href={abs(base, localePath('en', path))} />
+    <link rel="alternate" hreflang={LOCALE.zh} href={abs(base, localePath('zh', path))} />
+    <link rel="alternate" hreflang="x-default" href={abs(base, localePath('en', path))} />
+  </>
+)}
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={site.name} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+{image === '/og-default.jpg' && (
+  <>
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+  </>
+)}
+<meta property="og:locale" content={ogLocale[lang]} />
+<meta property="og:locale:alternate" content={ogLocale[other]} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+{!noindex && <script type="application/ld+json" is:inline set:html={jsonLd} />}

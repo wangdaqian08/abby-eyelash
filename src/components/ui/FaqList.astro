@@ -1,0 +1,13 @@
+---
+// Always-visible Q&A list (GEO-STRATEGY #2 — no accordion). Answers are plain text.
+interface Props { items: { q: string; a: string }[]; class?: string }
+const { items, class: cls } = Astro.props;
+---
+<dl class:list={['divide-y divide-border border-y border-border', cls]}>
+  {items.map(({ q, a }) => (
+    <div class="py-6">
+      <dt class="font-serif text-xl leading-snug">{q}</dt>
+      <dd class="mt-2 text-muted">{a}</dd>
+    </div>
+  ))}
+</dl>

@@ -1,0 +1,62 @@
+---
+import type { Lang } from '../../data/services';
+import { site } from '../../data/site';
+import { common, hoursRows, mapsUrl, napAddress, telHref } from '../../i18n/common';
+import { localePath } from '../../lib/i18n';
+import SectionHeading from '../ui/SectionHeading.astro';
+import Button from '../ui/Button.astro';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = common[lang].contact;
+const icon = 'mt-0.5 size-5 shrink-0 text-accent-ink';
+---
+<section id="contact" class="bg-surface-2 py-16 md:py-24">
+  <div class="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16">
+    <div data-reveal>
+      <SectionHeading lang={lang} eyebrow={t.eyebrow} title={t.title} accent={t.accent} />
+      <table class="mt-10 w-full text-left">
+        <caption class="sr-only">{common[lang].footer.hours}</caption>
+        <tbody class="divide-y divide-border border-y border-border">
+          {hoursRows(site.hours, lang).map((r) => (
+            <tr><th scope="row" class="py-4 font-normal">{r.days}</th><td class="py-4 text-right tabular-nums text-muted">{r.time}</td></tr>
+          ))}
+        </tbody>
+      </table>
+
+      <ul class="mt-8 space-y-4 text-muted">
+        <li class="flex gap-3">
+          <svg class={icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
+          <span><span class="sr-only">{t.address}: </span><span class="text-fg">{napAddress(site)}</span><br />{t.findUs}</span>
+        </li>
+        <li class="flex gap-3">
+          <svg class={icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>
+          <span><span class="sr-only">{t.phone}: </span><a href={telHref(site.phone)} data-track="call_click" class="text-fg underline-offset-4 hover:underline">{site.phoneDisplay}</a></span>
+        </li>
+        <li class="flex gap-3">
+          <svg class={icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="5" width="18" height="14" /><path d="m3 7 9 6 9-6" /></svg>
+          <span><span class="sr-only">{t.email}: </span><a href={`mailto:${site.email}`} class="text-fg underline-offset-4 hover:underline">{site.email}</a></span>
+        </li>
+        <li class="flex gap-3">
+          <svg class={icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+          <span>{t.byAppointment}</span>
+        </li>
+      </ul>
+    </div>
+
+    <div data-reveal class="flex flex-col gap-3">
+      {site.google.mapsEmbed ? (
+        <iframe src={site.google.mapsEmbed} title={t.mapTitle} loading="lazy" referrerpolicy="no-referrer-when-downgrade" class="aspect-[4/3] w-full border-0 bg-surface lg:aspect-auto lg:flex-1" />
+      ) : (
+        <a href={mapsUrl(site)} data-track="map_click" target="_blank" rel="noopener" class="group flex aspect-[4/3] flex-col items-center justify-center gap-4 border border-border bg-surface p-8 text-center transition duration-300 ease-brand hover:-translate-y-1 hover:shadow-lift lg:aspect-auto lg:flex-1">
+          <svg class="size-10 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
+          <span class="font-serif text-2xl">{site.name}</span>
+          <span class="text-muted">{napAddress(site)}</span>
+          <span class:list={['inline-flex items-center gap-2 text-accent-ink', lang === 'en' ? 'text-xs uppercase tracking-[0.2em]' : 'text-sm']}>{t.openMaps} <span aria-hidden="true" class="transition-transform duration-200 group-hover:translate-x-1">↗</span></span>
+        </a>
+      )}
+      <Button href={localePath(lang, '/book')} lang={lang} track="book_click" class="w-full">{t.bookOnline}</Button>
+      <Button href={telHref(site.phone)} lang={lang} variant="outline" track="call_click" class="w-full">{t.call} · {site.phoneDisplay}</Button>
+    </div>
+  </div>
+</section>

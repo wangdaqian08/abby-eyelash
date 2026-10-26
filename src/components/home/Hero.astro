@@ -1,0 +1,47 @@
+---
+import { Picture } from 'astro:assets';
+import type { Lang } from '../../data/services';
+import { site } from '../../data/site';
+import { reviewSummary } from '../../data/reviews';
+import { common, fill } from '../../i18n/common';
+import { localePath } from '../../lib/i18n';
+import Button from '../ui/Button.astro';
+import Eyebrow from '../ui/Eyebrow.astro';
+import Stars from '../ui/Stars.astro';
+import hero from '../../assets/home/placeholder-hero.jpg'; // PLACEHOLDER photo
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = common[lang].hero;
+const body = fill(t.body, { name: site.name, owner: site.owner, suburb: site.address.locality, region: site.address.region, postcode: site.address.postcode });
+---
+<section class="grid pt-[var(--header-h)] lg:min-h-svh lg:grid-cols-2">
+  <div class="flex flex-col justify-center px-4 py-16 sm:px-6 lg:py-24 lg:pl-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))] lg:pr-16">
+    <Eyebrow lang={lang}>{t.eyebrow}</Eyebrow>
+    <h1 class="mt-6 text-5xl leading-[1.08] md:text-6xl 2xl:text-7xl">{t.titleA}<br /><em>{t.accent}</em><br />{t.titleB}</h1>
+    <p class="mt-8 max-w-md text-lg text-muted">{body}</p>
+    <div class="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3">
+      <Button href={localePath(lang, '/book')} lang={lang} track="book_click">{t.book}</Button>
+      <a href="#services" class="group inline-flex min-h-12 items-center gap-2 text-sm text-muted transition-colors duration-200 hover:text-fg">
+        {t.services}
+        <svg viewBox="0 0 24 24" class="size-4 transition-transform duration-200 group-hover:translate-y-0.5" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+      </a>
+    </div>
+    <p class="mt-10 flex items-center gap-3 text-sm text-muted">
+      <Stars rating={reviewSummary.rating} label={`${reviewSummary.rating} / 5`} />
+      <span><span class="font-medium text-fg">{reviewSummary.rating}</span> · {t.rating}</span>
+    </p>
+  </div>
+  <div class="relative aspect-[4/5] sm:aspect-[16/10] lg:aspect-auto">
+    <Picture
+      src={hero}
+      alt={t.imageAlt}
+      formats={['avif', 'webp']}
+      widths={[480, 768, 1080, 1600]}
+      sizes="(min-width: 1024px) 50vw, 100vw"
+      loading="eager"
+      fetchpriority="high"
+      class="absolute inset-0 size-full object-cover"
+    />
+  </div>
+</section>

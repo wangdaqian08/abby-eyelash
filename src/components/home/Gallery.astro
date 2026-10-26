@@ -1,0 +1,49 @@
+---
+import { Picture } from 'astro:assets';
+import type { Lang } from '../../data/services';
+import { site } from '../../data/site';
+import { common } from '../../i18n/common';
+import SectionHeading from '../ui/SectionHeading.astro';
+// PLACEHOLDER stock photos (see docs/IMAGE-PLACEHOLDERS.md) — replace with Abby's own work.
+import g1 from '../../assets/gallery/placeholder-1.jpg';
+import g2 from '../../assets/gallery/placeholder-2.jpg';
+import g3 from '../../assets/gallery/placeholder-3.jpg';
+import g4 from '../../assets/gallery/placeholder-4.jpg';
+import g5 from '../../assets/gallery/placeholder-5.jpg';
+import g6 from '../../assets/gallery/placeholder-6.jpg';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = common[lang].gallery;
+const photos = [
+  { src: g1, en: 'Close-up of a green eye with long, softly curled lashes', zh: '绿色眼眸特写，睫毛纤长、自然上翘' },
+  { src: g2, en: 'Hand with glossy black and tortoiseshell nail art and a gold ring', zh: '亮面黑色与玳瑁纹手绘美甲，搭配金色戒指' },
+  { src: g3, en: 'Side view of full, dark volume lash extensions', zh: '侧面看浓密款嫁接睫毛，饱满乌黑' },
+  { src: g4, en: 'Hand with short, light pink gel manicure on a white surface', zh: '短款浅粉色光疗甲，手放在白色台面上' },
+  { src: g5, en: 'Almond nails in navy, gold foil and white hand-painted designs', zh: '杏仁形甲面，藏蓝、金箔与白色手绘设计' },
+  { src: g6, en: 'Mauve and silver glitter nails holding a white knit sleeve', zh: '豆沙紫与银色闪粉美甲，手握白色针织衣袖' },
+];
+---
+<section id="gallery" class="bg-surface-2 py-16 md:py-24">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div data-reveal class="flex flex-wrap items-end justify-between gap-6">
+      <SectionHeading lang={lang} eyebrow={t.eyebrow} title={t.title} accent={t.accent} />
+      <a href={site.social.instagram} data-track="social_click" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-4 transition-colors duration-200 hover:text-fg">{t.more}</a>
+    </div>
+    <ul data-reveal class="mt-12 grid grid-cols-2 gap-3 md:mt-16 lg:grid-cols-3">
+      {photos.map((p) => (
+        <li class="aspect-[4/5] overflow-hidden bg-surface lg:aspect-square">
+          <Picture
+            src={p.src}
+            alt={p[lang]}
+            formats={['avif', 'webp']}
+            widths={[300, 600, 800]}
+            sizes="(min-width: 1152px) 368px, (min-width: 1024px) 31vw, 47vw"
+            loading="lazy"
+            class="size-full object-cover transition-transform duration-500 ease-brand hover:scale-[1.03]"
+          />
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

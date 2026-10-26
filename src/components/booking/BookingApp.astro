@@ -1,0 +1,71 @@
+---
+// Booking flow shell. The interactive steps are rendered by ./booking-client.ts.
+import { readdirSync } from 'node:fs';
+import { site } from '../../data/site';
+import type { Lang } from '../../data/services';
+import { bookingStrings } from '../../i18n/booking';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = bookingStrings[lang];
+
+// Use the owner's photo when public/images/abby-avatar.* exists; otherwise a monogram placeholder.
+let avatar: string | undefined;
+try {
+  const f = readdirSync('public/images').find((n) => /^abby-avatar\.(webp|avif|jpe?g|png)$/i.test(n));
+  if (f) avatar = `/images/${f}`;
+} catch {}
+
+const config = {
+  lang,
+  turnstileSiteKey: import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? '',
+  web3formsKey: import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY ?? '',
+  home: lang === 'zh' ? '/zh/' : '/',
+};
+---
+
+<section class="mx-auto max-w-6xl px-4 pb-16 pt-[calc(var(--header-h)+40px)] sm:px-6 lg:pb-24 lg:pt-[calc(var(--header-h)+64px)]">
+  <p class:list={["text-xs font-medium uppercase text-accent-ink", lang === "en" && "tracking-[0.25em]"]}>{t.eyebrow}</p>
+  <h1 class="mt-3 text-4xl leading-tight sm:text-5xl">{t.titleA}<em>{t.titleB}</em></h1>
+
+  <div
+    data-booking
+    data-config={JSON.stringify(config)}
+    class="mt-8 bg-surface shadow-[var(--shadow-sm)] lg:mt-12 lg:grid lg:min-h-[560px] lg:grid-cols-[280px_1fr]"
+  >
+    <aside class="hidden border-r border-border p-8 lg:block">
+      {
+        avatar ? (
+          <img src={avatar} alt="Abby" width="72" height="72" class="size-18 rounded-full object-cover" />
+        ) : (
+          <div aria-hidden="true" class="flex size-18 items-center justify-center rounded-full bg-surface-2 font-serif text-3xl italic text-primary ring-1 ring-border">
+            A
+          </div>
+        )
+      }
+      <p class="mt-4 text-xs text-muted">{t.caption}</p>
+      <p class="font-serif text-2xl">{site.owner}</p>
+      <ol data-stepper class="mt-8" aria-label={t.eyebrow}></ol>
+    </aside>
+
+    <div class="min-w-0 p-5 sm:p-8 lg:p-10">
+      <div data-progress class="lg:hidden"></div>
+      <p data-demo hidden class="mb-6 border-l-2 border-accent bg-surface-2 px-4 py-2 text-sm text-muted">{t.demo}</p>
+      <p data-live class="sr-only" aria-live="polite"></p>
+      <!-- Reserve roughly the step-1 height so the JS render doesn't shift the footer (CLS). -->
+      <div data-view class="min-h-[620px] lg:min-h-[480px]">
+        <noscript>
+          <p>{t.noscript.replace('{phone}', site.phoneDisplay)}</p>
+          <a class="mt-4 inline-block underline underline-offset-4" href={`tel:${site.phone.replace(/\s/g, '')}`}>{site.phoneDisplay}</a>
+        </noscript>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { start } from './booking-client';
+  start(document.querySelector<HTMLElement>('[data-booking]')!);
+</script>

@@ -1,0 +1,30 @@
+---
+// Link styled as a button. variant: primary (filled) | outline | inverse (outline on --primary bands).
+// `track` sets data-track for GA4 (book_click, call_click, map_click, review_click, social_click).
+import type { HTMLAttributes } from 'astro/types';
+import type { Lang } from '../../data/services';
+
+interface Props extends HTMLAttributes<'a'> {
+  href: string;
+  lang: Lang;
+  variant?: 'primary' | 'outline' | 'inverse';
+  track?: string;
+}
+const { href, lang, variant = 'primary', track, class: cls, ...rest } = Astro.props;
+const variants = {
+  primary: 'bg-primary text-on-primary hover:bg-primary/90',
+  outline: 'border border-primary text-primary hover:bg-surface-2',
+  inverse: 'border border-on-primary/40 text-on-primary hover:bg-on-primary hover:text-primary',
+};
+---
+<a
+  href={href}
+  data-track={track}
+  class:list={[
+    'inline-flex min-h-12 items-center justify-center gap-2 px-7 text-center font-medium transition duration-200 ease-brand active:scale-[.97]',
+    lang === 'en' ? 'text-xs uppercase tracking-[0.2em]' : 'text-sm',
+    variants[variant],
+    cls,
+  ]}
+  {...rest}
+><slot /></a>

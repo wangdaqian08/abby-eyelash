@@ -1,0 +1,244 @@
+---
+// One service page (EN or ZH). All facts come from services.ts / site.ts / service-content.ts and render as static HTML.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ServiceImage from './ServiceImage.astro';
+import { services, type Lang, type Service } from '../../data/services';
+import { site } from '../../data/site';
+import { serviceContent } from '../../data/service-content';
+import { serviceStrings } from '../../i18n/service';
+import { localePath } from '../../lib/i18n';
+
+interface Props {
+  lang: Lang;
+  service: Service;
+}
+const { lang, service } = Astro.props;
+const t = serviceStrings[lang];
+const c = serviceContent(service.id, lang);
+const en = lang === 'en';
+
+const bookHref = `${localePath(lang, '/book')}?service=${service.id}`;
+const tel = `tel:${site.phone.replace(/\s/g, '')}`;
+const a = site.address;
+const addressLine = `${a.street}, ${a.locality} ${a.region} ${a.postcode}`;
+const mapHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${site.name}, ${addressLine}`)}`;
+const updated = new Intl.DateTimeFormat(en ? 'en-AU' : 'zh-CN', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(service.updated));
+
+// Opening hours grouped into runs of consecutive days (Mon → Sun) with identical times.
+const fmtTime = (hm: string) => {
+  if (!en) return hm.replace(/^0/, '');
+  const [h, m] = hm.split(':').map(Number);
+  return `${h % 12 || 12}${m ? ':' + String(m).padStart(2, '0') : ''} ${h < 12 ? 'am' : 'pm'}`;
+};
+const hourRows: { days: number[]; text: string }[] = [];
+for (const d of [1, 2, 3, 4, 5, 6, 0]) {
+  const h = site.hours.find((x) => x.day === d);
+  const text = h ? `${fmtTime(h.open)} – ${fmtTime(h.close)}` : t.closed;
+  const last = hourRows.at(-1);
+  if (last?.text === text) last.days.push(d);
+  else hourRows.push({ days: [d], text });
+}
+const dayLabel = (days: number[]) =>
+  days.length > 1 ? `${t.days[days[0]]}${t.to}${t.days[days.at(-1)!]}` : t.days[days[0]];
+
+const related = services.filter((s) => s.id !== service.id);
+const minPrice = (s: Service) => Math.min(...s.options.map((o) => o.price));
+
+const eyebrow = ['text-xs font-medium uppercase text-accent-ink', en && 'tracking-[0.25em]'];
+const btn = [
+  'inline-flex min-h-12 items-center justify-center gap-2 px-7 py-3 font-medium transition duration-200 ease-brand hover:-translate-y-0.5 hover:shadow-lift active:scale-[.97]',
+  en ? 'text-xs uppercase tracking-[0.2em]' : 'text-sm',
+];
+const container = 'mx-auto max-w-6xl px-4 sm:px-6';
+---
+
+<BaseLayout lang={lang} title={c.title} description={c.description} updated={service.updated}>
+  <article>
+    {/* Hero: breadcrumb, H1, answer-first intro, CTAs */}
+    <section class:list={[container, 'grid items-center gap-10 pb-16 pt-[calc(var(--header-h)+24px)] lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:pb-24 lg:pt-[calc(var(--header-h)+48px)]']}>
+      <div>
+        <nav aria-label={t.breadcrumb} class="text-sm text-muted">
+          <ol class="flex flex-wrap items-center gap-2">
+            <li><a href={localePath(lang, '/')} class="inline-flex min-h-11 items-center underline-offset-4 transition-colors hover:text-fg hover:underline">{t.home}</a></li>
+            <li aria-hidden="true">›</li>
+            <li aria-current="page" class="text-fg">{service.name[lang]}</li>
+          </ol>
+        </nav>
+        <p class:list={[eyebrow, 'mt-6']}>{t.eyebrow}</p>
+        <h1 class="mt-4 text-5xl leading-[1.08] lg:text-7xl [&_em]:block">{c.h1[0]}<em>{c.h1[1]}</em></h1>
+        <p class="mt-6 max-w-xl text-lg leading-relaxed">{c.intro}</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href={bookHref} data-track="book_click" class:list={[btn, 'bg-primary text-on-primary hover:bg-primary/90']}>{t.book}</a>
+          <a href={tel} data-track="call_click" class:list={[btn, 'border border-primary text-primary hover:bg-surface-2']}>{t.call} {site.phoneDisplay}</a>
+        </div>
+      </div>
+      <ServiceImage name={`${service.id}-hero`} alt={c.alt.hero} eager class="aspect-[4/3] w-full lg:aspect-[4/5] shadow-[var(--shadow-sm)]" />
+    </section>
+
+    {/* Price table (same data as Service/Offer JSON-LD) */}
+    <section id="prices" class="bg-surface-2 py-16 lg:py-24">
+      <div class:list={[container, 'grid gap-10 lg:grid-cols-[1fr_1.5fr] lg:gap-16']}>
+        <div>
+          <p class:list={eyebrow}>{t.priceEyebrow}</p>
+          <h2 class="mt-3 text-4xl leading-tight lg:text-5xl [&_em]:block">{t.priceTitle[0]}<em>{t.priceTitle[1]}</em></h2>
+        </div>
+        <div>
+          <table class="w-full bg-surface text-left shadow-[var(--shadow-sm)]">
+            <caption class="sr-only">{service.name[lang]}</caption>
+            <thead>
+              <tr class="border-b border-border text-sm text-muted">
+                <th scope="col" class="px-5 py-4 font-medium sm:px-8">{t.colOption}</th>
+                <th scope="col" class="px-3 py-4 font-medium">{t.colDuration}</th>
+                <th scope="col" class="px-5 py-4 text-right font-medium sm:px-8">{t.colPrice}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {service.options.map((o) => (
+                <tr class="border-b border-border last:border-0">
+                  <th scope="row" class="px-5 py-5 font-serif text-lg font-medium sm:px-8">{o.name[lang]}</th>
+                  <td class="whitespace-nowrap px-3 py-5 text-muted">{t.minutes(o.minutes)}</td>
+                  <td class="whitespace-nowrap px-5 py-5 text-right font-medium sm:px-8">{t.price(o.price, o.from)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p class="mt-4 text-sm text-muted">{t.updated}<time datetime={service.updated}>{updated}</time></p>
+        </div>
+      </div>
+    </section>
+
+    {/* Client questions */}
+    <section class:list={[container, 'grid gap-12 py-16 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-16 lg:py-24']}>
+      <div class="max-w-2xl">
+        {c.sections.map((s, i) => (
+          <section class:list={['border-border', i > 0 && 'mt-12 border-t pt-12']}>
+            <h2 class="text-3xl leading-tight lg:text-4xl">{s.h2[0]}<em>{s.h2[1]}</em></h2>
+            {s.body?.map((p) => <p class="mt-4 text-muted" set:html={p} />)}
+            {s.steps && (
+              <ol class="mt-6 space-y-4">
+                {s.steps.map((step, n) => (
+                  <li class="flex gap-4">
+                    <span aria-hidden="true" class="w-8 shrink-0 font-serif text-xl italic text-primary">{String(n + 1).padStart(2, '0')}</span>
+                    <span class="text-muted" set:html={step} />
+                  </li>
+                ))}
+              </ol>
+            )}
+            {s.list && (
+              <ul class="mt-6 space-y-3">
+                {s.list.map((li) => (
+                  <li class="flex gap-3">
+                    <span aria-hidden="true" class="text-accent">✦</span>
+                    <span class="text-muted [&_strong]:font-medium [&_strong]:text-fg" set:html={li} />
+                  </li>
+                ))}
+              </ul>
+            )}
+            {s.after?.map((p) => <p class="mt-4 text-muted" set:html={p} />)}
+          </section>
+        ))}
+      </div>
+      <div class="lg:sticky lg:top-[calc(var(--header-h)+32px)] lg:self-start">
+        <ServiceImage name={`${service.id}-detail`} alt={c.alt.detail} class="aspect-[3/2] w-full lg:aspect-[4/5]" />
+        <a href={bookHref} data-track="book_click" class:list={[btn, 'mt-6 w-full bg-primary text-on-primary hover:bg-primary/90']}>{t.bookShort}</a>
+      </div>
+    </section>
+
+    {/* FAQ: always visible, no accordion, no FAQPage schema (GEO #2, #11) */}
+    <section id="faq" class="bg-surface-2 py-16 lg:py-24">
+      <div class={container}>
+        <p class:list={eyebrow}>{t.faqEyebrow}</p>
+        <h2 class="mt-3 text-4xl leading-tight lg:text-5xl [&_em]:block">{t.faqTitle[0]}<em>{t.faqTitle[1]}</em></h2>
+        <div class="mt-10 grid gap-4 md:grid-cols-2">
+          {c.faq.map((f) => (
+            <div class="bg-surface p-6 sm:p-8">
+              <h3 class="text-lg leading-snug">{f.q}</h3>
+              <p class="mt-3 text-muted">{f.a}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* Location: NAP from site.ts (must match Google Business Profile) */}
+    <section id="visit" class:list={[container, 'grid gap-10 py-16 lg:grid-cols-2 lg:gap-16 lg:py-24']}>
+      <div>
+        <p class:list={eyebrow}>{t.locEyebrow}</p>
+        <h2 class="mt-3 text-4xl leading-tight lg:text-5xl [&_em]:block">{t.locTitle[0]}<em>{t.locTitle[1]}</em></h2>
+        <p class="mt-6 max-w-md text-muted">{t.findUs}</p>
+        <div class="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+          <a href={mapHref} target="_blank" rel="noopener" data-track="map_click" class="inline-flex min-h-11 items-center text-fg underline underline-offset-4 hover:text-primary">{t.map}</a>
+          <a href={site.google.reviewsUrl} target="_blank" rel="noopener" data-track="review_click" class="inline-flex min-h-11 items-center text-muted underline underline-offset-4 hover:text-fg">{t.review}</a>
+        </div>
+      </div>
+      <dl class="grid gap-6 border-t border-border pt-8 sm:grid-cols-2 lg:border-0 lg:pt-0">
+        <div>
+          <dt class:list={eyebrow}>{t.address}</dt>
+          <dd class="mt-2">{site.name}<br />{a.street}<br />{a.locality} {a.region} {a.postcode}</dd>
+        </div>
+        <div>
+          <dt class:list={eyebrow}>{t.phone}</dt>
+          <dd class="mt-1"><a href={tel} data-track="call_click" class="inline-flex min-h-11 items-center underline-offset-4 hover:underline">{site.phoneDisplay}</a></dd>
+          {!en && (
+            <>
+              <dt class:list={[eyebrow, 'mt-4']}>{t.wechat}</dt>
+              <dd class="mt-2">{site.social.wechatId}</dd>
+            </>
+          )}
+        </div>
+        <div class="sm:col-span-2">
+          <dt class:list={eyebrow}>{t.hours}</dt>
+          <dd class="mt-2">
+            <table class="w-full max-w-sm">
+              <tbody>
+                {hourRows.map((r) => (
+                  <tr class="border-b border-border last:border-0">
+                    <th scope="row" class="py-2 pr-6 text-left font-normal text-muted">{dayLabel(r.days)}</th>
+                    <td class="py-2 text-right">{r.text}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </dd>
+        </div>
+      </dl>
+    </section>
+
+    {/* Related services */}
+    <section class="border-t border-border py-16 lg:py-24">
+      <div class={container}>
+        <p class:list={eyebrow}>{t.relatedEyebrow}</p>
+        <h2 class="mt-3 text-4xl leading-tight lg:text-5xl [&_em]:block">{t.relatedTitle[0]}<em>{t.relatedTitle[1]}</em></h2>
+        <ul class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {related.map((s) => (
+            <li>
+              <a
+                href={localePath(lang, `/${s.slug}`)}
+                class="group flex h-full flex-col bg-surface p-6 shadow-[var(--shadow-sm)] transition duration-300 ease-brand hover:-translate-y-1 hover:bg-primary hover:text-on-primary hover:shadow-lift focus-visible:-translate-y-1 focus-visible:bg-primary focus-visible:text-on-primary active:scale-[.98]"
+              >
+                <span aria-hidden="true" class="text-accent group-hover:text-on-primary group-focus-visible:text-on-primary">✦</span>
+                <span class="mt-3 font-serif text-xl">{s.name[lang]}</span>
+                <span class="mt-2 flex-1 text-sm text-muted group-hover:text-on-primary group-focus-visible:text-on-primary">{s.summary[lang]}</span>
+                <span class="mt-4 text-sm font-medium">{t.price(minPrice(s), true)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    {/* Final CTA */}
+    <section class="bg-primary py-16 text-on-primary lg:py-24">
+      <div class:list={[container, 'flex flex-col items-start gap-6 md:flex-row md:items-end md:justify-between']}>
+        <div>
+          <h2 class="text-4xl leading-tight lg:text-5xl [&_em]:block [&_em]:text-on-primary">{t.ctaTitle[0]}<em>{t.ctaTitle[1]}</em></h2>
+          <p class="mt-4 max-w-md opacity-90">{t.ctaBody}</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <a href={bookHref} data-track="book_click" class:list={[btn, 'bg-on-primary text-primary hover:bg-surface-2']}>{t.book}</a>
+          <a href={tel} data-track="call_click" class:list={[btn, 'border border-on-primary text-on-primary hover:bg-on-primary/10']}>{site.phoneDisplay}</a>
+        </div>
+      </div>
+    </section>
+  </article>
+</BaseLayout>

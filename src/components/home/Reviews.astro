@@ -1,0 +1,41 @@
+---
+// Inverted --primary band. Dummy data only (D3) — no Review/AggregateRating schema.
+import type { Lang } from '../../data/services';
+import { site } from '../../data/site';
+import { reviews } from '../../data/reviews';
+import { common, monthYear } from '../../i18n/common';
+import SectionHeading from '../ui/SectionHeading.astro';
+import Stars from '../ui/Stars.astro';
+import GoogleMark from '../ui/GoogleMark.astro';
+import Button from '../ui/Button.astro';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = common[lang].reviews;
+---
+<section id="reviews" class="bg-primary py-16 text-on-primary md:py-24">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div data-reveal><SectionHeading lang={lang} eyebrow={t.eyebrow} title={t.title} accent={t.accent} inverse class="text-center" /></div>
+    {reviews.some((r) => r.dummy) && <p class="mx-auto mt-4 max-w-xl text-center text-sm text-on-primary/90">{t.sample}</p>}
+
+    <ul data-reveal class="mt-12 grid gap-px bg-on-primary/15 md:mt-16 md:grid-cols-2 lg:grid-cols-3">
+      {reviews.map((r) => (
+        <li class="flex flex-col bg-primary p-8">
+          <div class="flex items-center justify-between gap-4">
+            <Stars class="text-on-primary/90" rating={r.rating} label={lang === 'zh' ? `${r.rating} 星（满分 5 星）` : `${r.rating} out of 5 stars`} />
+            <span class="inline-flex items-center gap-1.5 text-xs text-on-primary/90"><GoogleMark class="size-3.5" />{t.google}</span>
+          </div>
+          <blockquote lang={r.lang === 'zh' ? 'zh-Hans' : 'en-AU'} class:list={['mt-6 flex-1 font-serif text-lg leading-relaxed', r.lang === 'en' && 'italic']}>
+            <p>“{r.text}”</p>
+          </blockquote>
+          <p class="mt-6 text-sm text-on-primary/90">— {r.name} · <time datetime={r.date}>{monthYear(r.date, lang)}</time></p>
+        </li>
+      ))}
+    </ul>
+
+    <div class="mt-12 flex flex-col items-center gap-4">
+      <Button href={site.google.reviewsUrl} lang={lang} variant="inverse" track="review_click" target="_blank" rel="noopener">{t.readAll}</Button>
+      <a href={site.google.reviewsUrl} data-track="review_click" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center text-sm text-on-primary/90 underline underline-offset-4 hover:text-on-primary">{t.leave}</a>
+    </div>
+  </div>
+</section>
