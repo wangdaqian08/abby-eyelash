@@ -69,7 +69,7 @@ test('/book has no BreadcrumbList (none is visible there); extra nodes are appen
 test('helpers', () => {
   assert.equal(pagePath('/zh/book'), '/book/');
   assert.equal(pagePath('/zh'), '/');
-  assert.equal(priceRange(), '$10–$140');
+  assert.equal(priceRange(), '$35–$140');
   assert.equal(isRealProfileUrl('https://www.instagram.com/'), false);
   assert.equal(isRealProfileUrl('https://www.google.com/maps'), false);
   assert.equal(isRealProfileUrl('https://www.instagram.com/abbyeyelash'), true);

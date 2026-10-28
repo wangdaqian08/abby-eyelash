@@ -31,7 +31,7 @@ export const isRealProfileUrl = (url: string) => {
 };
 
 export const priceRange = () => {
-  const all = services.flatMap((s) => s.options.map((o) => o.price));
+  const all = services.flatMap((s) => s.options.filter((o) => !o.extra).map((o) => o.price));
   return `$${Math.min(...all)}–$${Math.max(...all)}`;
 };
 

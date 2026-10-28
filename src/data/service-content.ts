@@ -28,6 +28,12 @@ const opt = (s: string, o: string) => {
 };
 const $ = (s: string, o: string) => `$${opt(s, o).price}`;
 const m = (s: string, o: string) => opt(s, o).minutes;
+/** Duration range over options, e.g. "60–75" (single value when equal). */
+const span = (s: string, ...os: string[]) => {
+  const v = os.map((o) => m(s, o));
+  const [lo, hi] = [Math.min(...v), Math.max(...v)];
+  return lo === hi ? `${lo}` : `${lo}–${hi}`;
+};
 // Infill share of the full-set price, from Abby's menu (after 4 weeks: full price).
 const INFILL = [['2', 50], ['3', 70], ['4', 85]] as const;
 
@@ -88,7 +94,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `Each extension is isolated onto a single natural lash, placed just off the skin so it never touches your eyelid.`,
             `Abby brushes through, checks that no lashes are stuck together, and shows you the result.`,
           ],
-          after: [`Allow about ${m(L, 'classic-natural')}–${m(L, 'hybrid-full')} minutes for a full set. Many clients nap.`],
+          after: [`Allow about ${span(L, 'classic-natural', 'classic-full', 'hybrid-natural', 'hybrid-full', 'styled')} minutes for a full set. Many clients nap.`],
         },
         {
           h2: ['How long they last ', 'and when to infill'],
@@ -131,7 +137,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         },
       ],
       faq: [
-        { q: 'How long does a full set take?', a: `About ${m(L, 'classic-natural')}–${m(L, 'hybrid-full')} minutes for a full set. An infill takes about ${m(L, 'infill-2w')} minutes.` },
+        { q: 'How long does a full set take?', a: `About ${span(L, 'classic-natural', 'classic-full', 'hybrid-natural', 'hybrid-full', 'styled')} minutes for a full set. An infill takes about ${span(L, 'infill-2w', 'infill-3w', 'infill-4w')} minutes.` },
         { q: 'Can I wear mascara with extensions?', a: 'You usually won’t need it. If you do, use a water-based mascara on the tips only, never waterproof, and remove it with an oil-free cleanser.' }, // OWNER-REVIEW
         { q: 'Do eyelash extensions damage natural lashes?', a: 'Lash loss is a known risk, mostly from extensions that are too heavy, rubbing, or pulling them off. Sizing the set to your own lashes and having them removed professionally keeps that risk low.' },
         { q: 'How do I get them removed?', a: 'Book a removal ($10–$20) with Abby. She dissolves the adhesive with a professional remover so your natural lashes aren’t pulled out. Never pick them off.' }, // OWNER-REVIEW: removal time
@@ -168,7 +174,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `逐根分离真睫毛再嫁接，接点离开皮肤，不会碰到眼皮。`,
             `梳理检查，确保没有粘连，再给你看效果。`,
           ],
-          after: [`全套预留约 ${m(L, 'classic-natural')}–${m(L, 'hybrid-full')} 分钟。很多客人会直接睡一觉。`],
+          after: [`全套预留约 ${span(L, 'classic-natural', 'classic-full', 'hybrid-natural', 'hybrid-full', 'styled')} 分钟。很多客人会直接睡一觉。`],
         },
         {
           h2: ['能维持多久，', '多久回补一次'],
@@ -211,7 +217,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         },
       ],
       faq: [
-        { q: '做一套要多久？', a: `全套约 ${m(L, 'classic-natural')}–${m(L, 'hybrid-full')} 分钟，回补约 ${m(L, 'infill-2w')} 分钟。` },
+        { q: '做一套要多久？', a: `全套约 ${span(L, 'classic-natural', 'classic-full', 'hybrid-natural', 'hybrid-full', 'styled')} 分钟，回补约 ${span(L, 'infill-2w', 'infill-3w', 'infill-4w')} 分钟。` },
         { q: '嫁接后还能涂睫毛膏吗？', a: '一般不需要。如果要涂，只在睫毛尾端用水性睫毛膏，不要用防水款，并用无油清洁产品卸掉。' }, // OWNER-REVIEW
         { q: '嫁接睫毛会伤真睫毛吗？', a: '睫毛脱落确实是已知风险，多数来自睫毛过重、经常揉或自己拔。按你的真睫毛选合适的款式，并由专业人员卸除，风险就能降到很低。' },
         { q: '想卸掉怎么办？', a: '预约 Abby 帮你卸（$10–$20）。她会用专业卸睫膏溶解胶水，不会扯掉真睫毛。请不要自己拔。' }, // OWNER-REVIEW: removal time

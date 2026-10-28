@@ -172,7 +172,7 @@ export function start(root: HTMLElement) {
             .map(
               (o) => `<label class="flex min-h-14 items-center justify-between gap-4 px-1 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring">
                 <span class="flex items-center gap-3"><input type="radio" name="bk-option" value="${o.id}" class="size-4 accent-primary" ${o === st.option ? 'checked' : ''}><span>${o.name[lang]}</span></span>
-                <span class="whitespace-nowrap text-sm text-muted">${mins(o.minutes)} · <span class="text-fg">${price(o)}</span></span>
+                <span class="shrink-0 text-right text-sm text-muted"><span class="block whitespace-nowrap text-fg">${price(o)}</span><span class="whitespace-nowrap">${mins(o.minutes)}</span></span>
               </label>`,
             )
             .join('')}</div></fieldset>`
