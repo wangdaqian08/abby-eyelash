@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { services } from '../data/services.ts';
+import { fromPrice, services } from '../data/services.ts';
 import { buildGraph, isRealProfileUrl, pagePath, priceRange } from './schema.ts';
 
 const SITE = 'https://example.org';
@@ -35,8 +35,7 @@ test('home: business node with required props and catalog mirroring services.ts'
     const items = biz.hasOfferCatalog.itemListElement;
     assert.equal(items.length, services.length);
     services.forEach((s, i) => {
-      const min = Math.min(...s.options.map((o) => o.price));
-      assert.equal(items[i].price ?? items[i].priceSpecification.minPrice, min);
+      assert.equal(items[i].price ?? items[i].priceSpecification.minPrice, fromPrice(s));
       assert.equal(items[i].itemOffered.name, s.name[lang]);
     });
   }
@@ -70,7 +69,7 @@ test('/book has no BreadcrumbList (none is visible there); extra nodes are appen
 test('helpers', () => {
   assert.equal(pagePath('/zh/book'), '/book/');
   assert.equal(pagePath('/zh'), '/');
-  assert.equal(priceRange(), '$35–$160');
+  assert.equal(priceRange(), '$10–$140');
   assert.equal(isRealProfileUrl('https://www.instagram.com/'), false);
   assert.equal(isRealProfileUrl('https://www.google.com/maps'), false);
   assert.equal(isRealProfileUrl('https://www.instagram.com/abbyeyelash'), true);

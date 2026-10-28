@@ -1,6 +1,6 @@
 // Shared UI copy (header, footer, home page) in EN + natively written Simplified Chinese,
 // plus small pure formatters. Only type imports here so `node --test` can load this file directly.
-import type { Lang, Service } from '../data/services';
+import { fromPrice, type Lang, type Service } from '../data/services.ts';
 import type { Site } from '../data/site';
 
 const en = {
@@ -222,8 +222,8 @@ export const fill = (s: string, vars: Record<string, string | number>) =>
 
 /** "from $65 · 60–150 min" — computed from the service's options (services.ts is the only price source). */
 export function priceLine(s: Service, lang: Lang) {
-  const min = Math.min(...s.options.map((o) => o.price));
-  const mins = s.options.map((o) => o.minutes);
+  const min = fromPrice(s);
+  const mins = s.options.filter((o) => !o.extra).map((o) => o.minutes);
   const lo = Math.min(...mins);
   const hi = Math.max(...mins);
   const from = s.options.length > 1 || s.options[0].from;
@@ -300,7 +300,7 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
     },
     {
       q: 'How long do lash extensions and lash lifts last?',
-      a: 'Lash extensions shed naturally with your own lashes, so most clients book a refill every 2–3 weeks. A lash lift and tint usually lasts 6–8 weeks.',
+      a: 'Lash extensions shed naturally with your own lashes, so most clients book an infill every 2–3 weeks. A lash lift and tint usually lasts 6–8 weeks.',
     },
     {
       q: 'How long do gel polish and nail extensions last?',

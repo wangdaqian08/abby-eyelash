@@ -29,7 +29,7 @@ Agreed with the owner on 2026-10-26. This is the source of truth for all build w
 ## 5. Services & placeholder prices (AUD, owner replaces before launch)
 | Service | Option | Duration (min) | Price |
 |---|---|---|---|
-| Eyelash Extensions | Classic / Hybrid / Volume / Refill | 120 / 120 / 150 / 60 | $120 / $140 / $160 / from $65 |
+| Eyelash Extensions | Japanese classic natural/full · Hybrid natural/full · Styled · Bottom natural/full · Infill 2/3/4 wk · Removal | placeholder | $80/$110 · $110/$140 · from $130 · $25/$35 · 50/70/85% of set · $10–$20 (owner menu 2026-10-29) |
 | Lash Lift | Lift & Tint | 60 | $90 |
 | Handcrafted Nails | Hand-painted custom nail art | 90 | from $80 |
 | Nail Polish | Gel manicure / Regular polish | 45 / 30 | $50 / $35 |

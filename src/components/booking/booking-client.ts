@@ -1,5 +1,5 @@
 // Booking flow (vanilla TS): 1 Service → 2 Date → 3 Time → 4 Details → success.
-import { services, type Lang, type Service, type ServiceOption } from '../../data/services';
+import { fromPrice, services, type Lang, type Service, type ServiceOption } from '../../data/services';
 import { site } from '../../data/site';
 import { bookingStrings } from '../../i18n/booking';
 import { daysInMonth, localDate, maxDate, validateDetails, weekday, zonedTimeToUtc, type Details } from '../../lib/availability';
@@ -157,8 +157,8 @@ export function start(root: HTMLElement) {
   // --- step 1 ---
   function serviceView() {
     const card = (s: Service) => {
-      const m = s.options.map((o) => o.minutes);
-      const from = Math.min(...s.options.map((o) => o.price));
+      const m = s.options.filter((o) => !o.extra).map((o) => o.minutes);
+      const from = fromPrice(s);
       const range = Math.min(...m) === Math.max(...m) ? mins(m[0]) : `${Math.min(...m)}–${mins(Math.max(...m))}`;
       return `<label class="flex min-h-16 items-center gap-3 border border-border p-4 transition-colors duration-200 hover:border-primary has-checked:border-primary has-checked:bg-surface-2 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring">
         <input type="radio" name="bk-service" value="${s.id}" class="sr-only" ${s === st.service ? 'checked' : ''}>

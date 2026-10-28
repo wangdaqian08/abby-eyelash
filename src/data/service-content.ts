@@ -28,6 +28,8 @@ const opt = (s: string, o: string) => {
 };
 const $ = (s: string, o: string) => `$${opt(s, o).price}`;
 const m = (s: string, o: string) => opt(s, o).minutes;
+// Infill share of the full-set price, from Abby's menu (after 4 weeks: full price).
+const INFILL = [['2', 50], ['3', 70], ['4', 85]] as const;
 
 const cite = (href: string, text: string) =>
   `<a href="${href}" target="_blank" rel="noopener" class="underline underline-offset-4 hover:text-fg">${text}</a>`;
@@ -61,16 +63,17 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
   [L]: {
     en: {
       title: 'Eyelash Extensions in Burwood | Abby Eyelash',
-      description: `Classic, hybrid and volume eyelash extensions by Abby in Burwood NSW. Full sets from ${$(L, 'classic')}, refills from ${$(L, 'refill')}. Aftercare, refills and patch tests.`,
+      description: `Japanese classic and hybrid eyelash extensions by Abby in Burwood NSW. Full sets from ${$(L, 'classic-natural')}, infills from ${$(L, 'infill-2w')}. Aftercare and patch tests.`,
       h1: ['Eyelash extensions ', 'in Burwood.'],
-      intro: `Eyelash extensions are single synthetic lashes bonded one at a time to your natural lashes with a cosmetic adhesive. At Abby Eyelash in Burwood NSW 2134, a classic full set is ${$(L, 'classic')} (about ${m(L, 'classic')} minutes), hybrid is ${$(L, 'hybrid')} and volume is ${$(L, 'volume')} (about ${m(L, 'volume')} minutes). Each extension lasts as long as the natural lash it sits on, so most clients book a refill (from ${$(L, 'refill')}) every 2–3 weeks.`,
+      intro: `Eyelash extensions are single synthetic lashes bonded one at a time to your natural lashes with a cosmetic adhesive. At Abby Eyelash in Burwood NSW 2134, a Japanese classic set is ${$(L, 'classic-natural')} natural or ${$(L, 'classic-full')} full (about ${m(L, 'classic-natural')} minutes), and a hybrid set is ${$(L, 'hybrid-natural')} natural or ${$(L, 'hybrid-full')} full. Each extension lasts as long as the natural lash it sits on, so most clients book an infill every 2–3 weeks; the price depends on how soon you come back.`,
       sections: [
         {
-          h2: ['Classic, hybrid or volume: ', 'which suits you?'],
+          h2: ['Classic, hybrid or styled: ', 'which suits you?'],
           list: [
-            `<strong>Classic</strong>: one extension on each natural lash. A defined, mascara-like look that suits you if you have plenty of healthy natural lashes.`,
-            `<strong>Hybrid</strong>: a mix of classic lashes and light handmade fans, for more texture and a little more fullness.`,
-            `<strong>Volume</strong>: fans of several ultra-fine extensions on each natural lash. The fullest look, and a good choice if your natural lashes are sparse.`,
+            `<strong>Japanese classic</strong>: one extension on each natural lash. A defined, mascara-like look that suits you if you have plenty of healthy natural lashes.`,
+            `<strong>Hybrid</strong>: a mix of classic lashes and light, airy fans, for more texture and a little more fullness.`,
+            `<strong>Natural or full</strong>: both styles come in a natural or a fuller density.`,
+            `<strong>Styled set</strong> (from ${$(L, 'styled')}): a custom shape designed with you. <strong>Bottom lashes</strong> can be added (${$(L, 'bottom-natural')} natural, ${$(L, 'bottom-full')} full).`,
           ],
           after: [
             `Abby matches length, curl and thickness to your natural lashes and eye shape, so the set is never too heavy for the lash carrying it.`, // OWNER-REVIEW
@@ -85,13 +88,19 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `Each extension is isolated onto a single natural lash, placed just off the skin so it never touches your eyelid.`,
             `Abby brushes through, checks that no lashes are stuck together, and shows you the result.`,
           ],
-          after: [`Allow about ${m(L, 'classic')} minutes for a classic or hybrid set and ${m(L, 'volume')} minutes for volume. Many clients nap.`],
+          after: [`Allow about ${m(L, 'classic-natural')}–${m(L, 'hybrid-full')} minutes for a full set. Many clients nap.`],
         },
         {
-          h2: ['How long they last ', 'and when to refill'],
+          h2: ['How long they last ', 'and when to infill'],
           body: [
-            `You shed a few natural lashes every day, and each extension falls out with its lash. To keep the set looking full, most clients book a refill every 2–3 weeks. A refill (about ${m(L, 'refill')} minutes, from ${$(L, 'refill')}) removes grown-out extensions and fills the gaps.`,
-            `If it has been longer than about 4 weeks, or fewer than half of your extensions are left, Abby may recommend a new full set instead.`, // OWNER-REVIEW: refill policy
+            `You shed a few natural lashes every day, and each extension falls out with its lash. To keep the set looking full, most clients book an infill every 2–3 weeks. An infill removes grown-out extensions and fills the gaps.`,
+          ],
+          list: [
+            ...INFILL.map(([w, pct]) => `Within ${w} weeks: ${pct}% of your set’s full price`),
+            `After 4 weeks: full price`,
+          ],
+          after: [
+            `For example, an infill on a Japanese classic natural set (${$(L, 'classic-natural')}) within 2 weeks is ${$(L, 'infill-2w')}. Removal is $10–$20.`,
           ],
         },
         {
@@ -122,30 +131,31 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         },
       ],
       faq: [
-        { q: 'How long does a full set take?', a: `About ${m(L, 'classic')} minutes for classic or hybrid, and ${m(L, 'volume')} minutes for volume. A refill takes about ${m(L, 'refill')} minutes.` },
+        { q: 'How long does a full set take?', a: `About ${m(L, 'classic-natural')}–${m(L, 'hybrid-full')} minutes for a full set. An infill takes about ${m(L, 'infill-2w')} minutes.` },
         { q: 'Can I wear mascara with extensions?', a: 'You usually won’t need it. If you do, use a water-based mascara on the tips only, never waterproof, and remove it with an oil-free cleanser.' }, // OWNER-REVIEW
         { q: 'Do eyelash extensions damage natural lashes?', a: 'Lash loss is a known risk, mostly from extensions that are too heavy, rubbing, or pulling them off. Sizing the set to your own lashes and having them removed professionally keeps that risk low.' },
-        { q: 'How do I get them removed?', a: 'Book in with Abby. She dissolves the adhesive with a professional remover so your natural lashes aren’t pulled out. Never pick them off.' }, // OWNER-REVIEW: removal price/time
+        { q: 'How do I get them removed?', a: 'Book a removal ($10–$20) with Abby. She dissolves the adhesive with a professional remover so your natural lashes aren’t pulled out. Never pick them off.' }, // OWNER-REVIEW: removal time
         { q: 'I reacted to lash glue before. Can I still have extensions?', a: 'Tell Abby before booking. A patch test is essential, and after a significant reaction a lash lift may be the better choice.' }, // OWNER-REVIEW
         { q: 'What is your cancellation policy?', a: 'Please give at least 24 hours’ notice to cancel or reschedule.' }, // OWNER-REVIEW (SPEC placeholder)
       ],
       alt: {
-        hero: 'Close-up of a classic eyelash extension set applied by Abby at her Burwood studio',
+        hero: 'Close-up of a Japanese classic eyelash extension set applied by Abby at her Burwood studio',
         detail: 'Abby isolating a single natural lash with tweezers while applying an extension',
       },
     },
     zh: {
       title: '宝活 Burwood 嫁接睫毛 | Abby Eyelash 美睫',
-      description: `悉尼宝活 Burwood 嫁接睫毛：经典单根全套 ${$(L, 'classic')}，补睫毛 ${$(L, 'refill')} 起。Abby 亲手逐根嫁接，附术后护理、补睫时间和皮试说明。`,
+      description: `悉尼宝活 Burwood 嫁接睫毛：日式单根 ${$(L, 'classic-natural')} 起，回补 ${$(L, 'infill-2w')} 起。Abby 亲手逐根嫁接，附术后护理、回补价格和皮试说明。`,
       h1: ['宝活 Burwood ', '嫁接睫毛'],
-      intro: `嫁接睫毛是用专用睫毛胶，把一根根合成睫毛逐根粘在你的真睫毛上。在 Burwood NSW 2134 的 Abby Eyelash，经典单根全套 ${$(L, 'classic')}（约 ${m(L, 'classic')} 分钟），混合款 ${$(L, 'hybrid')}，浓密款 ${$(L, 'volume')}（约 ${m(L, 'volume')} 分钟）。嫁接的睫毛会随真睫毛自然脱落，大多数客人每 2–3 周来补一次（补睫毛 ${$(L, 'refill')} 起）。`,
+      intro: `嫁接睫毛是用专用睫毛胶，把一根根合成睫毛逐根粘在你的真睫毛上。在 Burwood NSW 2134 的 Abby Eyelash，日式单根自然款 ${$(L, 'classic-natural')}、浓密款 ${$(L, 'classic-full')}（约 ${m(L, 'classic-natural')} 分钟），开花 / 轻盈自然款 ${$(L, 'hybrid-natural')}、浓密款 ${$(L, 'hybrid-full')}。嫁接的睫毛会随真睫毛自然脱落，大多数客人每 2–3 周回补一次，越早回补越便宜。`,
       sections: [
         {
-          h2: ['经典、混合还是浓密？', '怎么选'],
+          h2: ['日式单根、开花还是造型款？', '怎么选'],
           list: [
-            `<strong>经典单根</strong>：每根真睫毛接一根。效果清晰自然，像刷了睫毛膏，适合自身睫毛多且健康的人。`,
-            `<strong>混合款</strong>：单根和轻盈的手工开花睫毛混搭，更有层次，也更浓一点。`,
-            `<strong>浓密款</strong>：每根真睫毛接一小簇超细睫毛，效果最浓密，自身睫毛稀疏的人也适合。`,
+            `<strong>日式单根</strong>：每根真睫毛接一根。效果清晰自然，像刷了睫毛膏，适合自身睫毛多且健康的人。`,
+            `<strong>开花 / 轻盈</strong>：单根和轻盈的开花睫毛混搭，更有层次，也更浓一点。`,
+            `<strong>自然或浓密</strong>：两种款式都可以选自然或浓密。`,
+            `<strong>造型款</strong>（${$(L, 'styled')} 起）：和你一起设计的定制款式。也可以加做<strong>下睫毛</strong>（自然 ${$(L, 'bottom-natural')}，浓密 ${$(L, 'bottom-full')}）。`,
           ],
           after: [`Abby 会根据你的真睫毛和眼型选择长度、翘度和粗细，不会让嫁接睫毛给真睫毛造成负担。`], // OWNER-REVIEW
         },
@@ -158,13 +168,19 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `逐根分离真睫毛再嫁接，接点离开皮肤，不会碰到眼皮。`,
             `梳理检查，确保没有粘连，再给你看效果。`,
           ],
-          after: [`经典或混合款预留约 ${m(L, 'classic')} 分钟，浓密款约 ${m(L, 'volume')} 分钟。很多客人会直接睡一觉。`],
+          after: [`全套预留约 ${m(L, 'classic-natural')}–${m(L, 'hybrid-full')} 分钟。很多客人会直接睡一觉。`],
         },
         {
-          h2: ['能维持多久，', '多久补一次'],
+          h2: ['能维持多久，', '多久回补一次'],
           body: [
-            `真睫毛每天都会自然掉几根，嫁接的睫毛也跟着一起掉。想保持浓密，大多数客人每 2–3 周补一次。补睫毛约 ${m(L, 'refill')} 分钟，${$(L, 'refill')} 起，会取下长出来的旧睫毛并补满空位。`,
-            `如果距离上次超过 4 周左右，或剩下不到一半，Abby 可能会建议重新做全套。`, // OWNER-REVIEW: refill policy
+            `真睫毛每天都会自然掉几根，嫁接的睫毛也跟着一起掉。想保持浓密，大多数客人每 2–3 周回补一次，会取下长出来的旧睫毛并补满空位。`,
+          ],
+          list: [
+            ...INFILL.map(([w, pct]) => `${w} 周内：全套价格的 ${pct}%`),
+            `超过 4 周：原价`,
+          ],
+          after: [
+            `例如日式单根自然款（${$(L, 'classic-natural')}）2 周内回补为 ${$(L, 'infill-2w')}。卸睫毛 $10–$20。`,
           ],
         },
         {
@@ -195,15 +211,15 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         },
       ],
       faq: [
-        { q: '做一套要多久？', a: `经典或混合款约 ${m(L, 'classic')} 分钟，浓密款约 ${m(L, 'volume')} 分钟，补睫毛约 ${m(L, 'refill')} 分钟。` },
+        { q: '做一套要多久？', a: `全套约 ${m(L, 'classic-natural')}–${m(L, 'hybrid-full')} 分钟，回补约 ${m(L, 'infill-2w')} 分钟。` },
         { q: '嫁接后还能涂睫毛膏吗？', a: '一般不需要。如果要涂，只在睫毛尾端用水性睫毛膏，不要用防水款，并用无油清洁产品卸掉。' }, // OWNER-REVIEW
         { q: '嫁接睫毛会伤真睫毛吗？', a: '睫毛脱落确实是已知风险，多数来自睫毛过重、经常揉或自己拔。按你的真睫毛选合适的款式，并由专业人员卸除，风险就能降到很低。' },
-        { q: '想卸掉怎么办？', a: '预约 Abby 帮你卸。她会用专业卸睫膏溶解胶水，不会扯掉真睫毛。请不要自己拔。' }, // OWNER-REVIEW: removal price/time
+        { q: '想卸掉怎么办？', a: '预约 Abby 帮你卸（$10–$20）。她会用专业卸睫膏溶解胶水，不会扯掉真睫毛。请不要自己拔。' }, // OWNER-REVIEW: removal time
         { q: '以前对睫毛胶过敏，还能做吗？', a: '请在预约前告诉 Abby。一定要先做皮试；如果以前反应比较严重，翘睫可能更适合你。' }, // OWNER-REVIEW
         { q: '取消预约有什么规定？', a: '如需取消或改期，请至少提前 24 小时告知。' }, // OWNER-REVIEW
       ],
       alt: {
-        hero: 'Abby 在 Burwood 工作室完成的经典单根嫁接睫毛近照',
+        hero: 'Abby 在 Burwood 工作室完成的日式单根嫁接睫毛近照',
         detail: 'Abby 用镊子分离单根真睫毛并进行嫁接',
       },
     },
