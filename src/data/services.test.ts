@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { allDurations, findOption, parseAddons, quote, addonsParam } from './services.ts';
+import { allDurations, bookable, bookableWith, findOption, parseAddons, quote, addonsParam, services } from './services.ts';
 
 const L = 'lash-extensions';
 
@@ -37,4 +37,17 @@ test('allDurations covers base, base + add-on, and removal without add-ons', () 
   assert.ok(d.includes(base) && d.includes(base + 15));
   assert.ok(d.includes(findOption(L, 'removal')!.minutes));
   for (const q of [quote(L, 'hybrid-full', { 'bottom-natural': 1 })!, quote('lash-lift', 'keratin-lift', {})!]) assert.ok(d.includes(q.minutes));
+});
+
+test('nail extensions: one shared per-nail add-on, booked on top of a gel or hand-painted design', () => {
+  const ext = findOption('gel-nails', 'solid')!;
+  const q = quote('gel-nails', 'solid', { extension: 4 })!;
+  assert.equal(q.price, ext.price + 4 * 6);
+  assert.equal(quote('gel-nails', 'solid', { extension: 11 }), null); // max 10 nails
+  assert.equal(quote('nail-extensions', 'extension', {}), null); // add-on-only service can't be booked alone
+  assert.equal(bookableWith(services.find((s) => s.id === 'nail-extensions')!).id, 'gel-nails');
+  assert.ok(!bookable().some((s) => s.id === 'nail-extensions'));
+  const art = quote('handcrafted-nails', 'nail-art', { extension: 2 })!;
+  assert.equal(art.onRequest, true);
+  assert.equal(art.price, 12); // only the add-on is priced; the design is quoted by Abby
 });

@@ -1,5 +1,5 @@
 // Booking flow (vanilla TS): 1 Service → 2 Date → 3 Time → 4 Details → success.
-import { addonOptions, addonsParam, fromPrice, groupAt, mainOptions, quote, services, type Addons, type Lang, type Service, type ServiceOption } from '../../data/services';
+import { addonOptions, addonsParam, bookable, bookableWith, groupAt, headline, mainOptions, priceText, quote, services, type Addons, type Lang, type Service, type ServiceOption } from '../../data/services';
 import { site } from '../../data/site';
 import { bookingStrings } from '../../i18n/booking';
 import { daysInMonth, localDate, maxDate, validateDetails, weekday, zonedTimeToUtc, type Details } from '../../lib/availability';
@@ -86,7 +86,10 @@ export function start(root: HTMLElement) {
       minute: '2-digit',
       hourCycle: lang === 'zh' ? 'h23' : 'h12',
     }).format(zonedTimeToUtc(date, time, TZ));
-  const price = (o: { price: number; from?: boolean }) => (o.from ? fill(t.from, { p: `$${o.price}` }) : `$${o.price}`);
+  const price = (o: Parameters<typeof priceText>[0] & { wasPrice?: number }) =>
+    priceText(o, lang) + (o.wasPrice ? (lang === 'zh' ? `（原价 $${o.wasPrice}）` : ` (was $${o.wasPrice})`) : '');
+  // Booking total: an on-request design shows its add-ons on top, e.g. "Price on request + $24".
+  const totalPrice = (q: ReturnType<typeof total>) => (q.onRequest ? priceText(q, lang) + (q.price ? ` + $${q.price}` : '') : price(q));
   const label = () => {
     const q = total();
     return [`${st.service!.name[lang]} · ${q.option.name[lang]}`, ...q.extras.map((e) => `${e.option.name[lang]}${e.units > 1 ? ` × ${e.units}` : ''}`)].join(' + ');
@@ -168,13 +171,12 @@ export function start(root: HTMLElement) {
   // --- step 1 ---
   function serviceView() {
     const card = (s: Service) => {
-      const m = s.options.filter((o) => !o.extra).map((o) => o.minutes);
-      const from = fromPrice(s);
-      const range = Math.min(...m) === Math.max(...m) ? mins(m[0]) : `${Math.min(...m)}–${mins(Math.max(...m))}`;
+      const h = headline(s);
+      const range = h.minutes![0] === h.minutes![1] ? mins(h.minutes![0]) : `${h.minutes![0]}–${mins(h.minutes![1])}`;
       return `<label class="flex min-h-16 items-center gap-3 border border-border p-4 transition-colors duration-200 hover:border-primary has-checked:border-primary has-checked:bg-surface-2 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring">
         <input type="radio" name="bk-service" value="${s.id}" class="sr-only" ${s === st.service ? 'checked' : ''}>
         <span aria-hidden="true" class="text-accent">✦</span>
-        <span><span class="block font-medium">${s.name[lang]}</span><span class="text-sm text-muted">${range} · ${s.options.length > 1 || s.options[0].from ? fill(t.from, { p: `$${from}` }) : `$${from}`}</span></span>
+        <span><span class="block font-medium">${s.name[lang]}</span><span class="text-sm text-muted">${range} · ${price(h)}</span></span>
       </label>`;
     };
     const options = st.service
@@ -190,7 +192,7 @@ export function start(root: HTMLElement) {
       : '';
     return `<h2 data-focus tabindex="-1" class="text-2xl outline-none sm:text-3xl">${t.chooseService}</h2>
       <fieldset class="mt-6"><legend class="sr-only">${t.chooseService}</legend>
-        <div class="grid gap-3 sm:grid-cols-2">${services.map(card).join('')}</div>
+        <div class="grid gap-3 sm:grid-cols-2">${bookable().map(card).join('')}</div>
       </fieldset>
       ${options}
       <button type="button" data-action="to-date" class="${BTN_PRIMARY}${tracking} mt-8 w-full sm:w-auto" ${st.option ? '' : 'disabled'}>${t.continue}</button>`;
@@ -203,7 +205,7 @@ export function start(root: HTMLElement) {
     if (!st.option || st.option.noAddons || !list.length) return '';
     const row = 'flex min-h-14 items-center justify-between gap-4 px-1 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring';
     const meta = (o: ServiceOption, p: string) =>
-      `<span class="shrink-0 text-right text-sm text-muted"><span class="block whitespace-nowrap text-fg">${p}</span><span class="whitespace-nowrap">+${mins(o.minutes)}</span></span>`;
+      `<span class="shrink-0 text-right text-sm text-muted"><span class="block whitespace-nowrap text-fg">${p}</span><span class="whitespace-nowrap">+${mins(o.minutes)}${o.unit ? ` / ${o.unit[lang]}` : ''}</span></span>`;
     const groups = [...new Set(list.map((o) => o.group ?? o.id))];
     const blocks = groups.map((g, gi) => {
       const opts = list.filter((o) => (o.group ?? o.id) === g);
@@ -211,7 +213,7 @@ export function start(root: HTMLElement) {
       if (one.max && one.max > 1) {
         const n = st.addons[one.id] ?? 0;
         return `<label class="${row}"><span>${one.name[lang]}</span>
-          <span class="flex items-center gap-3">${meta(one, fill(t.perUnit, { p: price(one) }))}
+          <span class="flex items-center gap-3">${meta(one, price(one))}
             <span class="relative"><select name="bk-units" data-addon="${one.id}" class="${INPUT} w-20 pr-8">${Array.from({ length: one.max + 1 }, (_, i) => `<option value="${i}" ${i === n ? 'selected' : ''}>${i}</option>`).join('')}</select>${ICON.chevron}</span></span></label>`;
       }
       const name = `bk-addon-${gi}`;
@@ -311,7 +313,7 @@ export function start(root: HTMLElement) {
       [t.sDate, fmtDate(st.date!, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })],
       [t.sTime, fmtTime(st.date!, st.time!)],
       [t.sDuration, mins(q.minutes)],
-      [t.sPrice, price(q)],
+      [t.sPrice, totalPrice(q)],
     ];
     return `<dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 bg-surface-2 p-5 text-sm">${rows
       .map(([k, v]) => `<dt class="text-muted">${k}</dt><dd>${esc(v)}</dd>`)
@@ -333,7 +335,7 @@ export function start(root: HTMLElement) {
         ${field('phone', t.fPhone, `<input ${attrs('phone')} required type="tel" inputmode="tel" autocomplete="tel" maxlength="20" class="${INPUT}" value="${esc(d.phone)}">`)}
         ${field('email', t.fEmail, `<input ${attrs('email')} required type="email" autocomplete="email" maxlength="254" class="${INPUT}" value="${esc(d.email)}">`)}
         <div class="grid gap-5 sm:grid-cols-2">
-          ${field('service', t.fService, `<div class="relative"><select ${attrs('service')} class="${INPUT} pr-10">${services.map((s) => `<option value="${s.id}" ${s === st.service ? 'selected' : ''}>${s.name[lang]}</option>`).join('')}</select>${ICON.chevron}</div>`)}
+          ${field('service', t.fService, `<div class="relative"><select ${attrs('service')} class="${INPUT} pr-10">${bookable().map((s) => `<option value="${s.id}" ${s === st.service ? 'selected' : ''}>${s.name[lang]}</option>`).join('')}</select>${ICON.chevron}</div>`)}
           ${field('option', t.fOption, `<div class="relative"><select ${attrs('option')} class="${INPUT} pr-10">${optionList()}</select>${ICON.chevron}</div>`)}
         </div>
         ${field('notes', t.fNotes, `<textarea ${attrs('notes')} rows="3" maxlength="500" placeholder="${esc(t.notesHint)}" class="${INPUT} h-auto py-3">${esc(d.notes)}</textarea>`, false)}
@@ -476,7 +478,7 @@ export function start(root: HTMLElement) {
         service: `${service} (${q.minutes} min)`,
         date: st.date,
         time: st.time,
-        price: price(q),
+        price: totalPrice(q),
         notes: d.notes.trim() || '-',
         language: lang,
         status: 'PENDING — confirm by SMS/WhatsApp, collect the deposit, then rename the calendar event',
@@ -708,7 +710,8 @@ export function start(root: HTMLElement) {
 
   // Deep link: /book?service=lash-lift (id or service-page slug), optional &option=
   const q = new URLSearchParams(location.search);
-  const pre = services.find((s) => s.id === q.get('service') || s.slug === q.get('service'));
+  const found = services.find((s) => s.id === q.get('service') || s.slug === q.get('service'));
+  const pre = found && bookableWith(found);
   if (pre) {
     st.service = pre;
     const main = mainOptions(pre);

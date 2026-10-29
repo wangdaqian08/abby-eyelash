@@ -9,13 +9,15 @@ Delete this file before launch (everything in public/ is published).
 |---|---|
 | `lash-extensions-hero` | Close-up of a finished classic lash set |
 | `lash-extensions-detail` | Abby isolating a natural lash with tweezers |
-| `lash-lift-hero` | Lifted and tinted natural lashes |
+| `lash-lift-hero` | Natural lashes after a keratin lift (no tint) |
 | `lash-lift-detail` | Lashes combed onto the silicone shield |
+| `powder-brows-hero` | Healed, soft powder brows |
+| `powder-brows-detail` | Abby mapping a brow shape |
 | `handcrafted-nails-hero` | Hand-painted floral art on short natural nails |
 | `handcrafted-nails-detail` | Abby painting line art with a detail brush |
-| `nail-polish-hero` | Glossy nude gel manicure, short rounded nails |
-| `nail-polish-detail` | Gel polish curing under the LED lamp |
-| `nail-extensions-hero` | Almond Gel-X set in soft pink |
-| `nail-extensions-detail` | Builder gel being shaped during a BIAB appointment |
+| `gel-nails-hero` | Glossy gel nails (solid, cat-eye, aurora or French) |
+| `gel-nails-detail` | Gel curing under the LED lamp |
+| `nail-extensions-hero` | Almond tip extensions in soft pink gel |
+| `nail-extensions-detail` | A nail tip being shaped |
 
 If a photo shows something different, update the matching `alt` in `src/data/service-content.ts`.

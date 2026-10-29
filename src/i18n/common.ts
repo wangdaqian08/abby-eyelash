@@ -1,6 +1,6 @@
 // Shared UI copy (header, footer, home page) in EN + natively written Simplified Chinese,
 // plus small pure formatters. Only type imports here so `node --test` can load this file directly.
-import { fromPrice, type Lang, type Service } from '../data/services.ts';
+import { headline, priceText, type Lang, type Service } from '../data/services.ts';
 import type { Site } from '../data/site';
 
 const en = {
@@ -38,7 +38,7 @@ const en = {
     accent: 'made by hand',
     titleB: 'in Burwood.',
     // {name} {suburb} {region} {postcode} {owner} are filled from site.ts
-    body: '{name} is a lash and nail studio in {suburb} {region} {postcode}, Sydney, run by {owner}. Eyelash extensions, lash lifts, hand-painted nail art, gel polish and nail extensions — every appointment is done by {owner} herself.',
+    body: '{name} is a lash and nail studio in {suburb} {region} {postcode}, Sydney, run by {owner}. Eyelash extensions, keratin lash lifts, powder brows, gel nails, hand-painted nail art and nail extensions — every appointment is done by {owner} herself.',
     book: 'Book an appointment',
     services: 'Our services',
     rating: 'Google reviews',
@@ -48,7 +48,7 @@ const en = {
     eyebrow: 'What we offer',
     title: 'Five services,',
     accent: 'one pair of hands.',
-    intro: 'Lashes and nails are all Abby does, so each service gets her full attention. Prices and times below are the starting point — your exact quote depends on the look you choose.',
+    intro: 'Lashes, brows and nails are all Abby does, so each service gets her full attention. Prices and times below are the starting point — your exact quote depends on the look you choose.',
     details: 'Prices & details',
     ctaTitle: 'Know what you want?',
     ctaBody: 'Pick a service, a day and a time online in under a minute.',
@@ -153,7 +153,7 @@ const zh: Strings = {
     titleA: '美睫与美甲，',
     accent: '一根一笔',
     titleB: '皆由手作。',
-    body: '{name} 是位于悉尼宝活（{suburb} {region} {postcode}）的美睫美甲工作室，由 {owner} 一人主理。嫁接睫毛、睫毛翘睫、手绘美甲、光疗甲与延长甲，每一位顾客都由 {owner} 亲手完成。',
+    body: '{name} 是位于悉尼宝活（{suburb} {region} {postcode}）的美睫美甲工作室，由 {owner} 一人主理。嫁接睫毛、角蛋白翘睫、半永久雾眉、凝胶美甲、手绘造型与延长甲，每一位顾客都由 {owner} 亲手完成。',
     book: '在线预约',
     services: '查看服务',
     rating: 'Google 评价',
@@ -163,7 +163,7 @@ const zh: Strings = {
     eyebrow: '服务项目',
     title: '五项服务，',
     accent: '同一双手。',
-    intro: 'Abby 只专注睫毛与美甲，所以每一项都做得用心。下方是起步价格与所需时间，最终价格以你选择的款式为准。',
+    intro: 'Abby 只专注睫毛、眉毛与美甲，所以每一项都做得用心。下方是起步价格与所需时间，最终价格以你选择的款式为准。',
     details: '价格与详情',
     ctaTitle: '已经想好做什么？',
     ctaBody: '在线选择项目、日期和时间，一分钟就能约好。',
@@ -238,15 +238,12 @@ export const common: Record<Lang, Strings> = { en, zh };
 export const fill = (s: string, vars: Record<string, string | number>) =>
   s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
 
-/** "from $65 · 60–150 min" — computed from the service's options (services.ts is the only price source). */
+/** "from $80 · 50–75 min" · "$480 (was $580) · 120 min" · "$6 / nail" — computed from services.ts (the only price source). */
 export function priceLine(s: Service, lang: Lang) {
-  const min = fromPrice(s);
-  const mins = s.options.filter((o) => !o.extra).map((o) => o.minutes);
-  const lo = Math.min(...mins);
-  const hi = Math.max(...mins);
-  const from = s.options.length > 1 || s.options[0].from;
-  const price = from ? (lang === 'zh' ? `$${min} 起` : `from $${min}`) : `$${min}`;
-  return `${price} · ${lo === hi ? lo : `${lo}–${hi}`} ${lang === 'zh' ? '分钟' : 'min'}`;
+  const h = headline(s);
+  const was = h.wasPrice ? (lang === 'zh' ? `（原价 $${h.wasPrice}）` : ` (was $${h.wasPrice})`) : '';
+  const time = h.minutes && `${h.minutes[0] === h.minutes[1] ? h.minutes[0] : `${h.minutes[0]}–${h.minutes[1]}`} ${lang === 'zh' ? '分钟' : 'min'}`;
+  return [priceText(h, lang) + was, time].filter(Boolean).join(' · ');
 }
 
 /** Postal address on one line — identical text on every page and in both languages (must match GBP). */
@@ -329,8 +326,8 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
       a: 'Lash extensions shed naturally with your own lashes, so most clients book an infill every 2–3 weeks. A keratin lash lift usually lasts 6–8 weeks.',
     },
     {
-      q: 'How long do gel polish and nail extensions last?',
-      a: 'Gel polish typically lasts 2–3 weeks without chipping. BIAB and Gel-X extensions are usually infilled or redone every 3–4 weeks as your natural nail grows.',
+      q: 'How long do gel nails and nail extensions last?',
+      a: 'Gel nails usually last 2–3 weeks before regrowth shows. Tip extensions ($6 per nail, added to any gel or hand-painted design) are usually redone after about 3 weeks.',
     },
   ],
   zh: [
@@ -352,7 +349,7 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
     },
     {
       q: '第一次去需要注意什么？',
-      a: 'Abby 会先和你简单沟通想要的效果、自身睫毛或指甲的状况，以及是否有过敏或敏感情况。做睫毛请素颜、保持眼部清洁；做美甲如有在别处做的光疗或延长甲未卸，请在预约时说明。',
+      a: 'Abby 会先和你简单沟通想要的效果、自身睫毛或指甲的状况，以及是否有过敏或敏感情况。做睫毛请素颜、保持眼部清洁；做美甲如有在别处做的凝胶甲或延长甲未卸，请在预约时说明。',
     },
     {
       q: '可以先做皮肤测试吗？',
@@ -363,8 +360,8 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
       a: '嫁接睫毛会随自身睫毛自然脱落，大多数顾客每 2–3 周补一次。角蛋白翘睫一般可维持 6–8 周。',
     },
     {
-      q: '光疗甲和延长甲能维持多久？',
-      a: '光疗甲油一般可维持 2–3 周不易剥落。BIAB 和 Gel-X 延长甲随着自甲生长，通常每 3–4 周需要补甲或重做。',
+      q: '凝胶美甲和延长甲能维持多久？',
+      a: '凝胶美甲一般能维持 2–3 周，之后甲根会露出新长的指甲。甲片延长（每只 $6，可加在任何凝胶或手绘款上）一般约 3 周后重做。',
     },
   ],
 };

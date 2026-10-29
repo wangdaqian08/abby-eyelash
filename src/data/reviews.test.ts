@@ -31,7 +31,10 @@ test('priceLine derives "from" price and duration range from services.ts', () =>
   const by = (id: string) => services.find((s) => s.id === id)!;
   assert.equal(priceLine(by('lash-extensions'), 'en'), 'from $80 · 50–75 min');
   assert.equal(priceLine(by('lash-lift'), 'en'), '$80 · 60 min');
-  assert.equal(priceLine(by('handcrafted-nails'), 'zh'), '$80 起 · 90 分钟');
+  assert.equal(priceLine(by('handcrafted-nails'), 'zh'), '定制价，需咨询 · 120 分钟');
+  assert.equal(priceLine(by('powder-brows'), 'en'), '$480 (was $580) · 120 min');
+  assert.equal(priceLine(by('nail-extensions'), 'zh'), '$6 / 只');
+  assert.equal(priceLine(by('gel-nails'), 'en'), 'from $70 · 75–80 min');
 });
 
 test('groupAt: one heading per lash group, none for ungrouped services', () => {
@@ -40,5 +43,5 @@ test('groupAt: one heading per lash group, none for ungrouped services', () => {
     return o.flatMap((_, i) => (groupAt(o, i) ? [groupAt(o, i)!.zh] : []));
   };
   assert.deepEqual(heads('lash-extensions'), ['全套', '下睫毛', '回补', '卸睫毛']);
-  assert.deepEqual(heads('nail-polish'), []);
+  assert.deepEqual(heads('gel-nails'), []);
 });
