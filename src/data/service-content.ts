@@ -34,8 +34,9 @@ const span = (s: string, ...os: string[]) => {
   const [lo, hi] = [Math.min(...v), Math.max(...v)];
   return lo === hi ? `${lo}` : `${lo}–${hi}`;
 };
-// Infill share of the full-set price, from Abby's menu (after 4 weeks: full price).
-const INFILL = [['2', 50], ['3', 70], ['4', 85]] as const;
+// Options priced as a share of the full set (lash infill tiers), and "$X–$Y" for ranged prices — both from prices.csv.
+const shares = (s: string) => services.find((v) => v.id === s)!.options.filter((o) => o.pct);
+const range = (s: string, o: string) => (opt(s, o).maxPrice ? `$${opt(s, o).price}–$${opt(s, o).maxPrice}` : $(s, o));
 
 const cite = (href: string, text: string) =>
   `<a href="${href}" target="_blank" rel="noopener" class="underline underline-offset-4 hover:text-fg">${text}</a>`;
@@ -102,11 +103,11 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `You shed a few natural lashes every day, and each extension falls out with its lash. To keep the set looking full, most clients book an infill every 2–3 weeks. An infill removes grown-out extensions and fills the gaps.`,
           ],
           list: [
-            ...INFILL.map(([w, pct]) => `Within ${w} weeks: ${pct}% of your set’s full price`),
+            ...shares(L).map((o) => `${o.name.en}: ${o.pct}% of your set’s full price`),
             `After 4 weeks: full price`,
           ],
           after: [
-            `For example, an infill on a Japanese classic natural set (${$(L, 'classic-natural')}) within 2 weeks is ${$(L, 'infill-2w')}. Removal is $10–$20.`,
+            `For example, an infill on a Japanese classic natural set (${$(L, 'classic-natural')}) within 2 weeks is ${$(L, 'infill-2w')}. Removal is ${range(L, 'removal')}.`,
           ],
         },
         {
@@ -140,7 +141,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: 'How long does a full set take?', a: `About ${span(L, 'classic-natural', 'classic-full', 'hybrid-natural', 'hybrid-full', 'styled')} minutes for a full set. An infill takes about ${span(L, 'infill-2w', 'infill-3w', 'infill-4w')} minutes.` },
         { q: 'Can I wear mascara with extensions?', a: 'You usually won’t need it. If you do, use a water-based mascara on the tips only, never waterproof, and remove it with an oil-free cleanser.' }, // OWNER-REVIEW
         { q: 'Do eyelash extensions damage natural lashes?', a: 'Lash loss is a known risk, mostly from extensions that are too heavy, rubbing, or pulling them off. Sizing the set to your own lashes and having them removed professionally keeps that risk low.' },
-        { q: 'How do I get them removed?', a: 'Book a removal ($10–$20) with Abby. She dissolves the adhesive with a professional remover so your natural lashes aren’t pulled out. Never pick them off.' }, // OWNER-REVIEW: removal time
+        { q: 'How do I get them removed?', a: `Book a removal (${range(L, 'removal')}) with Abby. She dissolves the adhesive with a professional remover so your natural lashes aren’t pulled out. Never pick them off.` }, // OWNER-REVIEW: removal time
         { q: 'I reacted to lash glue before. Can I still have extensions?', a: 'Tell Abby before booking. A patch test is essential, and after a significant reaction a lash lift may be the better choice.' }, // OWNER-REVIEW
         { q: 'What is your cancellation policy?', a: 'Please give at least 24 hours’ notice to cancel or reschedule.' }, // OWNER-REVIEW (SPEC placeholder)
       ],
@@ -182,11 +183,11 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `真睫毛每天都会自然掉几根，嫁接的睫毛也跟着一起掉。想保持浓密，大多数客人每 2–3 周回补一次，会取下长出来的旧睫毛并补满空位。`,
           ],
           list: [
-            ...INFILL.map(([w, pct]) => `${w} 周内：全套价格的 ${pct}%`),
+            ...shares(L).map((o) => `${o.name.zh}：全套价格的 ${o.pct}%`),
             `超过 4 周：原价`,
           ],
           after: [
-            `例如日式单根自然款（${$(L, 'classic-natural')}）2 周内回补为 ${$(L, 'infill-2w')}。卸睫毛 $10–$20。`,
+            `例如日式单根自然款（${$(L, 'classic-natural')}）2 周内回补为 ${$(L, 'infill-2w')}。卸睫毛 ${range(L, 'removal')}。`,
           ],
         },
         {
@@ -220,7 +221,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: '做一套要多久？', a: `全套约 ${span(L, 'classic-natural', 'classic-full', 'hybrid-natural', 'hybrid-full', 'styled')} 分钟，回补约 ${span(L, 'infill-2w', 'infill-3w', 'infill-4w')} 分钟。` },
         { q: '嫁接后还能涂睫毛膏吗？', a: '一般不需要。如果要涂，只在睫毛尾端用水性睫毛膏，不要用防水款，并用无油清洁产品卸掉。' }, // OWNER-REVIEW
         { q: '嫁接睫毛会伤真睫毛吗？', a: '睫毛脱落确实是已知风险，多数来自睫毛过重、经常揉或自己拔。按你的真睫毛选合适的款式，并由专业人员卸除，风险就能降到很低。' },
-        { q: '想卸掉怎么办？', a: '预约 Abby 帮你卸（$10–$20）。她会用专业卸睫膏溶解胶水，不会扯掉真睫毛。请不要自己拔。' }, // OWNER-REVIEW: removal time
+        { q: '想卸掉怎么办？', a: `预约 Abby 帮你卸（${range(L, 'removal')}）。她会用专业卸睫膏溶解胶水，不会扯掉真睫毛。请不要自己拔。` }, // OWNER-REVIEW: removal time
         { q: '以前对睫毛胶过敏，还能做吗？', a: '请在预约前告诉 Abby。一定要先做皮试；如果以前反应比较严重，翘睫可能更适合你。' }, // OWNER-REVIEW
         { q: '取消预约有什么规定？', a: '如需取消或改期，请至少提前 24 小时告知。' }, // OWNER-REVIEW
       ],
