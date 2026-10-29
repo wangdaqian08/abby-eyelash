@@ -46,7 +46,7 @@ const en = {
   },
   services: {
     eyebrow: 'What we offer',
-    title: 'Five services,',
+    title: 'Six services,',
     accent: 'one pair of hands.',
     intro: 'Lashes, brows and nails are all Abby does, so each service gets her full attention. Prices and times below are the starting point — your exact quote depends on the look you choose.',
     details: 'Prices & details',
@@ -108,7 +108,8 @@ const en = {
     phone: 'SMS / WhatsApp',
     email: 'Email',
     findUs: 'About a 5-minute walk from Burwood station. The exact address is sent when your booking is confirmed.',
-    byAppointment: 'By appointment — Abby works alone, so please book ahead.',
+    byAppointment: 'By appointment only — Abby works alone, so please book ahead. Messages only (SMS or WhatsApp): she can’t take calls while working.',
+    lastStart: 'Hours are booking times: the last appointment starts at {time}.',
     openMaps: 'Open in Google Maps',
     mapTitle: 'Map showing Abby Eyelash in Burwood',
     bookOnline: 'Book your appointment online',
@@ -161,7 +162,7 @@ const zh: Strings = {
   },
   services: {
     eyebrow: '服务项目',
-    title: '五项服务，',
+    title: '六项服务，',
     accent: '同一双手。',
     intro: 'Abby 只专注睫毛、眉毛与美甲，所以每一项都做得用心。下方是起步价格与所需时间，最终价格以你选择的款式为准。',
     details: '价格与详情',
@@ -223,7 +224,8 @@ const zh: Strings = {
     phone: '短信 / WhatsApp',
     email: '邮箱',
     findUs: '从宝活火车站（Burwood station）步行约 5 分钟。确认预约时会把详细地址发给你。',
-    byAppointment: '仅限预约 —— Abby 一人工作，请提前预约。',
+    byAppointment: '仅限预约 —— Abby 一人工作，请提前预约。只接受短信或 WhatsApp 联系，工作时无法接听电话。',
+    lastStart: '以上为可预约时间，最晚 {time} 开始。',
     openMaps: '在 Google 地图中打开',
     mapTitle: 'Abby Eyelash 在宝活的位置地图',
     bookOnline: '在线预约',
@@ -268,6 +270,10 @@ const time = (hhmm: string, lang: Lang) => {
   const mm = String(m).padStart(2, '0');
   return lang === 'zh' ? `${h}:${mm}` : `${h % 12 || 12}:${mm} ${h < 12 ? 'am' : 'pm'}`;
 };
+
+/** "8:00 pm" / "20:00": the latest start time across the week (site.hours `close` is the last start). */
+export const lastStartLine = (hours: readonly { close: string }[], lang: Lang) =>
+  fill(common[lang].contact.lastStart, { time: time(hours.map((h) => h.close).sort().at(-1)!, lang) });
 
 /** Group consecutive days with identical hours: [{ days: 'Monday – Friday', time: '9:00 am – 7:00 pm' }, …]. Missing days = closed. */
 export function hoursRows(hours: readonly { day: number; open: string; close: string; nth?: number }[], lang: Lang) {

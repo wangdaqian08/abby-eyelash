@@ -59,7 +59,7 @@ const was = (s: string, o: string) => opt(s, o).wasPrice;
 const ext = () => `$${opt(X, 'extension').price}`; // per nail
 const link = (lang: Lang, id: string, text: string) => {
   const s = services.find((v) => v.id === id)!;
-  return `<a href="${lang === 'zh' ? '/zh' : ''}/${s.slug}" class="underline underline-offset-4 hover:text-fg">${text}</a>`;
+  return `<a href="${lang === 'zh' ? '/zh' : ''}/${s.slug}/" class="underline underline-offset-4 hover:text-fg">${text}</a>`;
 };
 
 // Shared nail-safety copy (gel products + curing lamps).
@@ -82,7 +82,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       title: 'Eyelash Extensions in Burwood | Abby Eyelash',
       description: `Japanese classic and hybrid eyelash extensions by Abby in Burwood NSW. Full sets from ${$(L, 'classic-natural')}, infills from ${$(L, 'infill-2w')}. Aftercare and patch tests.`,
       h1: ['Eyelash extensions ', 'in Burwood.'],
-      intro: `Eyelash extensions are single synthetic lashes bonded one at a time to your natural lashes with a cosmetic adhesive. At Abby Eyelash in Burwood NSW 2134, a Japanese classic set is ${$(L, 'classic-natural')} natural or ${$(L, 'classic-full')} full (about ${m(L, 'classic-natural')} minutes), and a hybrid set is ${$(L, 'hybrid-natural')} natural or ${$(L, 'hybrid-full')} full. Each extension lasts as long as the natural lash it sits on, so most clients book an infill every 2–3 weeks; the price depends on how soon you come back.`,
+      intro: `Eyelash extensions are single synthetic lashes bonded one at a time to your natural lashes with a cosmetic adhesive. At Abby Eyelash in Burwood NSW 2134, a Japanese classic set is ${$(L, 'classic-natural')} natural or ${$(L, 'classic-full')} full (about ${span(L, 'classic-natural', 'classic-full')} minutes), and a hybrid set is ${$(L, 'hybrid-natural')} natural or ${$(L, 'hybrid-full')} full. Each extension lasts as long as the natural lash it sits on, so most clients book an infill every 2–3 weeks; the price depends on how soon you come back.`,
       sections: [
         {
           h2: ['Classic, hybrid or styled: ', 'which suits you?'],
@@ -164,7 +164,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       title: '宝活 Burwood 嫁接睫毛 | Abby Eyelash 美睫',
       description: `悉尼宝活 Burwood 嫁接睫毛：日式单根 ${$(L, 'classic-natural')} 起，回补 ${$(L, 'infill-2w')} 起。Abby 亲手逐根嫁接，附术后护理、回补价格和皮试说明。`,
       h1: ['宝活 Burwood ', '嫁接睫毛'],
-      intro: `嫁接睫毛是用专用睫毛胶，把一根根合成睫毛逐根粘在你的真睫毛上。在 Burwood NSW 2134 的 Abby Eyelash，日式单根自然款 ${$(L, 'classic-natural')}、浓密款 ${$(L, 'classic-full')}（约 ${m(L, 'classic-natural')} 分钟），开花 / 轻盈自然款 ${$(L, 'hybrid-natural')}、浓密款 ${$(L, 'hybrid-full')}。嫁接的睫毛会随真睫毛自然脱落，大多数客人每 2–3 周回补一次，越早回补越便宜。`,
+      intro: `嫁接睫毛（也叫种睫毛、接睫毛）是用专用睫毛胶，把一根根合成睫毛逐根粘在你的真睫毛上。在 Burwood NSW 2134 的 Abby Eyelash，日式单根自然款 ${$(L, 'classic-natural')}、浓密款 ${$(L, 'classic-full')}（约 ${span(L, 'classic-natural', 'classic-full')} 分钟），开花 / 轻盈自然款 ${$(L, 'hybrid-natural')}、浓密款 ${$(L, 'hybrid-full')}。嫁接的睫毛会随真睫毛自然脱落，大多数客人每 2–3 周回补一次，越早回补越便宜。`,
       sections: [
         {
           h2: ['日式单根、开花还是造型款？', '怎么选'],
@@ -361,7 +361,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         {
           h2: ['皮试与', '敏感眼睛'],
           body: [
-            `翘睫药水和染膏都要在离眼睛很近的地方使用。克利夫兰诊所的眼科医生指出，${cite(CLEVELAND, '对香料或添加化学成分敏感的情况很常见')}，表现为发红、肿胀或起疹，并建议事先做皮试，同时提醒皮试并不能百分之百保证不过敏。`,
+            `翘睫药水要在离眼睛很近的地方使用。克利夫兰诊所的眼科医生指出，${cite(CLEVELAND, '对香料或添加化学成分敏感的情况很常见')}，表现为发红、肿胀或起疹，并建议事先做皮试，同时提醒皮试并不能百分之百保证不过敏。`,
             `首次到店的客人可以在预约前至少 48 小时免费做皮试。过程中如果感到刺痛，请马上告诉 Abby，她会立刻冲洗。离店后仍有不适，请看家庭医生（GP）或验光师。`, // OWNER-REVIEW
             `有眼部感染或近期做过眼部手术，请先暂缓。`, // OWNER-REVIEW
           ],
@@ -636,7 +636,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       title: 'Gel Nails Burwood | Cat-Eye · Aurora · French | Abby Eyelash',
       description: `Gel nails in Burwood NSW by Abby: solid colour ${$(G, 'solid')}, cat-eye or aurora ${$(G, 'cat-eye')}, French ${$(G, 'french')}, builder gel included. Extensions ${ext()} per nail.`,
       h1: ['Gel nails ', 'in Burwood.'],
-      intro: `Gel nails (a gel manicure) are coloured gel cured under a lamp, so they leave the studio dry and glossy and stay chip-resistant for weeks. At Abby Eyelash in Burwood NSW 2134, every gel set includes a builder gel layer for strength: solid colour is ${$(G, 'solid')} (about ${m(G, 'solid')} minutes), cat-eye and aurora are ${$(G, 'cat-eye')} (about ${m(G, 'cat-eye')} minutes), and French is ${$(G, 'french')} (about ${m(G, 'french')} minutes). Extensions can be added for ${ext()} per nail.`,
+      intro: `Gel nails (a gel manicure, sometimes called gel polish) are coloured gel cured under a lamp, so they leave the studio dry and glossy and typically last 2–3 weeks. At Abby Eyelash in Burwood NSW 2134, every gel set includes a builder gel layer for strength: solid colour is ${$(G, 'solid')} (about ${m(G, 'solid')} minutes), cat-eye and aurora are ${$(G, 'cat-eye')} (about ${m(G, 'cat-eye')} minutes), and French is ${$(G, 'french')} (about ${m(G, 'french')} minutes). Extensions can be added for ${ext()} per nail.`,
       sections: [
         {
           h2: ['Four finishes: ', 'which one?'],
@@ -698,7 +698,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       title: '宝活 Burwood 凝胶美甲 | 猫眼 · 极光 · 法式 | Abby Eyelash',
       description: `悉尼宝活 Burwood 凝胶美甲：单色 ${$(G, 'solid')}，猫眼或极光 ${$(G, 'cat-eye')}，法式 ${$(G, 'french')}，已含 Gel 建构。延长每只 ${ext()}。`,
       h1: ['宝活 Burwood ', '凝胶美甲'],
-      intro: `凝胶美甲（也叫光疗甲）是照灯固化的彩色凝胶，做完就干、有光泽，几周都不容易掉色。在 Burwood NSW 2134 的 Abby Eyelash，每一套凝胶美甲都已包含 Gel 建构，让指甲更坚固：单色 ${$(G, 'solid')}（约 ${m(G, 'solid')} 分钟），猫眼和极光 ${$(G, 'cat-eye')}（约 ${m(G, 'cat-eye')} 分钟），法式 ${$(G, 'french')}（约 ${m(G, 'french')} 分钟）。需要加长可加选延长，每只 ${ext()}。`,
+      intro: `凝胶美甲（也叫光疗甲、甲油胶美甲）是照灯固化的彩色凝胶，做完就干、有光泽，一般能维持 2–3 周。在 Burwood NSW 2134 的 Abby Eyelash，每一套凝胶美甲都已包含 Gel 建构，让指甲更坚固：单色 ${$(G, 'solid')}（约 ${m(G, 'solid')} 分钟），猫眼和极光 ${$(G, 'cat-eye')}（约 ${m(G, 'cat-eye')} 分钟），法式 ${$(G, 'french')}（约 ${m(G, 'french')} 分钟）。需要加长可加选延长，每只 ${ext()}。`,
       sections: [
         {
           h2: ['四种款式，', '怎么选'],

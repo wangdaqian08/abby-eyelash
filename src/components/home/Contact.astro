@@ -1,7 +1,7 @@
 ---
 import type { Lang } from '../../data/services';
 import { site } from '../../data/site';
-import { common, hoursRows, mapsUrl, napAddress, smsHref, waHref } from '../../i18n/common';
+import { common, hoursRows, lastStartLine, mapsUrl, napAddress, smsHref, waHref } from '../../i18n/common';
 import { localePath } from '../../lib/i18n';
 import SectionHeading from '../ui/SectionHeading.astro';
 import Button from '../ui/Button.astro';
@@ -23,6 +23,7 @@ const icon = 'mt-0.5 size-5 shrink-0 text-accent-ink';
           ))}
         </tbody>
       </table>
+      <p class="mt-3 text-sm text-muted">{lastStartLine(site.hours, lang)}</p>
 
       <ul class="mt-8 space-y-4 text-muted">
         <li class="flex gap-3">

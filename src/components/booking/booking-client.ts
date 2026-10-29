@@ -97,6 +97,7 @@ export function start(root: HTMLElement) {
   const mins = (n: number) => fill(t.minutes, { n });
   const shortDate = (d: string) => fmtDate(d, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
   const announce = (msg: string) => ($('[data-live]')!.textContent = msg);
+  const showDemo = () => Object.assign($('[data-demo]')!, { hidden: false, textContent: t.demo });
   const emit = (name: string, detail: Record<string, unknown>) => window.dispatchEvent(new CustomEvent(name, { detail }));
 
   // --- availability ---
@@ -110,7 +111,7 @@ export function start(root: HTMLElement) {
       if (!r.ok) throw new Error(String(r.status));
       const j = (await r.json()) as Month & { demo?: boolean };
       cache.set(k, { days: j.days, recommended: j.recommended ?? {} });
-      if (j.demo) $('[data-demo]')!.hidden = false;
+      if (j.demo) showDemo();
     } catch {
       cache.set(k, 'error');
     }
@@ -430,7 +431,7 @@ export function start(root: HTMLElement) {
     } catch {}
 
     if (res?.ok && body.ok) {
-      if (body.demo) $('[data-demo]')!.hidden = false;
+      if (body.demo) showDemo();
       notifyOwner(d);
       emit('booking_submitted', { service: st.service!.id, option: st.option!.id, value: total().price, currency: 'AUD' });
       st.name = d.name.trim();

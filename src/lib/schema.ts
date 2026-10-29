@@ -3,6 +3,7 @@
 import { site } from '../data/site.ts';
 import { headline, services, type Lang, type Service } from '../data/services.ts';
 import { localePath, neutralPath } from './i18n.ts';
+import { common } from '../i18n/common.ts';
 
 type Node = Record<string, unknown>;
 const BIZ_TYPE = ['BeautySalon', 'NailSalon'];
@@ -35,14 +36,14 @@ export const priceRange = () => {
   return `$${Math.min(...all)}–$${Math.max(...all)}`;
 };
 
-const offer = (name: string, price: number, from = false, unit?: string): Node => ({
+const offer = (name: string, price: number, from = false, unit?: string, maxPrice?: number): Node => ({
   '@type': 'Offer',
   name,
   priceCurrency: 'AUD',
   ...(unit
     ? { price, priceSpecification: { '@type': 'UnitPriceSpecification', price, priceCurrency: 'AUD', unitText: unit } }
     : from
-      ? { priceSpecification: { '@type': 'PriceSpecification', minPrice: price, priceCurrency: 'AUD' } }
+      ? { priceSpecification: { '@type': 'PriceSpecification', minPrice: price, ...(maxPrice && { maxPrice }), priceCurrency: 'AUD' } }
       : { price }),
 });
 
@@ -85,6 +86,7 @@ export function businessNode(base: string | URL, lang: Lang, image: string): Nod
     url: abs(base, localePath(lang, '/')),
     image,
     telephone: site.phone.replace(/[^\d+]/g, ''),
+    description: `${common[lang].contact.byAppointment} ${common[lang].contact.findUs}`, // same sentences as the visible contact block
     ...(email && { email }),
     address: {
       '@type': 'PostalAddress',
@@ -136,7 +138,10 @@ export function serviceNode(base: string | URL, lang: Lang, s: Service): Node {
         addressCountry: site.address.country,
       },
     },
-    offers: s.options.filter((o) => !o.onRequest).map((o) => offer(o.name[lang], o.price, !!o.from, o.unit?.en)),
+    // On-request designs keep an Offer with no price, so the per-nail add-on isn't read as the service price.
+    offers: s.options.map((o) =>
+      o.onRequest ? { '@type': 'Offer', name: o.name[lang] } : offer(o.name[lang], o.price, !!o.from, o.unit?.en, o.maxPrice),
+    ),
   };
 }
 
@@ -181,7 +186,8 @@ export function buildGraph({ site: base, lang, pathname, title, image, updated, 
     nodes.push(serviceNode(base, lang, service));
     crumb = breadcrumbNode(base, lang, url, service.name[lang]);
   }
-  const modified = service?.updated ?? updated;
+  // Home pages show every service's prices, so their date is the newest service date (matches sitemap lastmod).
+  const modified = service?.updated ?? updated ?? (pagePath(pathname) === '/' ? services.map((s) => s.updated).sort().at(-1) : undefined);
   nodes.push({
     '@type': 'WebPage',
     '@id': url + '#webpage',

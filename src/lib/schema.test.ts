@@ -50,10 +50,10 @@ test('service pages: Service offers equal services.ts prices, breadcrumb, dateMo
     const [svc] = byType(g, 'Service');
     assert.equal(svc.provider['@id'], SITE + '/#business');
     assert.equal(svc.areaServed.name, 'Burwood NSW 2134');
-    const priced = s.options.filter((o) => !o.onRequest); // on-request options carry no offer
-    assert.equal(svc.offers.length, priced.length);
-    priced.forEach((o, i) => {
+    assert.equal(svc.offers.length, s.options.length);
+    s.options.forEach((o, i) => {
       const off = svc.offers[i];
+      if (o.onRequest) return assert.ok(!('price' in off) && !off.priceSpecification, `${o.id}: on-request offer has no price`);
       assert.equal(off.priceCurrency, 'AUD');
       if (o.unit) assert.equal(off.priceSpecification.unitText, o.unit.en);
       else if (o.from) assert.equal(off.priceSpecification.minPrice, o.price);
