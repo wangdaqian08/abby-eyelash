@@ -15,6 +15,9 @@ export interface ServiceOption {
   pct?: number; // price is this % of the service's cheapest full option (lash infill)
   extra?: boolean; // add-on, infill or removal: left out of the service's headline price
   group?: L10n; // consecutive options with the same group are listed under one heading
+  addon?: boolean; // only bookable on top of a main option; add-ons sharing a group are either/or
+  max?: number; // add-on charged per unit (e.g. per nail), up to max units
+  noAddons?: boolean; // main option that takes no add-ons (e.g. removal on its own)
 }
 
 export interface Service {
@@ -28,7 +31,7 @@ export interface Service {
   options: ServiceOption[];
 }
 
-type Draft = Omit<Service, 'updated' | 'options'> & { options: Pick<ServiceOption, 'id' | 'name' | 'extra' | 'group'>[] };
+type Draft = Omit<Service, 'updated' | 'options'> & { options: Pick<ServiceOption, 'id' | 'name' | 'extra' | 'group' | 'addon' | 'max' | 'noAddons'>[] };
 
 const FULL_SET = { en: 'Full sets', zh: '全套' };
 const BOTTOM = { en: 'Bottom lashes', zh: '下睫毛' };
@@ -48,12 +51,12 @@ const drafts: Draft[] = [
       { id: 'hybrid-natural', name: { en: 'Hybrid – natural', zh: '开花 / 轻盈 · 自然' }, group: FULL_SET },
       { id: 'hybrid-full', name: { en: 'Hybrid – full', zh: '开花 / 轻盈 · 浓密' }, group: FULL_SET },
       { id: 'styled', name: { en: 'Styled set', zh: '造型款' }, group: FULL_SET },
-      { id: 'bottom-natural', name: { en: 'Bottom lashes – natural', zh: '下睫毛 · 自然' }, extra: true, group: BOTTOM },
-      { id: 'bottom-full', name: { en: 'Bottom lashes – full', zh: '下睫毛 · 浓密' }, extra: true, group: BOTTOM },
+      { id: 'bottom-natural', name: { en: 'Bottom lashes – natural', zh: '下睫毛 · 自然' }, extra: true, group: BOTTOM, addon: true },
+      { id: 'bottom-full', name: { en: 'Bottom lashes – full', zh: '下睫毛 · 浓密' }, extra: true, group: BOTTOM, addon: true },
       { id: 'infill-2w', name: { en: 'Infill – within 2 weeks', zh: '回补 · 2 周内' }, extra: true, group: INFILL },
       { id: 'infill-3w', name: { en: 'Infill – within 3 weeks', zh: '回补 · 3 周内' }, extra: true, group: INFILL },
       { id: 'infill-4w', name: { en: 'Infill – within 4 weeks', zh: '回补 · 4 周内' }, extra: true, group: INFILL },
-      { id: 'removal', name: { en: 'Lash removal', zh: '卸睫毛' }, extra: true, group: REMOVAL },
+      { id: 'removal', name: { en: 'Lash removal', zh: '卸睫毛' }, extra: true, group: REMOVAL, noAddons: true },
     ],
   },
   {
@@ -123,4 +126,64 @@ export const groupAt = (options: ServiceOption[], i: number) =>
   options[i].group && options[i].group !== options[i - 1]?.group ? options[i].group : undefined;
 
 export const findOption = (serviceId: string, optionId: string) =>
-  services.find((s) => s.id === serviceId)?.options.find((o) => o.id === optionId);
+  services.find((s) => s.id === serviceId)?.options.find((o) => o.id === optionId && !o.addon);
+
+export type Addons = Record<string, number>; // add-on id → units
+export const mainOptions = (s: Service) => s.options.filter((o) => !o.addon);
+export const addonOptions = (s: Service) => s.options.filter((o) => o.addon);
+
+/** "bottom-full:1,extension:4" ↔ { 'bottom-full': 1, extension: 4 } (sorted, so equal choices give equal keys). */
+export const addonsParam = (a: Addons) =>
+  Object.entries(a).filter(([, n]) => n > 0).sort(([x], [y]) => x.localeCompare(y)).map(([id, n]) => `${id}:${n}`).join(',');
+export const parseAddons = (s: string): Addons | null => {
+  const out: Addons = {};
+  for (const part of s ? s.split(',') : []) {
+    const m = part.match(/^([a-z0-9-]{1,40}):(\d{1,2})$/);
+    if (!m || m[1] in out) return null;
+    out[m[1]] = +m[2];
+  }
+  return out;
+};
+
+/**
+ * Validated total for a booking: main option + add-ons. Null when the combination isn't bookable
+ * (unknown ids, add-on booked alone, two add-ons from one either/or group, units out of range).
+ * Shared by the booking UI and both booking APIs, so price and duration can't disagree.
+ */
+export function quote(serviceId: string, optionId: string, addons: Addons) {
+  const s = services.find((x) => x.id === serviceId);
+  const option = s && findOption(serviceId, optionId);
+  if (!s || !option) return null;
+  const extras: { option: ServiceOption; units: number }[] = [];
+  for (const [id, units] of Object.entries(addons)) {
+    const o = s.options.find((x) => x.id === id && x.addon);
+    if (!o || option.noAddons || !Number.isInteger(units) || units < 1 || units > (o.max ?? 1)) return null;
+    if (o.group && extras.some((e) => e.option.group === o.group)) return null;
+    extras.push({ option: o, units });
+  }
+  return {
+    service: s,
+    option,
+    extras,
+    minutes: option.minutes + extras.reduce((n, e) => n + e.option.minutes * e.units, 0),
+    price: option.price + extras.reduce((n, e) => n + e.option.price * e.units, 0),
+    from: !!option.from || extras.some((e) => e.option.from),
+  };
+}
+
+/** Every total duration a booking can have (cache keys are per duration, so a booking purges all of them). */
+export function allDurations() {
+  const out = new Set<number>();
+  for (const s of services) {
+    // per either/or group: none or one option; per-unit add-on: 0..max units
+    let sums = [0];
+    const groups = new Map<unknown, ServiceOption[]>();
+    for (const o of addonOptions(s)) groups.set(o.group ?? o.id, [...(groups.get(o.group ?? o.id) ?? []), o]);
+    for (const opts of groups.values()) {
+      const adds = [0, ...opts.flatMap((o) => Array.from({ length: o.max ?? 1 }, (_, i) => o.minutes * (i + 1)))];
+      sums = [...new Set(sums.flatMap((a) => adds.map((b) => a + b)))];
+    }
+    for (const o of mainOptions(s)) for (const n of o.noAddons ? [0] : sums) out.add(o.minutes + n);
+  }
+  return [...out];
+}

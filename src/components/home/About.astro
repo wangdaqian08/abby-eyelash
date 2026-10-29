@@ -23,7 +23,7 @@ const facts = [
 const stats = [
   a.yearsExperience ? [`${a.yearsExperience}+`, t.statYears] : null,
   [String(services.length), t.statServices],
-  [String(site.hours.length), t.statDays],
+  [String(site.hours.filter((h) => !h.nth).length), t.statDays], // weekly days; the monthly Sunday isn't counted
 ].filter((s): s is string[] => !!s);
 const img = { formats: ['avif', 'webp'] as const, loading: 'lazy' as const, class: 'size-full object-cover' };
 ---

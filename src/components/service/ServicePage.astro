@@ -7,7 +7,7 @@ import { site } from '../../data/site';
 import { serviceContent } from '../../data/service-content';
 import { serviceStrings } from '../../i18n/service';
 import { localePath } from '../../lib/i18n';
-import { smsHref, waHref } from '../../i18n/common';
+import { hoursRows, smsHref, waHref } from '../../i18n/common';
 
 interface Props {
   lang: Lang;
@@ -24,23 +24,6 @@ const a = site.address;
 const addressLine = `${a.street}, ${a.locality} ${a.region} ${a.postcode}`;
 const mapHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${site.name}, ${addressLine}`)}`;
 const updated = new Intl.DateTimeFormat(en ? 'en-AU' : 'zh-CN', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(service.updated));
-
-// Opening hours grouped into runs of consecutive days (Mon → Sun) with identical times.
-const fmtTime = (hm: string) => {
-  if (!en) return hm.replace(/^0/, '');
-  const [h, m] = hm.split(':').map(Number);
-  return `${h % 12 || 12}${m ? ':' + String(m).padStart(2, '0') : ''} ${h < 12 ? 'am' : 'pm'}`;
-};
-const hourRows: { days: number[]; text: string }[] = [];
-for (const d of [1, 2, 3, 4, 5, 6, 0]) {
-  const h = site.hours.find((x) => x.day === d);
-  const text = h ? `${fmtTime(h.open)} – ${fmtTime(h.close)}` : t.closed;
-  const last = hourRows.at(-1);
-  if (last?.text === text) last.days.push(d);
-  else hourRows.push({ days: [d], text });
-}
-const dayLabel = (days: number[]) =>
-  days.length > 1 ? `${t.days[days[0]]}${t.to}${t.days[days.at(-1)!]}` : t.days[days[0]];
 
 const related = services.filter((s) => s.id !== service.id);
 
@@ -202,10 +185,10 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
           <dd class="mt-2">
             <table class="w-full max-w-sm">
               <tbody>
-                {hourRows.map((r) => (
+                {hoursRows(site.hours, lang).map((r) => (
                   <tr class="border-b border-border last:border-0">
-                    <th scope="row" class="py-2 pr-6 text-left font-normal text-muted">{dayLabel(r.days)}</th>
-                    <td class="py-2 text-right">{r.text}</td>
+                    <th scope="row" class="py-2 pr-6 text-left font-normal text-muted">{r.days}</th>
+                    <td class="py-2 text-right">{r.time}</td>
                   </tr>
                 ))}
               </tbody>

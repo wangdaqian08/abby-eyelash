@@ -1,5 +1,5 @@
 // Booking flow (vanilla TS): 1 Service → 2 Date → 3 Time → 4 Details → success.
-import { fromPrice, groupAt, services, type Lang, type Service, type ServiceOption } from '../../data/services';
+import { addonOptions, addonsParam, fromPrice, groupAt, mainOptions, quote, services, type Addons, type Lang, type Service, type ServiceOption } from '../../data/services';
 import { site } from '../../data/site';
 import { bookingStrings } from '../../i18n/booking';
 import { daysInMonth, localDate, maxDate, validateDetails, weekday, zonedTimeToUtc, type Details } from '../../lib/availability';
@@ -15,6 +15,7 @@ declare global {
 }
 
 type Days = Record<string, string[]>;
+type Month = { days: Days; recommended: Days };
 type Step = 1 | 2 | 3 | 4 | 5;
 type Field = keyof Details | 'service' | 'option' | 'time';
 
@@ -58,6 +59,7 @@ export function start(root: HTMLElement) {
     step: Step;
     service?: Service;
     option?: ServiceOption;
+    addons: Addons;
     month: string;
     date?: string;
     time?: string;
@@ -65,10 +67,11 @@ export function start(root: HTMLElement) {
     details: Details;
     started: boolean;
     name?: string;
-  } = { step: 1, month: localDate(Date.now(), TZ).slice(0, 7), details: { name: '', phone: '', email: '', notes: '' }, started: false };
+  } = { step: 1, addons: {}, month: localDate(Date.now(), TZ).slice(0, 7), details: { name: '', phone: '', email: '', notes: '' }, started: false };
 
-  const cache = new Map<string, Days | 'loading' | 'error'>();
-  const key = (m = st.month) => `${st.service?.id}/${st.option?.id}/${m}`;
+  const cache = new Map<string, Month | 'loading' | 'error'>();
+  const key = (m = st.month) => `${st.service?.id}/${st.option?.id}/${addonsParam(st.addons)}/${m}`;
+  const total = () => quote(st.service!.id, st.option!.id, st.addons)!; // the UI only offers valid combinations
   let tsToken = '';
   let tsWidget: string | undefined;
   let gridFocusPending = false;
@@ -83,7 +86,11 @@ export function start(root: HTMLElement) {
       minute: '2-digit',
       hourCycle: lang === 'zh' ? 'h23' : 'h12',
     }).format(zonedTimeToUtc(date, time, TZ));
-  const price = (o: ServiceOption) => (o.from ? fill(t.from, { p: `$${o.price}` }) : `$${o.price}`);
+  const price = (o: { price: number; from?: boolean }) => (o.from ? fill(t.from, { p: `$${o.price}` }) : `$${o.price}`);
+  const label = () => {
+    const q = total();
+    return [`${st.service!.name[lang]} · ${q.option.name[lang]}`, ...q.extras.map((e) => `${e.option.name[lang]}${e.units > 1 ? ` × ${e.units}` : ''}`)].join(' + ');
+  };
   const mins = (n: number) => fill(t.minutes, { n });
   const shortDate = (d: string) => fmtDate(d, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
   const announce = (msg: string) => ($('[data-live]')!.textContent = msg);
@@ -95,11 +102,11 @@ export function start(root: HTMLElement) {
     if (!force && cache.has(k) && cache.get(k) !== 'error') return;
     cache.set(k, 'loading');
     try {
-      const q = new URLSearchParams({ service: st.service!.id, option: st.option!.id, month });
+      const q = new URLSearchParams({ service: st.service!.id, option: st.option!.id, addons: addonsParam(st.addons), month });
       const r = await fetch(`/api/availability?${q}`, force ? { cache: 'reload' } : {});
       if (!r.ok) throw new Error(String(r.status));
-      const j = (await r.json()) as { days: Days; demo?: boolean };
-      cache.set(k, j.days);
+      const j = (await r.json()) as Month & { demo?: boolean };
+      cache.set(k, { days: j.days, recommended: j.recommended ?? {} });
       if (j.demo) $('[data-demo]')!.hidden = false;
     } catch {
       cache.set(k, 'error');
@@ -108,13 +115,17 @@ export function start(root: HTMLElement) {
   }
   const daysFor = (m = st.month) => {
     const d = cache.get(key(m));
-    return typeof d === 'object' ? d : undefined;
+    return typeof d === 'object' ? d.days : undefined;
+  };
+  const recommendedFor = (date: string) => {
+    const d = cache.get(key(date.slice(0, 7)));
+    return new Set(typeof d === 'object' ? d.recommended[date] : []);
   };
 
   // --- rail stepper (desktop) + progress bar (mobile) ---
   function renderChrome() {
     const values = [
-      st.option && `${st.service!.name[lang]} · ${st.option.name[lang]}`,
+      st.option && label(),
       st.date && shortDate(st.date),
       st.date && st.time && fmtTime(st.date, st.time),
       st.step === 5 ? st.name : undefined,
@@ -168,14 +179,14 @@ export function start(root: HTMLElement) {
     };
     const options = st.service
       ? `<fieldset class="mt-8"><legend class="font-serif text-xl">${t.chooseOption}</legend>
-          <div class="mt-3 divide-y divide-border border-y border-border">${st.service.options
+          <div class="mt-3 divide-y divide-border border-y border-border">${mainOptions(st.service)
             .map(
               (o, i, all) => `${groupAt(all, i) ? `<p class="px-1 pb-2 pt-5 text-xs font-medium uppercase tracking-wider text-accent-ink">${groupAt(all, i)![lang]}</p>` : ''}<label class="flex min-h-14 items-center justify-between gap-4 px-1 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring">
                 <span class="flex items-center gap-3"><input type="radio" name="bk-option" value="${o.id}" class="size-4 accent-primary" ${o === st.option ? 'checked' : ''}><span>${o.name[lang]}</span></span>
                 <span class="shrink-0 text-right text-sm text-muted"><span class="block whitespace-nowrap text-fg">${price(o)}</span><span class="whitespace-nowrap">${mins(o.minutes)}</span></span>
               </label>`,
             )
-            .join('')}</div></fieldset>`
+            .join('')}</div></fieldset>${addonsView()}`
       : '';
     return `<h2 data-focus tabindex="-1" class="text-2xl outline-none sm:text-3xl">${t.chooseService}</h2>
       <fieldset class="mt-6"><legend class="sr-only">${t.chooseService}</legend>
@@ -183,6 +194,34 @@ export function start(root: HTMLElement) {
       </fieldset>
       ${options}
       <button type="button" data-action="to-date" class="${BTN_PRIMARY}${tracking} mt-8 w-full sm:w-auto" ${st.option ? '' : 'disabled'}>${t.continue}</button>`;
+  }
+
+  // Add-ons for the chosen option: either/or groups as radios (with "none"), per-unit add-ons as a 0..max select.
+  function addonsView() {
+    const s = st.service!;
+    const list = addonOptions(s);
+    if (!st.option || st.option.noAddons || !list.length) return '';
+    const row = 'flex min-h-14 items-center justify-between gap-4 px-1 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring';
+    const meta = (o: ServiceOption, p: string) =>
+      `<span class="shrink-0 text-right text-sm text-muted"><span class="block whitespace-nowrap text-fg">${p}</span><span class="whitespace-nowrap">+${mins(o.minutes)}</span></span>`;
+    const groups = [...new Set(list.map((o) => o.group ?? o.id))];
+    const blocks = groups.map((g, gi) => {
+      const opts = list.filter((o) => (o.group ?? o.id) === g);
+      const one = opts[0];
+      if (one.max && one.max > 1) {
+        const n = st.addons[one.id] ?? 0;
+        return `<label class="${row}"><span>${one.name[lang]}</span>
+          <span class="flex items-center gap-3">${meta(one, fill(t.perUnit, { p: price(one) }))}
+            <span class="relative"><select name="bk-units" data-addon="${one.id}" class="${INPUT} w-20 pr-8">${Array.from({ length: one.max + 1 }, (_, i) => `<option value="${i}" ${i === n ? 'selected' : ''}>${i}</option>`).join('')}</select>${ICON.chevron}</span></span></label>`;
+      }
+      const name = `bk-addon-${gi}`;
+      const chosen = opts.find((o) => st.addons[o.id]);
+      return `${one.group ? `<p class="px-1 pb-2 pt-5 text-xs font-medium uppercase tracking-wider text-accent-ink">${one.group[lang]}</p>` : ''}
+        <label class="${row}"><span class="flex items-center gap-3"><input type="radio" name="${name}" value="" class="size-4 accent-primary" ${chosen ? '' : 'checked'}><span>${t.noAddon}</span></span></label>
+        ${opts.map((o) => `<label class="${row}"><span class="flex items-center gap-3"><input type="radio" name="${name}" value="${o.id}" class="size-4 accent-primary" ${o === chosen ? 'checked' : ''}><span>${o.name[lang]}</span></span>${meta(o, price(o))}</label>`).join('')}`;
+    });
+    return `<fieldset class="mt-8"><legend class="font-serif text-xl">${t.addons}</legend>
+      <div class="mt-3 divide-y divide-border border-y border-border">${blocks.join('')}</div></fieldset>`;
   }
 
   // --- steps 2 + 3 (side by side on desktop) ---
@@ -248,13 +287,16 @@ export function start(root: HTMLElement) {
   function slotsView() {
     if (!st.date) return `<p class="text-sm text-muted lg:pt-3">${t.pickDateHint}</p>`;
     const list = daysFor(st.date.slice(0, 7))?.[st.date] ?? [];
+    const rec = recommendedFor(st.date);
+    const badge = `<span class="ml-2 bg-surface-2 px-1.5 py-0.5 text-xs font-medium text-accent-ink">${t.recommended}</span>`;
     const items = list
       .map((time) => {
         const label = fmtTime(st.date!, time);
+        const tag = rec.has(time) ? badge : '';
         return time === st.time
-          ? `<li class="grid grid-cols-2 gap-2"><span class="flex h-12 items-center justify-center bg-muted text-on-primary">${label}</span>
+          ? `<li class="grid grid-cols-2 gap-2"><span class="flex h-12 items-center justify-center bg-muted text-on-primary">${label}${tag && `<span class="sr-only">, ${t.recommended}</span>`}</span>
               <button type="button" data-action="to-details" aria-label="${t.next}: ${label}" class="h-12 bg-primary font-medium text-on-primary transition duration-200 hover:bg-primary/90 active:scale-[.97]">${t.next}</button></li>`
-          : `<li><button type="button" data-time="${time}" class="h-12 w-full border border-border text-muted transition-colors duration-200 hover:border-primary hover:text-fg">${label}</button></li>`;
+          : `<li><button type="button" data-time="${time}" class="h-12 w-full border border-border text-muted transition-colors duration-200 hover:border-primary hover:text-fg">${label}${tag}</button></li>`;
       })
       .join('');
     return `<h3 data-slots-heading tabindex="-1" class="font-sans text-base font-normal outline-none">${fmtDate(st.date, { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
@@ -263,13 +305,13 @@ export function start(root: HTMLElement) {
 
   // --- step 4 ---
   const summary = () => {
-    const o = st.option!;
+    const q = total();
     const rows: [string, string][] = [
-      [t.fService, `${st.service!.name[lang]} · ${o.name[lang]}`],
+      [t.fService, label()],
       [t.sDate, fmtDate(st.date!, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })],
       [t.sTime, fmtTime(st.date!, st.time!)],
-      [t.sDuration, mins(o.minutes)],
-      [t.sPrice, price(o)],
+      [t.sDuration, mins(q.minutes)],
+      [t.sPrice, price(q)],
     ];
     return `<dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 bg-surface-2 p-5 text-sm">${rows
       .map(([k, v]) => `<dt class="text-muted">${k}</dt><dd>${esc(v)}</dd>`)
@@ -302,7 +344,7 @@ export function start(root: HTMLElement) {
     </form>`;
   }
   const optionList = () =>
-    st.service!.options.map((o) => `<option value="${o.id}" ${o === st.option ? 'selected' : ''}>${o.name[lang]} · ${mins(o.minutes)} · ${price(o)}</option>`).join('');
+    mainOptions(st.service!).map((o) => `<option value="${o.id}" ${o === st.option ? 'selected' : ''}>${o.name[lang]} · ${mins(o.minutes)} · ${price(o)}</option>`).join('');
 
   function setError(k: Field, msg?: string) {
     const input = $(`#bk-${k}`);
@@ -377,7 +419,7 @@ export function start(root: HTMLElement) {
     btn.disabled = true;
     btn.setAttribute('aria-busy', 'true');
     btn.innerHTML = `<span aria-hidden="true" class="size-4 rounded-full border-2 border-on-primary/40 border-t-on-primary motion-safe:animate-spin"></span>${t.submitting}`;
-    const payload = { ...d, service: st.service!.id, option: st.option!.id, date: st.date, time: st.time, lang, turnstileToken: tsToken };
+    const payload = { ...d, service: st.service!.id, option: st.option!.id, addons: addonsParam(st.addons), date: st.date, time: st.time, lang, turnstileToken: tsToken };
     let res: Response | undefined;
     let body: { ok?: boolean; demo?: boolean; error?: string; errors?: Record<string, string> } = {};
     try {
@@ -388,7 +430,7 @@ export function start(root: HTMLElement) {
     if (res?.ok && body.ok) {
       if (body.demo) $('[data-demo]')!.hidden = false;
       notifyOwner(d);
-      emit('booking_submitted', { service: st.service!.id, option: st.option!.id, value: st.option!.price, currency: 'AUD' });
+      emit('booking_submitted', { service: st.service!.id, option: st.option!.id, value: total().price, currency: 'AUD' });
       st.name = d.name.trim();
       load(st.date!.slice(0, 7), true); // bypass the browser's 60 s cache so the taken slot disappears
       return go(5);
@@ -417,7 +459,8 @@ export function start(root: HTMLElement) {
   // Web3Forms only accepts browser-side submissions on the free plan; keepalive lets it finish during navigation.
   function notifyOwner(d: Details) {
     if (!cfg.web3formsKey) return;
-    const label = `${st.service!.name.en} – ${st.option!.name.en}`;
+    const q = total();
+    const service = [`${q.service.name.en} – ${q.option.name.en}`, ...q.extras.map((e) => `${e.option.name.en}${e.units > 1 ? ` × ${e.units}` : ''}`)].join(' + ');
     fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       keepalive: true,
@@ -430,10 +473,10 @@ export function start(root: HTMLElement) {
         name: d.name.trim(),
         phone: d.phone.trim(),
         email: d.email.trim(),
-        service: label,
+        service: `${service} (${q.minutes} min)`,
         date: st.date,
         time: st.time,
-        price: price(st.option!),
+        price: price(q),
         notes: d.notes.trim() || '-',
         language: lang,
         status: 'PENDING — confirm by SMS/WhatsApp, collect the deposit, then rename the calendar event',
@@ -443,11 +486,10 @@ export function start(root: HTMLElement) {
 
   // --- success ---
   function successView() {
-    const o = st.option!;
     const start = zonedTimeToUtc(st.date!, st.time!, TZ);
-    const end = start + o.minutes * MIN;
+    const end = start + total().minutes * MIN;
     const stamp = (ms: number) => new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-    const title = fill(t.calendarTitle, { service: `${st.service!.name[lang]} · ${o.name[lang]}` });
+    const title = fill(t.calendarTitle, { service: label() });
     const a = site.address;
     const location = `${site.name}, ${a.street}, ${a.locality} ${a.region} ${a.postcode}`;
     const successBody = fill(t.successBody, { deposit: site.booking.deposit, wechat: site.social.wechatId, hours: site.booking.cancelHours });
@@ -557,10 +599,21 @@ export function start(root: HTMLElement) {
     const el = e.target as HTMLInputElement | HTMLSelectElement;
     if (el.name === 'bk-service' || el.name === 'service') {
       st.service = services.find((s) => s.id === el.value);
-      st.option = st.service!.options.length === 1 || el.name === 'service' ? st.service!.options[0] : undefined;
+      const main = mainOptions(st.service!);
+      st.option = main.length === 1 || el.name === 'service' ? main[0] : undefined;
+      st.addons = {};
       startOnce();
     } else if (el.name === 'bk-option' || el.name === 'option') {
-      st.option = st.service!.options.find((o) => o.id === el.value);
+      st.option = mainOptions(st.service!).find((o) => o.id === el.value);
+      if (st.option?.noAddons) st.addons = {};
+    } else if (el.name.startsWith('bk-addon-')) {
+      // either/or: drop whichever option of this radio group was chosen before
+      root.querySelectorAll<HTMLInputElement>(`input[name="${el.name}"]`).forEach((r) => delete st.addons[r.value]);
+      if (el.value) st.addons[el.value] = 1;
+    } else if (el.name === 'bk-units') {
+      const id = (el as HTMLSelectElement).dataset.addon!;
+      if (+el.value) st.addons[id] = +el.value;
+      else delete st.addons[id];
     } else return;
     if (st.step === 1) {
       st.time = undefined;
@@ -658,7 +711,8 @@ export function start(root: HTMLElement) {
   const pre = services.find((s) => s.id === q.get('service') || s.slug === q.get('service'));
   if (pre) {
     st.service = pre;
-    st.option = pre.options.find((o) => o.id === q.get('option')) ?? (pre.options.length === 1 ? pre.options[0] : undefined);
+    const main = mainOptions(pre);
+    st.option = main.find((o) => o.id === q.get('option')) ?? (main.length === 1 ? main[0] : undefined);
   }
   go(1, false);
 }

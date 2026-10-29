@@ -31,7 +31,7 @@ test('home: business node with required props and catalog mirroring services.ts'
       assert.ok(biz[k], `${p} missing ${k}`);
     assert.match(biz.telephone, /^\+\d{8,15}$/);
     assert.equal(biz.address.postalCode, '2134');
-    assert.equal(biz.openingHoursSpecification.flatMap((h: any) => h.dayOfWeek).length, 7);
+    assert.equal(biz.openingHoursSpecification.flatMap((h: any) => h.dayOfWeek).length, 6); // monthly Sunday isn't a weekly day
     const items = biz.hasOfferCatalog.itemListElement;
     assert.equal(items.length, services.length);
     services.forEach((s, i) => {
