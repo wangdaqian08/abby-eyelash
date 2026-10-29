@@ -1,7 +1,7 @@
 // Pure JSON-LD builders (docs/GEO-STRATEGY.md #11). Everything here must mirror visible page content.
 // Never emit FAQPage, AggregateRating or Review (strategy §2) — schema.test.ts enforces it.
 import { site } from '../data/site.ts';
-import { services, type Lang, type Service } from '../data/services.ts';
+import { fromPrice, services, type Lang, type Service } from '../data/services.ts';
 import { localePath, neutralPath } from './i18n.ts';
 
 type Node = Record<string, unknown>;
@@ -30,9 +30,8 @@ export const isRealProfileUrl = (url: string) => {
   }
 };
 
-const minPrice = (s: Service) => Math.min(...s.options.map((o) => o.price));
 export const priceRange = () => {
-  const all = services.flatMap((s) => s.options.map((o) => o.price));
+  const all = services.flatMap((s) => s.options.filter((o) => !o.extra).map((o) => o.price));
   return `$${Math.min(...all)}–$${Math.max(...all)}`;
 };
 
@@ -84,7 +83,7 @@ export function businessNode(base: string | URL, lang: Lang, image: string): Nod
       '@type': 'OfferCatalog',
       name: lang === 'zh' ? '服务项目' : 'Services',
       itemListElement: services.map((s) => ({
-        ...offer(s.name[lang], minPrice(s), s.options.length > 1 || !!s.options[0].from),
+        ...offer(s.name[lang], fromPrice(s), s.options.length > 1 || !!s.options[0].from),
         itemOffered: { '@type': 'Service', name: s.name[lang], url: abs(base, localePath(lang, `/${s.slug}/`)) },
       })),
     },

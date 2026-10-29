@@ -4,15 +4,15 @@
 export const site = {
   name: 'Abby Eyelash',
   owner: 'Abby',
-  // PLACEHOLDER — real street address must match Google Business Profile exactly.
+  // Home studio: street name only, never the house number (Abby sends it when confirming). Must match Google Business Profile.
   address: {
-    street: 'Shop 1, 1 Burwood Road', // PLACEHOLDER
+    street: 'Burwood Rd',
     locality: 'Burwood',
     region: 'NSW',
     postcode: '2134',
     country: 'AU',
   },
-  geo: { lat: -33.8774, lng: 151.1036 }, // approx. Burwood centre — PLACEHOLDER until real address
+  geo: { lat: -33.8774, lng: 151.1036 }, // deliberately approximate (Burwood centre) so the home studio can't be pinpointed
   phone: '+61 400 000 000', // PLACEHOLDER (E.164)
   phoneDisplay: '0400 000 000', // PLACEHOLDER
   email: 'hello@example.com', // PLACEHOLDER
@@ -36,7 +36,7 @@ export const site = {
   social: {
     instagram: 'https://www.instagram.com/', // PLACEHOLDER
     xiaohongshu: 'https://www.xiaohongshu.com/', // PLACEHOLDER
-    wechatId: 'abbyeyelash', // PLACEHOLDER
+    wechatId: 'AB_Flora',
   },
   google: {
     reviewsUrl: 'https://www.google.com/maps', // PLACEHOLDER — Google Business Profile review link

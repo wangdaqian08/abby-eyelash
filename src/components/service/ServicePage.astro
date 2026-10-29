@@ -2,7 +2,7 @@
 // One service page (EN or ZH). All facts come from services.ts / site.ts / service-content.ts and render as static HTML.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ServiceImage from './ServiceImage.astro';
-import { services, type Lang, type Service } from '../../data/services';
+import { fromPrice, groupAt, services, type Lang, type Service } from '../../data/services';
 import { site } from '../../data/site';
 import { serviceContent } from '../../data/service-content';
 import { serviceStrings } from '../../i18n/service';
@@ -42,7 +42,6 @@ const dayLabel = (days: number[]) =>
   days.length > 1 ? `${t.days[days[0]]}${t.to}${t.days[days.at(-1)!]}` : t.days[days[0]];
 
 const related = services.filter((s) => s.id !== service.id);
-const minPrice = (s: Service) => Math.min(...s.options.map((o) => o.price));
 
 const eyebrow = ['text-xs font-medium uppercase text-accent-ink', en && 'tracking-[0.25em]'];
 const btn = [
@@ -82,23 +81,34 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
           <p class:list={eyebrow}>{t.priceEyebrow}</p>
           <h2 class="mt-3 text-4xl leading-tight lg:text-5xl [&_em]:block">{t.priceTitle[0]}<em>{t.priceTitle[1]}</em></h2>
         </div>
-        <div>
+        <div class="min-w-0">
           <table class="w-full bg-surface text-left shadow-[var(--shadow-sm)]">
             <caption class="sr-only">{service.name[lang]}</caption>
             <thead>
               <tr class="border-b border-border text-sm text-muted">
                 <th scope="col" class="px-5 py-4 font-medium sm:px-8">{t.colOption}</th>
-                <th scope="col" class="px-3 py-4 font-medium">{t.colDuration}</th>
+                <th scope="col" class="hidden px-3 py-4 font-medium sm:table-cell">{t.colDuration}</th>
                 <th scope="col" class="px-5 py-4 text-right font-medium sm:px-8">{t.colPrice}</th>
               </tr>
             </thead>
             <tbody>
-              {service.options.map((o) => (
+              {service.options.map((o, i) => (
+                <Fragment>
+                {groupAt(service.options, i) && (
+                  <tr class="border-b border-border bg-surface-2/60">
+                    <th scope="colgroup" colspan="3" class="px-5 pb-2 pt-5 text-xs font-medium uppercase tracking-wider text-accent-ink sm:px-8">{groupAt(service.options, i)![lang]}</th>
+                  </tr>
+                )}
                 <tr class="border-b border-border last:border-0">
-                  <th scope="row" class="px-5 py-5 font-serif text-lg font-medium sm:px-8">{o.name[lang]}</th>
-                  <td class="whitespace-nowrap px-3 py-5 text-muted">{t.minutes(o.minutes)}</td>
+                  <th scope="row" class="px-5 py-5 font-serif text-lg font-medium sm:px-8">
+                    {o.name[lang]}
+                    {/* Mobile: duration moves under the name so long option names get the width. */}
+                    <span class="mt-1 block font-sans text-sm font-normal text-muted sm:hidden">{t.minutes(o.minutes)}</span>
+                  </th>
+                  <td class="hidden whitespace-nowrap px-3 py-5 text-muted sm:table-cell">{t.minutes(o.minutes)}</td>
                   <td class="whitespace-nowrap px-5 py-5 text-right font-medium sm:px-8">{t.price(o.price, o.from)}</td>
                 </tr>
+                </Fragment>
               ))}
             </tbody>
           </table>
@@ -219,7 +229,7 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
                 <span aria-hidden="true" class="text-accent group-hover:text-on-primary group-focus-visible:text-on-primary">✦</span>
                 <span class="mt-3 font-serif text-xl">{s.name[lang]}</span>
                 <span class="mt-2 flex-1 text-sm text-muted group-hover:text-on-primary group-focus-visible:text-on-primary">{s.summary[lang]}</span>
-                <span class="mt-4 text-sm font-medium">{t.price(minPrice(s), true)}</span>
+                <span class="mt-4 text-sm font-medium">{t.price(fromPrice(s), s.options.length > 1 || !!s.options[0].from)}</span>
               </a>
             </li>
           ))}

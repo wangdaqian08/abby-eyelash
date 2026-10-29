@@ -1,5 +1,5 @@
 // Booking flow (vanilla TS): 1 Service → 2 Date → 3 Time → 4 Details → success.
-import { services, type Lang, type Service, type ServiceOption } from '../../data/services';
+import { fromPrice, groupAt, services, type Lang, type Service, type ServiceOption } from '../../data/services';
 import { site } from '../../data/site';
 import { bookingStrings } from '../../i18n/booking';
 import { daysInMonth, localDate, maxDate, validateDetails, weekday, zonedTimeToUtc, type Details } from '../../lib/availability';
@@ -157,8 +157,8 @@ export function start(root: HTMLElement) {
   // --- step 1 ---
   function serviceView() {
     const card = (s: Service) => {
-      const m = s.options.map((o) => o.minutes);
-      const from = Math.min(...s.options.map((o) => o.price));
+      const m = s.options.filter((o) => !o.extra).map((o) => o.minutes);
+      const from = fromPrice(s);
       const range = Math.min(...m) === Math.max(...m) ? mins(m[0]) : `${Math.min(...m)}–${mins(Math.max(...m))}`;
       return `<label class="flex min-h-16 items-center gap-3 border border-border p-4 transition-colors duration-200 hover:border-primary has-checked:border-primary has-checked:bg-surface-2 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring">
         <input type="radio" name="bk-service" value="${s.id}" class="sr-only" ${s === st.service ? 'checked' : ''}>
@@ -170,9 +170,9 @@ export function start(root: HTMLElement) {
       ? `<fieldset class="mt-8"><legend class="font-serif text-xl">${t.chooseOption}</legend>
           <div class="mt-3 divide-y divide-border border-y border-border">${st.service.options
             .map(
-              (o) => `<label class="flex min-h-14 items-center justify-between gap-4 px-1 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring">
+              (o, i, all) => `${groupAt(all, i) ? `<p class="px-1 pb-2 pt-5 text-xs font-medium uppercase tracking-wider text-accent-ink">${groupAt(all, i)![lang]}</p>` : ''}<label class="flex min-h-14 items-center justify-between gap-4 px-1 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring">
                 <span class="flex items-center gap-3"><input type="radio" name="bk-option" value="${o.id}" class="size-4 accent-primary" ${o === st.option ? 'checked' : ''}><span>${o.name[lang]}</span></span>
-                <span class="whitespace-nowrap text-sm text-muted">${mins(o.minutes)} · <span class="text-fg">${price(o)}</span></span>
+                <span class="shrink-0 text-right text-sm text-muted"><span class="block whitespace-nowrap text-fg">${price(o)}</span><span class="whitespace-nowrap">${mins(o.minutes)}</span></span>
               </label>`,
             )
             .join('')}</div></fieldset>`

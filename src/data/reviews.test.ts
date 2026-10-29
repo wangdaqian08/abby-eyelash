@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { assertNoDummyAtLaunch, reviews } from './reviews.ts';
 import { hoursRows, priceLine } from '../i18n/common.ts';
-import { services } from './services.ts';
+import { groupAt, services } from './services.ts';
 import { site } from './site.ts';
 
 test('launch guard throws only when LAUNCH=1 and dummy data remains', () => {
@@ -27,7 +27,16 @@ test('hoursRows groups consecutive days, Monday first, and formats per locale', 
 
 test('priceLine derives "from" price and duration range from services.ts', () => {
   const by = (id: string) => services.find((s) => s.id === id)!;
-  assert.equal(priceLine(by('lash-extensions'), 'en'), 'from $65 · 60–150 min');
-  assert.equal(priceLine(by('lash-lift'), 'en'), '$90 · 60 min');
+  assert.equal(priceLine(by('lash-extensions'), 'en'), 'from $80 · 120–150 min');
+  assert.equal(priceLine(by('lash-lift'), 'en'), '$80 · 60 min');
   assert.equal(priceLine(by('handcrafted-nails'), 'zh'), '$80 起 · 90 分钟');
+});
+
+test('groupAt: one heading per lash group, none for ungrouped services', () => {
+  const heads = (id: string) => {
+    const o = services.find((s) => s.id === id)!.options;
+    return o.flatMap((_, i) => (groupAt(o, i) ? [groupAt(o, i)!.zh] : []));
+  };
+  assert.deepEqual(heads('lash-extensions'), ['全套', '下睫毛', '回补', '卸睫毛']);
+  assert.deepEqual(heads('nail-polish'), []);
 });

@@ -34,7 +34,7 @@ Time estimates are our rough guesses, not from the sources.
 - [ ] Primary category: **Eyelash salon**. Secondary category: **Nail salon**.
 - [ ] Business name, address, phone: copy exactly from `src/data/site.ts`. Website: the new domain.
 - [ ] Opening hours: same as the website. Update Google when hours change (public holidays too).
-- [ ] Add **each service with its price**, using the same names and prices as the website: Eyelash Extensions (classic, hybrid, volume, refill), Lash Lift, Handcrafted Nails (hand-painted nail art), Nail Polish (gel, regular), Nail Extensions (BIAB, Gel-X, infill). How to add: [Google: add or edit services](https://support.google.com/business/answer/9455399).
+- [ ] Add **each service with its price**, using the same names and prices as the website: Eyelash Extensions (Japanese classic, hybrid, styled, bottom lashes, infill, removal), Lash Lift, Handcrafted Nails (hand-painted nail art), Nail Polish (gel, regular), Nail Extensions (BIAB, Gel-X, infill). How to add: [Google: add or edit services](https://support.google.com/business/answer/9455399).
 - [ ] Description (English): who you are, what you do, Burwood location, one or two real facts about your work. No keyword lists, no suburb lists.
 - [ ] Photos: real photos of your work and the studio (see the shot list at the end). Add new ones regularly.
 - [ ] Booking link: the website booking page.
@@ -193,7 +193,7 @@ Fresha lets people search and book salons inside ChatGPT and Claude (announced A
 
 Placeholders in `src/data/site.ts` and `src/data/services.ts` (address, phone, prices, About facts) must be replaced before the site goes live. Under decision D3, dummy reviews are shown in preview only and must not go live.
 
-- [ ] **Real street address** (with shop/unit number) and a walking note, for example "X minutes from Burwood station". Must match GBP exactly.
+- [ ] **Street name only** (home studio: never the house number, on the site or in this repo) and a walking note, for example "X minutes from Burwood station". On GBP, hide the address and set a service area.
 - [ ] **Phone number** (the one clients call or text) and **email**.
 - [ ] **Socials:** Instagram, Xiaohongshu, Facebook, WeChat ID (and QR image).
 - [ ] **Prices and durations** for every service and option. The numbers currently on the site are placeholders. See the service list in `src/data/services.ts`.
@@ -202,7 +202,7 @@ Placeholders in `src/data/site.ts` and `src/data/services.ts` (address, phone, p
 - [ ] **Photos** (high resolution, your own work; ask clients' permission before showing their faces):
   - Abby portrait, and one working at the desk
   - Studio: entrance, treatment bed, nail desk, exterior or street view
-  - Eyelash extensions: classic, hybrid, volume close-ups (eyes open and closed)
+  - Eyelash extensions: Japanese classic, hybrid and styled close-ups (eyes open and closed)
   - Lash lift and tint: before and after
   - Hand-painted nail art: 6–8 different designs, hands and close-ups
   - Gel polish: simple colours, close-up
@@ -214,7 +214,7 @@ Placeholders in `src/data/site.ts` and `src/data/services.ts` (address, phone, p
 - [ ] **Domain name:** which one you want (for example abbyeyelash.com.au), and who holds the account to buy it.
 - [ ] **GBP review link** (from action 1).
 
-**中文说明：** 上线前请提供：真实地址（含店铺号）和从 Burwood 火车站步行时间、电话、邮箱、社交账号（Instagram、小红书、Facebook、微信号和二维码）、所有服务的真实价格和时长、营业时间、Abby 的个人资料（培训经历、证书、从业年限、使用的产品）、作品照片（拍摄清单见上；拍到客人要先征得同意）、真实 Google 评价（不能自己编写）、选定的配色方案、按 `docs/SETUP-booking.md` 完成 Google 日历设置、想要的域名，以及 Google 评价链接。
+**中文说明：** 上线前请提供：街道名（家庭工作室，门牌号不写进网站和代码仓库；Google 商家资料隐藏地址、设置服务区域）和从 Burwood 火车站步行时间、电话、邮箱、社交账号（Instagram、小红书、Facebook、微信号和二维码）、所有服务的真实价格和时长、营业时间、Abby 的个人资料（培训经历、证书、从业年限、使用的产品）、作品照片（拍摄清单见上；拍到客人要先征得同意）、真实 Google 评价（不能自己编写）、选定的配色方案、按 `docs/SETUP-booking.md` 完成 Google 日历设置、想要的域名，以及 Google 评价链接。
 
 ---
 
