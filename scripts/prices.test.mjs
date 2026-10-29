@@ -11,7 +11,10 @@ test('parsePrice: exact, from, range, percent; rejects nonsense', () => {
   assert.deepEqual(parsePrice('130+'), { price: 130, from: true });
   assert.deepEqual(parsePrice('10-20'), { price: 10, maxPrice: 20, from: true });
   assert.deepEqual(parsePrice('50%'), { pct: 50 });
-  for (const bad of ['', '八十', '20-10', '0%', '150%', '80.5']) assert.equal(parsePrice(bad), null, bad);
+  assert.deepEqual(parsePrice('480（原价580）'), { price: 480, wasPrice: 580 });
+  assert.deepEqual(parsePrice('480(原价580)'), { price: 480, wasPrice: 580 });
+  assert.deepEqual(parsePrice('需咨询'), { onRequest: true });
+  for (const bad of ['', '八十', '20-10', '0%', '150%', '80.5', '580（原价480）']) assert.equal(parsePrice(bad), null, bad);
 });
 
 test('parsePrices: BOM, CRLF, quoted cells and blank lines', () => {

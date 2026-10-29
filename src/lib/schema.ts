@@ -1,7 +1,7 @@
 // Pure JSON-LD builders (docs/GEO-STRATEGY.md #11). Everything here must mirror visible page content.
 // Never emit FAQPage, AggregateRating or Review (strategy §2) — schema.test.ts enforces it.
 import { site } from '../data/site.ts';
-import { fromPrice, services, type Lang, type Service } from '../data/services.ts';
+import { headline, services, type Lang, type Service } from '../data/services.ts';
 import { localePath, neutralPath } from './i18n.ts';
 
 type Node = Record<string, unknown>;
@@ -31,15 +31,19 @@ export const isRealProfileUrl = (url: string) => {
 };
 
 export const priceRange = () => {
-  const all = services.flatMap((s) => s.options.filter((o) => !o.extra).map((o) => o.price));
+  const all = services.flatMap((s) => s.options.filter((o) => !o.extra && !o.addon && !o.onRequest).map((o) => o.price));
   return `$${Math.min(...all)}–$${Math.max(...all)}`;
 };
 
-const offer = (name: string, price: number, from = false): Node => ({
+const offer = (name: string, price: number, from = false, unit?: string): Node => ({
   '@type': 'Offer',
   name,
   priceCurrency: 'AUD',
-  ...(from ? { priceSpecification: { '@type': 'PriceSpecification', minPrice: price, priceCurrency: 'AUD' } } : { price }),
+  ...(unit
+    ? { price, priceSpecification: { '@type': 'UnitPriceSpecification', price, priceCurrency: 'AUD', unitText: unit } }
+    : from
+      ? { priceSpecification: { '@type': 'PriceSpecification', minPrice: price, priceCurrency: 'AUD' } }
+      : { price }),
 });
 
 const hours = () => {
@@ -83,10 +87,14 @@ export function businessNode(base: string | URL, lang: Lang, image: string): Nod
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
       name: lang === 'zh' ? '服务项目' : 'Services',
-      itemListElement: services.map((s) => ({
-        ...offer(s.name[lang], fromPrice(s), s.options.length > 1 || !!s.options[0].from),
-        itemOffered: { '@type': 'Service', name: s.name[lang], url: abs(base, localePath(lang, `/${s.slug}/`)) },
-      })),
+      // An on-request service gets no price at all rather than a made-up one.
+      itemListElement: services.map((s) => {
+        const h = headline(s);
+        return {
+          ...(h.onRequest ? { '@type': 'Offer', name: s.name[lang] } : offer(s.name[lang], h.price, h.from)),
+          itemOffered: { '@type': 'Service', name: s.name[lang], url: abs(base, localePath(lang, `/${s.slug}/`)) },
+        };
+      }),
     },
   };
 }
@@ -111,7 +119,7 @@ export function serviceNode(base: string | URL, lang: Lang, s: Service): Node {
         addressCountry: site.address.country,
       },
     },
-    offers: s.options.map((o) => offer(o.name[lang], o.price, !!o.from)),
+    offers: s.options.filter((o) => !o.onRequest).map((o) => offer(o.name[lang], o.price, !!o.from, o.unit?.en)),
   };
 }
 

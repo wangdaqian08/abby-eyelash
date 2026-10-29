@@ -26,14 +26,17 @@ Agreed with the owner on 2026-10-26. This is the source of truth for all build w
 - No blog for now.
 - Demo copy is kept in spirit but rewritten for Abby Eyelash / Burwood (demo is "S.H.E Nails", Truganina VIC — none of its business facts are reused).
 
-## 5. Services & placeholder prices (AUD, owner replaces before launch)
-| Service | Option | Duration (min) | Price |
-|---|---|---|---|
-| Eyelash Extensions | Japanese classic natural/full · Hybrid natural/full · Styled · Bottom natural/full · Infill 2/3/4 wk · Removal | placeholder | $80/$110 · $110/$140 · from $130 · $25/$35 · 50/70/85% of set · $10–$20 (owner menu 2026-10-29) |
-| Lash Lift | Lift & Tint | 60 | $80 |
-| Handcrafted Nails | Hand-painted custom nail art | 90 | from $80 |
-| Nail Polish | Gel manicure / Regular polish | 45 / 30 | $50 / $35 |
-| Nail Extensions | BIAB / Gel-X / Infill | 90 / 90 / 60 | $85 / $95 / $65 |
+## 5. Services & prices (AUD)
+Prices and durations live in `src/data/prices.csv` (owner-editable, see `docs/PRICES.md`); this table is a summary as of 2026-10-30.
+
+| Service | Options | Price |
+|---|---|---|
+| Eyelash Extensions | Japanese classic natural/full · Hybrid natural/full · Styled · Bottom lashes (add-on) · Infill 2/3/4 wk · Removal | $80/$110 · $110/$140 · from $130 · $25/$35 · 50/70/85% of set · $10–$20 |
+| Keratin Lash Lift | No tint | $80 |
+| Powder Brows | One free touch-up within 3 months | $480 (was $580) |
+| Gel Nails | Solid · Cat-eye · Aurora · French (builder gel included) | $70 · $110 · $110 · $120 |
+| Hand-painted Nail Art | Custom design | Price on request |
+| Nail Extensions | Add-on to any nail design | $6 per nail |
 
 Service cards on Home show price + duration and link to their service page.
 

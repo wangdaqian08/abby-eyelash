@@ -18,6 +18,10 @@ export interface ServiceOption {
   addon?: boolean; // only bookable on top of a main option; add-ons sharing a group are either/or
   max?: number; // add-on charged per unit (e.g. per nail), up to max units
   noAddons?: boolean; // main option that takes no add-ons (e.g. removal on its own)
+  unit?: L10n; // per-unit price label, e.g. "nail" → "$6 / nail"
+  wasPrice?: number; // original price shown struck through (sale)
+  onRequest?: boolean; // custom price quoted by Abby; `price` is 0
+  priceKey?: string; // prices.csv row when one option is shared by several services
 }
 
 export interface Service {
@@ -31,12 +35,23 @@ export interface Service {
   options: ServiceOption[];
 }
 
-type Draft = Omit<Service, 'updated' | 'options'> & { options: Pick<ServiceOption, 'id' | 'name' | 'extra' | 'group' | 'addon' | 'max' | 'noAddons'>[] };
+type Draft = Omit<Service, 'updated' | 'options'> & {
+  options: Pick<ServiceOption, 'id' | 'name' | 'extra' | 'group' | 'addon' | 'max' | 'noAddons' | 'unit' | 'priceKey'>[];
+};
 
 const FULL_SET = { en: 'Full sets', zh: '全套' };
 const BOTTOM = { en: 'Bottom lashes', zh: '下睫毛' };
 const INFILL = { en: 'Infill', zh: '回补' };
 const REMOVAL = { en: 'Removal', zh: '卸睫毛' };
+// Nail extensions: one per-nail add-on offered with every nail design, priced once in prices.csv.
+const EXTENSION = {
+  id: 'extension',
+  name: { en: 'Extensions', zh: '延长' }, // price/time show "/ nail" via unit
+  addon: true,
+  max: 10,
+  unit: { en: 'nail', zh: '只' },
+  priceKey: 'nail-extensions/extension',
+};
 
 // Prices, durations and "updated" dates come from src/data/prices.csv (Abby edits that table, see docs/PRICES.md).
 const drafts: Draft[] = [
@@ -67,59 +82,96 @@ const drafts: Draft[] = [
     options: [{ id: 'keratin-lift', name: { en: 'Keratin lash lift', zh: '角蛋白翘睫' } }],
   },
   {
-    id: 'handcrafted-nails',
-    summary: { en: 'Hand-painted custom nail art, designed with you and painted by Abby.', zh: '与你一起设计、由 Abby 亲手绘制的定制美甲。' },
-    slug: 'handcrafted-nails-burwood',
-    name: { en: 'Handcrafted Nails', zh: '手绘定制美甲' },
+    id: 'powder-brows',
+    summary: { en: 'Semi-permanent powder brows: a soft, filled-in look that lasts, with one free touch-up within 3 months.', zh: '半永久雾眉，柔和自然的粉雾感，3 个月内免费补色一次。' },
+    slug: 'powder-brows-burwood',
+    name: { en: 'Powder Brows', zh: '半永久眉 · 雾眉' },
+    options: [{ id: 'powder', name: { en: 'Powder brows', zh: '雾眉' } }],
+  },
+  {
+    id: 'gel-nails',
+    summary: { en: 'Gel nails in solid colour, cat-eye, aurora or French, with builder gel included.', zh: '凝胶美甲：单色、猫眼、极光、法式，已含 Gel 建构。' },
+    slug: 'gel-nails-burwood',
+    name: { en: 'Gel Nails', zh: '凝胶美甲' },
     options: [
-      { id: 'nail-art', name: { en: 'Hand-painted custom nail art', zh: '手绘定制款' } },
+      { id: 'solid', name: { en: 'Solid colour', zh: '单色' } },
+      { id: 'cat-eye', name: { en: 'Cat-eye', zh: '猫眼' } },
+      { id: 'aurora', name: { en: 'Aurora', zh: '极光' } },
+      { id: 'french', name: { en: 'French', zh: '法式' } },
+      EXTENSION,
     ],
   },
   {
-    id: 'nail-polish',
-    summary: { en: 'Gel and regular polish with careful cuticle prep and shaping.', zh: '光疗与普通甲油，细致修护甲缘与修型。' },
-    slug: 'nail-polish-burwood',
-    name: { en: 'Nail Polish', zh: '美甲上色' },
-    options: [
-      { id: 'gel', name: { en: 'Gel manicure', zh: '光疗甲油' } },
-      { id: 'regular', name: { en: 'Regular polish', zh: '普通甲油' } },
-    ],
+    id: 'handcrafted-nails',
+    summary: { en: 'Hand-painted nail art designed with you and painted by Abby; priced per design.', zh: '和你一起设计、由 Abby 亲手绘制的手绘造型，按款式报价。' },
+    slug: 'handcrafted-nails-burwood',
+    name: { en: 'Hand-painted Nail Art', zh: '手绘造型' },
+    options: [{ id: 'nail-art', name: { en: 'Custom design', zh: '定制款' } }, EXTENSION],
   },
   {
     id: 'nail-extensions',
-    summary: { en: 'BIAB and Gel-X for strength and length that still looks natural.', zh: 'BIAB 与 Gel-X，坚固延长，依然自然。' },
+    summary: { en: 'Nail tip extensions, $6 per nail, added to any gel or hand-painted set.', zh: '甲片延长，每只 $6，可加在任何凝胶或手绘款上。' },
     slug: 'nail-extensions-burwood',
     name: { en: 'Nail Extensions', zh: '延长甲' },
-    options: [
-      { id: 'biab', name: { en: 'BIAB', zh: 'BIAB 加固甲' } },
-      { id: 'gel-x', name: { en: 'Gel-X', zh: 'Gel-X 延长甲' } },
-      { id: 'infill', name: { en: 'Infill', zh: '补甲' } },
-    ],
+    // Add-on only: booked on top of a gel or hand-painted set (see bookableWith()).
+    options: [EXTENSION],
   },
 ];
 
 /** Merges prices.csv into the drafts; a "50%" row is a share of the service's cheapest full option. */
 function withPrices(d: Draft): Service {
   const rows = d.options.map((o) => {
-    const p = prices[`${d.id}/${o.id}`];
-    if (!p) throw new Error(`src/data/prices.csv has no row for ${d.id}/${o.id}`);
+    const p = prices[o.priceKey ?? `${d.id}/${o.id}`];
+    if (!p) throw new Error(`src/data/prices.csv has no row for ${o.priceKey ?? `${d.id}/${o.id}`}`);
     return { ...o, ...p };
   });
-  const base = Math.min(...rows.filter((o) => !o.extra && o.price !== undefined).map((o) => o.price!));
+  const base = Math.min(...rows.filter((o) => !o.extra && !o.addon && o.price !== undefined).map((o) => o.price!));
   return {
     ...d,
     updated: rows.map((o) => o.updated).sort().at(-1)!, // latest 更新日期 of this service's rows
-    options: rows.map(({ updated, ...o }) => (o.pct ? { ...o, price: Math.round((base * o.pct) / 100), from: true } : { ...o, price: o.price! })),
+    options: rows.map(({ updated, ...o }) => (o.pct ? { ...o, price: Math.round((base * o.pct) / 100), from: true } : { ...o, price: o.price ?? 0 })),
   };
 }
 
 export const services: Service[] = drafts.map(withPrices);
 
-const unknown = Object.keys(prices).filter((k) => !services.some((s) => s.options.some((o) => `${s.id}/${o.id}` === k)));
+const unknown = Object.keys(prices).filter((k) => !services.some((s) => s.options.some((o) => (o.priceKey ?? `${s.id}/${o.id}`) === k)));
 if (unknown.length) throw new Error(`src/data/prices.csv has rows no service uses: ${unknown.join(', ')}`);
 
-/** Headline "from" price for cards and the catalog: the cheapest main option. */
-export const fromPrice = (s: Service) => Math.min(...s.options.filter((o) => !o.extra).map((o) => o.price));
+/** Headline "from" price for cards and the catalog: the cheapest priced main option (undefined if all are on request). */
+export const fromPrice = (s: Service) => {
+  const p = s.options.filter((o) => !o.extra && !o.onRequest && (!o.addon || !mainOptions(s).length)).map((o) => o.price);
+  return p.length ? Math.min(...p) : undefined;
+};
+/** The one-line headline for a service card / catalog entry: cheapest priced main option, duration range of the main options. */
+export function headline(s: Service) {
+  const main = mainOptions(s).length ? mainOptions(s).filter((o) => !o.extra) : s.options;
+  const price = fromPrice(s);
+  const mins = main.map((o) => o.minutes);
+  const only = main.length === 1 ? main[0] : undefined;
+  return {
+    price: price ?? 0,
+    onRequest: price === undefined,
+    from: main.length > 1 || !!only?.from,
+    unit: only?.unit,
+    wasPrice: only?.wasPrice,
+    minutes: only?.unit ? undefined : ([Math.min(...mins), Math.max(...mins)] as const),
+  };
+}
+
+type Priced = Pick<ServiceOption, 'price' | 'from' | 'unit' | 'onRequest'>;
+/** "$80" · "from $130" · "$6 / nail" · "Price on request" (zh: "$130 起" · "$6 / 只" · "定制价，需咨询"). */
+export const priceText = (o: Priced, lang: Lang) => {
+  if (o.onRequest) return lang === 'zh' ? '定制价，需咨询' : 'Price on request';
+  const p = o.from ? (lang === 'zh' ? `$${o.price} 起` : `from $${o.price}`) : `$${o.price}`;
+  return o.unit ? `${p} / ${o.unit[lang]}` : p;
+};
+
+/** Services you can start a booking with (an add-on-only service like nail extensions is booked on top of another). */
+export const bookable = () => services.filter((s) => mainOptions(s).length);
+/** Where to book an add-on-only service: the first service that offers its add-on. */
+export const bookableWith = (s: Service) =>
+  mainOptions(s).length ? s : bookable().find((b) => b.options.some((o) => s.options.some((x) => x.addon && x.id === o.id)))!;
 
 /** The group heading to show before option `i`, if a new group starts there. */
 export const groupAt = (options: ServiceOption[], i: number) =>
@@ -166,15 +218,16 @@ export function quote(serviceId: string, optionId: string, addons: Addons) {
     option,
     extras,
     minutes: option.minutes + extras.reduce((n, e) => n + e.option.minutes * e.units, 0),
-    price: option.price + extras.reduce((n, e) => n + e.option.price * e.units, 0),
+    price: option.price + extras.reduce((n, e) => n + e.option.price * e.units, 0), // on request: add-ons only
     from: !!option.from || extras.some((e) => e.option.from),
+    onRequest: !!option.onRequest,
   };
 }
 
 /** Every total duration a booking can have (cache keys are per duration, so a booking purges all of them). */
 export function allDurations() {
   const out = new Set<number>();
-  for (const s of services) {
+  for (const s of bookable()) {
     // per either/or group: none or one option; per-unit add-on: 0..max units
     let sums = [0];
     const groups = new Map<unknown, ServiceOption[]>();

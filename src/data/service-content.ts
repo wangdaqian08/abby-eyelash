@@ -54,7 +54,9 @@ const CLEVELAND = 'https://health.clevelandclinic.org/are-lash-lifts-safe';
 const BAD = 'https://www.skinhealthinfo.org.uk/dermatologists-issue-warning-about-uk-artificial-nail-allergy-epidemic/';
 const CANCER = 'https://cancer.org.au/iheard/do-the-uv-lights-used-in-nail-salons-for-shellac-and-other-nail-polishes-cause-skin-cancer';
 
-const L = 'lash-extensions', LL = 'lash-lift', H = 'handcrafted-nails', P = 'nail-polish', X = 'nail-extensions';
+const L = 'lash-extensions', LL = 'lash-lift', B = 'powder-brows', G = 'gel-nails', H = 'handcrafted-nails', X = 'nail-extensions';
+const was = (s: string, o: string) => opt(s, o).wasPrice;
+const ext = () => `$${opt(X, 'extension').price}`; // per nail
 const link = (lang: Lang, id: string, text: string) => {
   const s = services.find((v) => v.id === id)!;
   return `<a href="${lang === 'zh' ? '/zh' : ''}/${s.slug}" class="underline underline-offset-4 hover:text-fg">${text}</a>`;
@@ -63,14 +65,14 @@ const link = (lang: Lang, id: string, text: string) => {
 // Shared nail-safety copy (gel products + curing lamps).
 const nailSafety = {
   en: [
-    `Gel polish, builder gel and soft-gel tips all contain (meth)acrylates. The British Association of Dermatologists has ${cite(BAD, 'warned about a rise in (meth)acrylate allergy')}: it can develop when uncured product touches the skin, and the risk is higher with home kits, insufficient technician training, or a lamp that doesn’t match the gel. Abby keeps product off your skin and cuticles and cures each layer with the lamp made for the gel system she uses.`, // OWNER-REVIEW: confirm gel brand + matching lamp
+    `Gel colour, builder gel and the gel used with nail tips all contain (meth)acrylates. The British Association of Dermatologists has ${cite(BAD, 'warned about a rise in (meth)acrylate allergy')}: it can develop when uncured product touches the skin, and the risk is higher with home kits, insufficient technician training, or a lamp that doesn’t match the gel. Abby keeps product off your skin and cuticles and cures each layer with the lamp made for the gel system she uses.`, // OWNER-REVIEW: confirm gel brand + matching lamp
     `Nail lamps give off UV. Cancer Council Australia says ${cite(CANCER, 'nail lamps emit low levels of radiation for short exposure times')}, and suggests SPF50 or SPF50+ sunscreen on your hands 20 minutes beforehand, or fingerless gloves, if you’re concerned. You’re welcome to bring either.`,
-    `If you’ve had itching, redness, swelling or nails lifting after gel before, tell Abby before you book; she may suggest regular polish instead and seeing your GP about patch testing.`, // OWNER-REVIEW
+    `If you’ve had itching, redness, swelling or nails lifting after gel before, tell Abby before you book; she may suggest seeing your GP about patch testing before having gel again.`, // OWNER-REVIEW
   ],
   zh: [
-    `甲油胶、建构胶（BIAB）和 Gel-X 软甲片都含有（甲基）丙烯酸酯类成分。英国皮肤科医师协会曾${cite(BAD, '就（甲基）丙烯酸酯过敏病例增多发出提醒')}：未固化的胶接触皮肤就可能致敏，自己在家用套装、美甲师培训不足、或灯与胶不匹配时风险更高。Abby 操作时会避免胶碰到皮肤和甲缘，每一层都用与所用胶系统配套的灯照干。`, // OWNER-REVIEW: confirm gel brand + matching lamp
+    `凝胶、建构胶和粘贴甲片用的凝胶都含有（甲基）丙烯酸酯类成分。英国皮肤科医师协会曾${cite(BAD, '就（甲基）丙烯酸酯过敏病例增多发出提醒')}：未固化的胶接触皮肤就可能致敏，自己在家用套装、美甲师培训不足、或灯与胶不匹配时风险更高。Abby 操作时会避免胶碰到皮肤和甲缘，每一层都用与所用胶系统配套的灯照干。`, // OWNER-REVIEW: confirm gel brand + matching lamp
     `美甲灯会发出紫外线。澳洲癌症协会（Cancer Council Australia）表示${cite(CANCER, '美甲灯的辐射量低、照射时间短')}；如果你仍有顾虑，可以提前 20 分钟在手上涂 SPF50 或 SPF50+ 防晒霜，或戴露指手套，欢迎自带。`,
-    `如果你以前做完光疗甲出现过发痒、发红、肿胀或甲面翘起，请在预约前告诉 Abby，她可能建议你改做普通甲油，并建议你找家庭医生（GP）做过敏原测试。`, // OWNER-REVIEW
+    `如果你以前做完凝胶甲出现过发痒、发红、肿胀或甲面翘起，请在预约前告诉 Abby，她可能建议你先找家庭医生（GP）做过敏原测试，再决定是否继续做凝胶。`, // OWNER-REVIEW
   ],
 };
 
@@ -379,18 +381,143 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
     },
   },
 
+  [B]: {
+    en: {
+      title: 'Powder Brows in Burwood | Semi-Permanent | Abby Eyelash',
+      description: `Semi-permanent powder brows by Abby in Burwood NSW: ${$(B, 'powder')} (was $${was(B, 'powder')}), about ${m(B, 'powder')} minutes, one free touch-up within 3 months. Healing and aftercare.`,
+      h1: ['Powder brows ', 'in Burwood.'],
+      intro: `Powder brows are a semi-permanent brow treatment: fine dots of cosmetic pigment are placed in the skin to build a soft, filled-in look, like a light brow powder that doesn’t wash off. At Abby Eyelash in Burwood NSW 2134, powder brows are currently ${$(B, 'powder')} (usually $${was(B, 'powder')}) and take about ${m(B, 'powder')} minutes, including mapping the shape with you. One touch-up within 3 months is included free.`,
+      sections: [
+        {
+          h2: ['Who powder brows ', 'suit'],
+          body: [
+            `Powder brows suit you if you fill your brows in most days, want a soft, defined shape that stays put, or have sparse or uneven brows. The finish is soft and powdery rather than hair-like strokes.`,
+            `Because pigment fades and shifts over time, the look is designed to be natural rather than heavy. Abby maps the shape to your face and natural brow line before any pigment goes in.`, // OWNER-REVIEW
+          ],
+        },
+        {
+          h2: ['What happens ', 'during your appointment'],
+          steps: [
+            `Consultation: the shape and depth you want, your skin, and any health questions (see below).`,
+            `Brow mapping: Abby measures and draws the shape, and you approve it before she starts.`,
+            `Pigment is applied in fine layers of tiny dots to build an even, powdery finish.`,
+            `The brows are cleaned and Abby explains the aftercare for the next two weeks.`,
+          ],
+          after: [`Allow about ${m(B, 'powder')} minutes in total.`],
+        },
+        {
+          h2: ['Healing ', 'and the free touch-up'],
+          body: [
+            `Straight after the appointment the brows look darker and sharper than the final result. Over the first one to two weeks they flake lightly and soften, and some areas can look patchy while the skin heals; this is normal.`, // OWNER-REVIEW: healing timeline
+            `Your free touch-up within 3 months fills any spots that didn’t hold and fine-tunes the shape. Touch-ups aren’t booked online: message Abby by WhatsApp, SMS or WeChat to arrange it.`,
+            `Powder brows usually last one to three years, depending on your skin, sun exposure and skincare. A paid colour refresh keeps them looking fresh after that.`, // OWNER-REVIEW: longevity, refresh pricing
+          ],
+        },
+        {
+          h2: ['Before ', 'you come in'],
+          list: [
+            `Come with your usual brows (no tinting or waxing in the week before) so Abby can see your natural shape.`, // OWNER-REVIEW
+            `Avoid alcohol and caffeine on the day; they can increase bleeding.`, // OWNER-REVIEW
+            `Tell Abby when you book if you are pregnant or breastfeeding, take blood thinners, use retinoids on your face, have a skin condition on your brows, or tend to scar or keloid. She may suggest waiting or checking with your GP first.`, // OWNER-REVIEW: contraindication list
+          ],
+        },
+        {
+          h2: ['Aftercare: ', 'Abby’s steps'],
+          list: [
+            `Keep the brows clean and dry, and follow the aftercare balm instructions Abby gives you.`, // OWNER-REVIEW
+            `For about 10 days avoid swimming, saunas, heavy sweating, makeup on the brows and direct sun.`, // OWNER-REVIEW
+            `Don’t pick or scratch the flakes; let them fall off on their own.`,
+            `Once healed, sunscreen on your brows helps the colour last.`,
+          ],
+        },
+      ],
+      faq: [
+        { q: 'Does it hurt?', a: 'Most clients describe it as a scratchy feeling rather than pain. Tell Abby if anything feels uncomfortable and she will pause.' }, // OWNER-REVIEW: numbing
+        { q: 'How long do powder brows last?', a: 'Usually one to three years. Oily skin, sun and some skincare make pigment fade faster.' }, // OWNER-REVIEW
+        { q: 'Is the touch-up included?', a: `Yes. One touch-up within 3 months of your appointment is free. Message Abby to book it; it isn’t available online.` },
+        { q: 'Powder brows or microblading?', a: 'Microblading draws hair-like strokes; powder brows build a soft shaded finish with tiny dots. Abby offers powder brows.' },
+        CANCEL.en,
+      ],
+      alt: {
+        hero: 'Soft, shaded powder brows after a semi-permanent brow appointment at Abby Eyelash, Burwood',
+        detail: 'Abby mapping a brow shape before a powder brows treatment',
+      },
+    },
+    zh: {
+      title: '宝活 Burwood 半永久雾眉 | Abby Eyelash',
+      description: `悉尼宝活 Burwood 半永久雾眉：现价 ${$(B, 'powder')}（原价 $${was(B, 'powder')}），约 ${m(B, 'powder')} 分钟，3 个月内免费补色一次。流程、恢复期与护理说明。`,
+      h1: ['宝活 Burwood ', '半永久雾眉'],
+      intro: `雾眉是一种半永久眉妆：用很细的点状手法把色料打入皮肤浅层，形成柔和的粉雾感，像淡淡的眉粉，但不会被洗掉。在 Burwood NSW 2134 的 Abby Eyelash，雾眉现价 ${$(B, 'powder')}（原价 $${was(B, 'powder')}），约 ${m(B, 'powder')} 分钟，包含和你一起设计眉形。3 个月内免费补色一次。`,
+      sections: [
+        {
+          h2: ['哪些人', '适合雾眉'],
+          body: [
+            `如果你几乎每天都要画眉、想要一个不会掉的柔和眉形，或者眉毛稀疏、不对称，雾眉都很合适。效果是柔和的粉雾感，而不是一根根的线条。`,
+            `色料会随时间慢慢变淡，所以整体设计以自然为主，不会太浓。Abby 会先根据你的脸型和原生眉形设计眉形，再开始上色。`, // OWNER-REVIEW
+          ],
+        },
+        {
+          h2: ['做雾眉时的', '流程'],
+          steps: [
+            `沟通：想要的眉形和深浅、皮肤状况，以及下面提到的健康情况。`,
+            `设计眉形：Abby 测量并画出眉形，你确认后才开始。`,
+            `用细密的点状手法分层上色，做出均匀的粉雾效果。`,
+            `清洁眉毛，并讲解之后两周的护理方法。`,
+          ],
+          after: [`整个过程约 ${m(B, 'powder')} 分钟。`],
+        },
+        {
+          h2: ['恢复期与', '免费补色'],
+          body: [
+            `刚做完时颜色会比最终效果深、线条也更明显。之后一到两周会轻微脱皮、慢慢变柔和，恢复期间局部看起来不均匀是正常的。`, // OWNER-REVIEW
+            `3 个月内的免费补色，会补上没有留住颜色的地方，并微调眉形。补色不开放在线预约，请通过 WhatsApp、短信或微信联系 Abby 约时间。`,
+            `雾眉一般能维持一到三年，取决于肤质、日晒和护肤习惯。之后可以付费补色，让颜色保持新鲜。`, // OWNER-REVIEW
+          ],
+        },
+        {
+          h2: ['到店前', '准备'],
+          list: [
+            `做之前一周不要染眉或修眉，让 Abby 看到你本来的眉形。`, // OWNER-REVIEW
+            `当天避免喝酒和咖啡，它们可能让出血更多。`, // OWNER-REVIEW
+            `如果你怀孕或在哺乳期、在服用抗凝血药、脸上使用 A 醇类产品、眉部有皮肤问题，或者是容易留疤、疤痕体质，请在预约时告诉 Abby。她可能建议你先暂缓，或先咨询家庭医生（GP）。`, // OWNER-REVIEW
+          ],
+        },
+        {
+          h2: ['术后护理：', 'Abby 的建议'],
+          list: [
+            `保持眉毛清洁干燥，按 Abby 给你的修复膏说明使用。`, // OWNER-REVIEW
+            `大约 10 天内避免游泳、桑拿、大量出汗、眉部化妆和直接日晒。`, // OWNER-REVIEW
+            `不要抠或抓掉皮屑，让它自然脱落。`,
+            `恢复后在眉部涂防晒，颜色能维持更久。`,
+          ],
+        },
+      ],
+      faq: [
+        { q: '做雾眉疼吗？', a: '大多数客人觉得是轻微的刮擦感，而不是疼。如果有不舒服可以随时告诉 Abby，她会停下来。' }, // OWNER-REVIEW
+        { q: '雾眉能维持多久？', a: '一般一到三年。油性皮肤、日晒和部分护肤品会让颜色褪得更快。' }, // OWNER-REVIEW
+        { q: '补色包含在价格里吗？', a: '包含。做完后 3 个月内免费补色一次，请直接联系 Abby 预约，不开放在线预约。' },
+        { q: '雾眉和线条眉有什么区别？', a: '线条眉是画出一根根仿真眉毛；雾眉是用细小的点做出柔和的粉雾效果。Abby 做的是雾眉。' },
+        CANCEL.zh,
+      ],
+      alt: {
+        hero: 'Abby Eyelash（Burwood）完成的柔和半永久雾眉',
+        detail: 'Abby 在做雾眉前为客人设计眉形',
+      },
+    },
+  },
+
   [H]: {
     en: {
       title: 'Hand-Painted Nail Art in Burwood | Abby Eyelash',
-      description: `Custom hand-painted nail art designed with you and painted by Abby in Burwood NSW. From ${$(H, 'nail-art')}, about ${m(H, 'nail-art')} minutes. How it works, wear time and aftercare.`,
+      description: `Custom hand-painted nail art designed with you and painted by Abby in Burwood NSW. Priced per design, from about ${m(H, 'nail-art')} minutes. Extensions ${ext()} per nail.`,
       h1: ['Hand-painted nail art ', 'in Burwood.'],
-      intro: `Handcrafted nails are custom nail art that Abby designs with you and paints by hand with fine brushes, not stickers or printed wraps. At Abby Eyelash in Burwood NSW 2134, hand-painted nail art starts from ${$(H, 'nail-art')} for about ${m(H, 'nail-art')} minutes, and the final price depends on how detailed the design is. Painted over a gel base and sealed with a gel top coat, it typically lasts 2–3 weeks.`, // OWNER-REVIEW: gel base, wear time
+      intro: `Hand-painted nail art is a custom design that Abby plans with you and paints by hand with fine brushes, not stickers or printed wraps. At Abby Eyelash in Burwood NSW 2134, each design is priced individually because it depends on the detail and the number of nails; Abby confirms the price with you before she starts. Allow at least ${m(H, 'nail-art')} minutes. Painted over gel and sealed with a gel top coat, it typically lasts 2–3 weeks.`, // OWNER-REVIEW: wear time
       sections: [
         {
           h2: ['Designs ', 'made with you'],
           body: [
-            `Bring screenshots from Xiaohongshu, Instagram or Pinterest, or just a mood, and Abby will adapt the idea to your nail shape, length and skin tone. Popular requests include fine florals, line art, characters, detailed French tips and seasonal sets.`,
-            `A few accent nails sit at the lower end of the price; a full set of detailed art costs more. Abby confirms the price before she starts painting.`, // OWNER-REVIEW: pricing tiers
+            `Bring screenshots from Xiaohongshu, Instagram or Pinterest, or just a mood, and Abby will adapt the idea to your nail shape, length and skin tone. Popular requests include fine florals, line art, characters and seasonal sets.`,
+            `Add your references to the booking notes; Abby replies with a price when she confirms your appointment.`, // OWNER-REVIEW: quoting process
           ],
         },
         {
@@ -398,7 +525,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           steps: [
             `Design chat: references, colours, which nails get art.`,
             `Prep: shaping, cuticles pushed back and tidied, a light buff of the surface.`,
-            `Gel base and background colour, each layer cured under the lamp.`,
+            `Gel base, builder gel and background colour, each layer cured under the lamp.`,
             `Hand-painting layer by layer with fine brushes, curing between details.`,
             `Gel top coat to seal the design, then cuticle oil.`,
           ],
@@ -407,7 +534,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           h2: ['How long it lasts ', 'and adding length'],
           body: [
             `Expect 2–3 weeks of wear before regrowth shows at the cuticle. Most clients rebook at around 3 weeks.`, // OWNER-REVIEW
-            `Want longer nails under your art? Combine it with BIAB or Gel-X from ${link('en', X, 'nail extensions')} and mention it when you book so enough time is set aside.`, // OWNER-REVIEW: combined booking
+            `Want longer nails under your art? Add ${link('en', X, 'nail extensions')} when you book: ${ext()} per nail.`,
           ],
         },
         {
@@ -424,17 +551,16 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `Wear gloves for cleaning and washing up.`,
             `Massage in cuticle oil daily to keep the nail and skin flexible.`,
             `Don’t pick or peel the gel: it takes layers of your nail with it.`,
-            `Use your fingertips, not your nails, to open cans and peel labels.`,
             `Book a professional soak-off rather than removing it yourself.`,
           ],
         },
         { h2: ['Gel allergy ', 'and UV lamps'], body: nailSafety.en },
       ],
       faq: [
-        { q: 'How much does custom nail art cost?', a: `From ${$(H, 'nail-art')}. Simple accents cost less than a full set of detailed art, and Abby confirms the price before she starts.` },
+        { q: 'How much does hand-painted nail art cost?', a: 'It is priced per design, because the time depends on the detail and how many nails are painted. Abby confirms the price before she starts.' },
         { q: 'Can you copy a design I found online?', a: 'Abby uses it as a reference and paints her own version by hand, adjusting the scale and colours so it suits your nails.' },
-        { q: 'How long will hand-painted nails last?', a: 'Usually 2–3 weeks on a gel base. Wearing gloves for chores and using cuticle oil helps.' }, // OWNER-REVIEW
-        { q: 'Can I have nail art on extensions?', a: 'Yes. Pair it with BIAB or Gel-X and mention it when booking.' },
+        { q: 'How long will hand-painted nails last?', a: 'Usually 2–3 weeks on gel. Wearing gloves for chores and using cuticle oil helps.' }, // OWNER-REVIEW
+        { q: 'Can I have nail art on extensions?', a: `Yes. Add extensions when you book (${ext()} per nail).` },
         CANCEL.en,
       ],
       alt: {
@@ -443,16 +569,16 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       },
     },
     zh: {
-      title: '宝活 Burwood 手绘美甲 | 定制款 | Abby Eyelash',
-      description: `悉尼宝活 Burwood 手绘定制美甲：和你一起设计，由 Abby 亲手绘制。${$(H, 'nail-art')} 起，约 ${m(H, 'nail-art')} 分钟。流程、持久度与护理说明。`,
-      h1: ['宝活 Burwood ', '手绘定制美甲'],
-      intro: `手绘美甲是 Abby 和你一起设计、再用细笔一笔一笔手绘的定制款，不用贴纸，也不是印花甲片。在 Burwood NSW 2134 的 Abby Eyelash，手绘定制款 ${$(H, 'nail-art')} 起，约 ${m(H, 'nail-art')} 分钟，最终价格取决于图案的复杂程度。图案画在甲油胶底色上，再用封层封住，一般能维持 2–3 周。`, // OWNER-REVIEW
+      title: '宝活 Burwood 手绘造型美甲 | Abby Eyelash',
+      description: `悉尼宝活 Burwood 手绘造型美甲：和你一起设计，由 Abby 亲手绘制。按款式报价，约 ${m(H, 'nail-art')} 分钟起。延长每只 ${ext()}。`,
+      h1: ['宝活 Burwood ', '手绘造型'],
+      intro: `手绘造型是 Abby 和你一起设计、再用细笔一笔一笔手绘的定制款，不用贴纸，也不是印花甲片。在 Burwood NSW 2134 的 Abby Eyelash，每款都单独报价，价格取决于图案的复杂程度和画几根，Abby 会在开始前跟你确认价格。时间请预留 ${m(H, 'nail-art')} 分钟以上。图案画在凝胶上，再用封层封住，一般能维持 2–3 周。`, // OWNER-REVIEW
       sections: [
         {
           h2: ['和你一起', '设计'],
           body: [
-            `可以带上小红书、Instagram 或 Pinterest 的截图，或者只说想要的感觉，Abby 会根据你的甲型、长度和肤色调整。常见款式有细碎小花、线条画、卡通人物、精致法式和节日主题。`,
-            `只画几根点缀价格较低，整套细节图案会高一些。Abby 会在动笔前先跟你确认价格。`, // OWNER-REVIEW
+            `可以带上小红书、Instagram 或 Pinterest 的截图，或者只说想要的感觉，Abby 会根据你的甲型、长度和肤色调整。常见款式有细碎小花、线条画、卡通人物和节日主题。`,
+            `把参考图写在预约备注里，Abby 确认预约时会告诉你价格。`, // OWNER-REVIEW
           ],
         },
         {
@@ -460,7 +586,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           steps: [
             `沟通设计：参考图、颜色、哪几根画图案。`,
             `修型、推死皮、修整甲缘，轻轻打磨甲面。`,
-            `上底胶和底色，每层都照灯固化。`,
+            `上底胶、建构胶和底色，每层都照灯固化。`,
             `用细笔一层层手绘，细节之间照灯。`,
             `上封层锁住图案，最后涂指缘油。`,
           ],
@@ -469,15 +595,15 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           h2: ['能维持多久，', '想要加长怎么办'],
           body: [
             `一般能戴 2–3 周，之后甲根会露出新长的指甲，大多数客人约 3 周后再来。`, // OWNER-REVIEW
-            `想要更长的指甲？可以搭配${link('zh', X, '延长甲')}（BIAB 或 Gel-X），预约时备注一下，方便预留足够时间。`, // OWNER-REVIEW
+            `想要更长的指甲？预约时加选${link('zh', X, '延长甲')}，每只 ${ext()}。`,
           ],
         },
         {
           h2: ['到店前', '准备'],
           list: [
             `把参考图或想法写在预约备注里。`,
-            `最好是裸甲到店；如果有旧的甲油胶或延长甲需要卸，请提前告诉 Abby。`, // OWNER-REVIEW
-            `来之前别涂护手霜，油分会影响甲油胶附着。`,
+            `最好是裸甲到店；如果有旧的凝胶甲或延长甲需要卸，请提前告诉 Abby。`, // OWNER-REVIEW
+            `来之前别涂护手霜，油分会影响凝胶附着。`,
           ],
         },
         {
@@ -485,18 +611,17 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           list: [
             `做家务、洗碗时戴手套。`,
             `每天涂指缘油，让指甲和甲周保持柔软。`,
-            `不要抠或撕甲油胶，会把自己的甲面一起撕掉。`,
-            `开易拉罐、撕标签用指腹，不要用指甲。`,
+            `不要抠或撕凝胶，会把自己的甲面一起撕掉。`,
             `想卸甲请找专业卸甲，不要自己硬撕。`,
           ],
         },
-        { h2: ['甲油胶过敏与', '美甲灯'], body: nailSafety.zh },
+        { h2: ['凝胶过敏与', '美甲灯'], body: nailSafety.zh },
       ],
       faq: [
-        { q: '手绘美甲多少钱？', a: `${$(H, 'nail-art')} 起。简单点缀比整套细节图便宜，Abby 会在开始前确认价格。` },
+        { q: '手绘造型多少钱？', a: '按款式报价，因为时间取决于图案的细节和画几根。Abby 会在开始前确认价格。' },
         { q: '网上看到的款式能照着做吗？', a: '可以作为参考。Abby 会亲手画出自己的版本，并调整比例和颜色，让它更适合你的指甲。' },
-        { q: '手绘美甲能维持多久？', a: '做在甲油胶底上一般 2–3 周。做家务戴手套、常涂指缘油会更持久。' }, // OWNER-REVIEW
-        { q: '延长甲上可以画图案吗？', a: '可以，搭配 BIAB 或 Gel-X，预约时备注即可。' },
+        { q: '手绘美甲能维持多久？', a: '做在凝胶上一般 2–3 周。做家务戴手套、常涂指缘油会更持久。' }, // OWNER-REVIEW
+        { q: '延长甲上可以画图案吗？', a: `可以，预约时加选延长即可（每只 ${ext()}）。` },
         CANCEL.zh,
       ],
       alt: {
@@ -506,162 +631,163 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
     },
   },
 
-  [P]: {
+  [G]: {
     en: {
-      title: 'Gel Manicure & Nail Polish in Burwood | Abby Eyelash',
-      description: `Gel manicure (${$(P, 'gel')}, ${m(P, 'gel')} min) and regular polish (${$(P, 'regular')}, ${m(P, 'regular')} min) in Burwood NSW, with cuticle prep and shaping. Wear time and aftercare.`,
-      h1: ['Gel & regular polish ', 'in Burwood.'],
-      intro: `Abby offers two kinds of manicure colour: gel polish, cured under a lamp so it’s dry and chip-resistant when you leave, and regular polish, which air-dries and is easy to change at home. At Abby Eyelash in Burwood NSW 2134, a gel manicure is ${$(P, 'gel')} (about ${m(P, 'gel')} minutes) and regular polish is ${$(P, 'regular')} (about ${m(P, 'regular')} minutes), both with cuticle prep and shaping. Gel usually lasts 2–3 weeks; regular polish typically lasts about a week before it chips.`, // OWNER-REVIEW: wear times
+      title: 'Gel Nails Burwood | Cat-Eye · Aurora · French | Abby Eyelash',
+      description: `Gel nails in Burwood NSW by Abby: solid colour ${$(G, 'solid')}, cat-eye or aurora ${$(G, 'cat-eye')}, French ${$(G, 'french')}, builder gel included. Extensions ${ext()} per nail.`,
+      h1: ['Gel nails ', 'in Burwood.'],
+      intro: `Gel nails are coloured gel cured under a lamp, so they leave the studio dry and glossy and stay chip-resistant for weeks. At Abby Eyelash in Burwood NSW 2134, every gel set includes a builder gel layer for strength: solid colour is ${$(G, 'solid')} (about ${m(G, 'solid')} minutes), cat-eye and aurora are ${$(G, 'cat-eye')} (about ${m(G, 'cat-eye')} minutes), and French is ${$(G, 'french')} (about ${m(G, 'french')} minutes). Extensions can be added for ${ext()} per nail.`,
       sections: [
         {
-          h2: ['Gel or regular: ', 'how to choose'],
+          h2: ['Four finishes: ', 'which one?'],
           list: [
-            `<strong>Gel manicure</strong>: fully dry when you leave, stays glossy for 2–3 weeks, and is removed by soaking off, never peeling. Good for holidays and busy weeks.`,
-            `<strong>Regular polish</strong>: lower cost, no lamp, and you can take it off at home with polish remover whenever you like. Good if you change colour often.`,
+            `<strong>Solid colour</strong> (${$(G, 'solid')}): one shade, from sheer nude to bold, in a glossy or matte top coat.`, // OWNER-REVIEW: matte option
+            `<strong>Cat-eye</strong> (${$(G, 'cat-eye')}): magnetic gel that a magnet pulls into a shimmering band of light, like a cat’s eye.`,
+            `<strong>Aurora</strong> (${$(G, 'aurora')}): a pearly, colour-shifting finish that changes with the light.`,
+            `<strong>French</strong> (${$(G, 'french')}): a natural base with crisp painted tips, classic or in colour.`,
           ],
-          after: [`Want a design rather than a plain colour? Hand-painted art is booked as ${link('en', H, 'handcrafted nails')}.`],
+          after: [`Want a custom design rather than a finish? See ${link('en', H, 'hand-painted nail art')}.`],
         },
         {
           h2: ['What happens ', 'during your appointment'],
           steps: [
             `Shape and length agreed, then nails filed.`,
-            `Cuticles gently pushed back and tidied.`,
-            `For gel, the surface is lightly buffed and cleansed so it bonds.`,
-            `Base coat, two coats of colour and a top coat, cured under the lamp for gel or air-dried for regular.`,
+            `Cuticles gently pushed back and tidied; the surface is lightly buffed and cleansed so the gel bonds.`,
+            `Base and builder gel for strength, cured under the lamp.`,
+            `Colour or finish in thin layers, each cured, then a gel top coat.`,
             `Cuticle oil to finish.`,
           ],
         },
         {
           h2: ['How long it lasts ', 'and removal'],
           body: [
-            `Gel typically lasts 2–3 weeks, and most clients rebook at about 3 weeks as the nail grows out. Regular polish usually lasts around a week, depending on how much you use your hands.`, // OWNER-REVIEW
+            `Gel nails typically last 2–3 weeks, and most clients rebook at about 3 weeks as the nail grows out.`, // OWNER-REVIEW
             `If you’re arriving with gel on, mention it in your booking notes so Abby can allow time to soak it off properly.`, // OWNER-REVIEW: removal time/charge
           ],
         },
         {
           h2: ['Before ', 'you come in'],
           list: [
-            `Skip hand cream just before your appointment; oils can affect how polish bonds.`,
-            `Bring a photo of the colour you love if you have one.`,
-            `For regular polish, allow time afterwards: it needs a while to harden fully.`,
+            `Skip hand cream just before your appointment; oils can affect how gel bonds.`,
+            `Bring a photo of the colour or finish you love if you have one.`,
           ],
         },
         {
           h2: ['Aftercare: ', 'Abby’s steps'],
           list: [
-            `Regular polish: avoid hot water and heavy hand use for a couple of hours while it hardens.`, // OWNER-REVIEW
-            `Gel: wear gloves for cleaning and washing up.`,
+            `Wear gloves for cleaning and washing up.`,
             `Use cuticle oil daily.`,
             `Don’t pick or peel gel: it strips layers of the nail plate. Book a soak-off instead.`,
           ],
         },
-        { h2: ['Gel allergy ', 'and UV lamps'], body: [...nailSafety.en.slice(0, 2), `Regular polish isn’t cured under a lamp, so it’s an easy alternative if you’d rather avoid UV or gel.`] },
+        { h2: ['Gel allergy ', 'and UV lamps'], body: nailSafety.en },
       ],
       faq: [
-        { q: 'How long does a gel manicure take?', a: `About ${m(P, 'gel')} minutes. Regular polish takes about ${m(P, 'regular')} minutes.` },
+        { q: 'How long does a gel set take?', a: `About ${span(G, 'solid', 'cat-eye', 'aurora', 'french')} minutes, plus time for any extensions.` },
+        { q: 'Is builder gel included?', a: 'Yes. Every gel set has a builder gel layer for strength at no extra cost.' },
         { q: 'Is gel bad for my nails?', a: 'Most damage comes from peeling gel off or rough removal, which strips layers of the nail. Having it soaked off properly and using cuticle oil keeps nails in good condition.' }, // OWNER-REVIEW
-        { q: 'Which lasts longer for a holiday?', a: 'Gel. It is dry when you leave and usually lasts 2–3 weeks, while regular polish lasts around a week.' },
-        { q: 'Can I add nail art?', a: `Yes. Hand-painted designs are booked as Handcrafted Nails, from ${$(H, 'nail-art')}.` },
+        { q: 'Can I add length?', a: `Yes. Add extensions when you book: ${ext()} per nail, on any finish.` },
         CANCEL.en,
       ],
       alt: {
-        hero: 'Glossy nude gel manicure on short rounded nails, Abby Eyelash Burwood',
-        detail: 'Gel polish being cured under an LED nail lamp',
+        hero: 'Glossy gel nails on short rounded nails, Abby Eyelash Burwood',
+        detail: 'Gel being cured under an LED nail lamp',
       },
     },
     zh: {
-      title: '宝活 Burwood 光疗甲 · 普通甲油 | Abby Eyelash',
-      description: `悉尼宝活 Burwood 光疗甲（${$(P, 'gel')}，${m(P, 'gel')} 分钟）和普通甲油（${$(P, 'regular')}，${m(P, 'regular')} 分钟），含修型和甲缘护理。持久度与护理说明。`,
-      h1: ['宝活 Burwood ', '光疗甲与普通甲油'],
-      intro: `Abby 提供两种纯色美甲：光疗甲（甲油胶）需要照灯固化，做完就干、不易掉色；普通甲油自然风干，回家随时可以自己卸了换色。在 Burwood NSW 2134 的 Abby Eyelash，光疗甲 ${$(P, 'gel')}（约 ${m(P, 'gel')} 分钟），普通甲油 ${$(P, 'regular')}（约 ${m(P, 'regular')} 分钟），都包含修型和甲缘护理。光疗甲一般能维持 2–3 周，普通甲油大约一周后开始掉色。`, // OWNER-REVIEW
+      title: '宝活 Burwood 凝胶美甲 | 猫眼 · 极光 · 法式 | Abby Eyelash',
+      description: `悉尼宝活 Burwood 凝胶美甲：单色 ${$(G, 'solid')}，猫眼或极光 ${$(G, 'cat-eye')}，法式 ${$(G, 'french')}，已含 Gel 建构。延长每只 ${ext()}。`,
+      h1: ['宝活 Burwood ', '凝胶美甲'],
+      intro: `凝胶美甲（也叫光疗甲）是照灯固化的彩色凝胶，做完就干、有光泽，几周都不容易掉色。在 Burwood NSW 2134 的 Abby Eyelash，每一套凝胶美甲都已包含 Gel 建构，让指甲更坚固：单色 ${$(G, 'solid')}（约 ${m(G, 'solid')} 分钟），猫眼和极光 ${$(G, 'cat-eye')}（约 ${m(G, 'cat-eye')} 分钟），法式 ${$(G, 'french')}（约 ${m(G, 'french')} 分钟）。需要加长可加选延长，每只 ${ext()}。`,
       sections: [
         {
-          h2: ['光疗甲还是普通甲油？', '怎么选'],
+          h2: ['四种款式，', '怎么选'],
           list: [
-            `<strong>光疗甲</strong>：做完即干，亮泽维持 2–3 周，需要专业泡卸，不能硬撕。适合旅行或忙碌的时候。`,
-            `<strong>普通甲油</strong>：价格更低，不用照灯，在家用洗甲水就能随时卸掉。适合喜欢经常换颜色的人。`,
+            `<strong>单色</strong>（${$(G, 'solid')}）：一种颜色，从透明裸色到浓郁色都可以，亮面或哑光封层。`, // OWNER-REVIEW
+            `<strong>猫眼</strong>（${$(G, 'cat-eye')}）：用磁铁吸出一道流动的光带，像猫的眼睛。`,
+            `<strong>极光</strong>（${$(G, 'aurora')}）：珠光感、随光线变色的效果。`,
+            `<strong>法式</strong>（${$(G, 'french')}）：自然底色配干净的甲尖，经典白边或彩色都可以。`,
           ],
-          after: [`想要图案而不只是纯色？手绘款请预约${link('zh', H, '手绘定制美甲')}。`],
+          after: [`想要定制图案？可以看看${link('zh', H, '手绘造型')}。`],
         },
         {
           h2: ['做美甲时的', '流程'],
           steps: [
             `确定甲型和长度，修型。`,
-            `轻推死皮，修整甲缘。`,
-            `光疗甲会轻轻打磨并清洁甲面，帮助附着。`,
-            `底油、两层颜色、封层；光疗甲每层照灯，普通甲油自然风干。`,
+            `轻推死皮、修整甲缘，轻轻打磨并清洁甲面，帮助凝胶附着。`,
+            `上底胶和建构胶增加硬度，照灯固化。`,
+            `分薄层上颜色或做效果，每层照灯，最后上封层。`,
             `最后涂指缘油。`,
           ],
         },
         {
           h2: ['能维持多久，', '怎么卸'],
           body: [
-            `光疗甲一般维持 2–3 周，大多数客人约 3 周后随着指甲长出来再做。普通甲油大约一周，取决于你平时用手的多少。`, // OWNER-REVIEW
-            `如果到店时手上有旧的甲油胶，请在预约备注里说明，Abby 会预留时间帮你正确泡卸。`, // OWNER-REVIEW
+            `凝胶美甲一般维持 2–3 周，大多数客人约 3 周后随着指甲长出来再做。`, // OWNER-REVIEW
+            `如果到店时手上有旧的凝胶甲，请在预约备注里说明，Abby 会预留时间帮你正确泡卸。`, // OWNER-REVIEW
           ],
         },
         {
           h2: ['到店前', '准备'],
           list: [
             `来之前别涂护手霜，油分会影响附着。`,
-            `有喜欢的颜色可以带张图。`,
-            `做普通甲油的话，结束后要给它一点时间完全变硬。`,
+            `有喜欢的颜色或款式可以带张图。`,
           ],
         },
         {
           h2: ['日常护理：', 'Abby 的建议'],
           list: [
-            `普通甲油：做完后几个小时内避免热水和用力用手。`, // OWNER-REVIEW
-            `光疗甲：做家务、洗碗时戴手套。`,
+            `做家务、洗碗时戴手套。`,
             `每天涂指缘油。`,
-            `不要抠或撕甲油胶，会把甲面一层层撕薄，请预约专业卸甲。`,
+            `不要抠或撕凝胶，会把甲面一层层撕薄，请预约专业卸甲。`,
           ],
         },
-        { h2: ['甲油胶过敏与', '美甲灯'], body: [...nailSafety.zh.slice(0, 2), `普通甲油不需要照灯，如果你想避开紫外线或甲油胶，可以选择普通甲油。`] },
+        { h2: ['凝胶过敏与', '美甲灯'], body: nailSafety.zh },
       ],
       faq: [
-        { q: '光疗甲要做多久？', a: `约 ${m(P, 'gel')} 分钟；普通甲油约 ${m(P, 'regular')} 分钟。` },
-        { q: '光疗甲伤指甲吗？', a: '损伤大多来自硬撕或粗暴卸甲，会把甲面一层层带掉。专业泡卸、平时涂指缘油，指甲就能保持健康。' }, // OWNER-REVIEW
-        { q: '去旅行选哪种更持久？', a: '光疗甲。做完就干，一般维持 2–3 周；普通甲油大约一周。' },
-        { q: '可以加图案吗？', a: `可以，手绘款请预约手绘定制美甲，${$(H, 'nail-art')} 起。` },
+        { q: '做一套凝胶美甲要多久？', a: `约 ${span(G, 'solid', 'cat-eye', 'aurora', 'french')} 分钟，加延长需要另外的时间。` },
+        { q: 'Gel 建构要另外收费吗？', a: '不用。每一套凝胶美甲都已包含 Gel 建构。' },
+        { q: '凝胶美甲伤指甲吗？', a: '损伤大多来自硬撕或粗暴卸甲，会把甲面一层层带掉。专业泡卸、平时涂指缘油，指甲就能保持健康。' }, // OWNER-REVIEW
+        { q: '可以加长吗？', a: `可以，预约时加选延长，每只 ${ext()}，任何款式都可以加。` },
         CANCEL.zh,
       ],
       alt: {
-        hero: 'Abby Eyelash（Burwood）完成的裸色光疗甲，短圆甲型',
-        detail: '甲油胶在 LED 美甲灯下照灯固化',
+        hero: 'Abby Eyelash（Burwood）完成的亮面凝胶美甲，短圆甲型',
+        detail: '凝胶在 LED 美甲灯下照灯固化',
       },
     },
   },
 
   [X]: {
     en: {
-      title: 'BIAB & Gel-X Nail Extensions in Burwood | Abby Eyelash',
-      description: `BIAB (${$(X, 'biab')}) and Gel-X (${$(X, 'gel-x')}) nail extensions in Burwood NSW, about ${m(X, 'gel-x')} minutes; infills ${$(X, 'infill')}. Which to choose, how long they last and aftercare.`,
+      title: 'Nail Extensions in Burwood | $6 per Nail | Abby Eyelash',
+      description: `Nail tip extensions in Burwood NSW by Abby: ${ext()} per nail, added to any gel or hand-painted design. How it works, how long it lasts and aftercare.`,
       h1: ['Nail extensions ', 'in Burwood.'],
-      intro: `Abby offers two nail extension systems: BIAB, a builder gel that strengthens your natural nails and can add a little length, and Gel-X, soft-gel tips that cover the whole nail for instant length and shape. At Abby Eyelash in Burwood NSW 2134, BIAB is ${$(X, 'biab')} and Gel-X is ${$(X, 'gel-x')}, each taking about ${m(X, 'gel-x')} minutes, and an infill is ${$(X, 'infill')} (about ${m(X, 'infill')} minutes). Most clients come back every 3–4 weeks for an infill or a fresh set.`, // OWNER-REVIEW: wear time
+      intro: `Nail extensions add length and shape with a nail tip bonded to your natural nail and finished in gel. At Abby Eyelash in Burwood NSW 2134, extensions are ${ext()} per nail and are added to any ${link('en', G, 'gel nail')} or ${link('en', H, 'hand-painted')} design, so you only pay for the nails you want longer. When you book, choose your design first and then the number of nails to extend.`,
       sections: [
         {
-          h2: ['BIAB or Gel-X: ', 'which is right for you?'],
+          h2: ['How the price ', 'works'],
           list: [
-            `<strong>BIAB</strong> (“builder in a bottle”): a thicker builder gel layered over your natural nail for strength and structure. Choose it if you want your own nails to grow without breaking, or a natural look with a little extra length. Grown-out BIAB can be infilled rather than removed.`,
-            `<strong>Gel-X</strong>: pre-shaped soft-gel tips, bonded with gel adhesive and cured. Choose it for instant length and a set shape (almond, coffin, square) when your natural nails are short. Gel-X is soaked off and replaced with a new set rather than infilled.`, // OWNER-REVIEW: genuine Aprés Gel-X? infill policy
+            `Choose a design: gel solid colour from ${$(G, 'solid')}, cat-eye, aurora, French, or hand-painted art.`,
+            `Add extensions at ${ext()} per nail, from one nail to all ten.`,
+            `For example, a solid-colour gel set with all ten nails extended is $${opt(G, 'solid').price + 10 * opt(X, 'extension').price}.`,
           ],
         },
         {
           h2: ['What happens ', 'during your appointment'],
           steps: [
-            `Consultation: length, shape and colour.`,
-            `Prep: shaping, cuticle care, a light buff, then dehydrator and primer.`,
-            `BIAB: builder gel layered, cured and filed to shape. Gel-X: a tip sized to each nail, bonded with gel adhesive and cured.`,
-            `Colour or nail art, then a top coat.`,
+            `Length and shape agreed (round, almond, square and more).`,
+            `Prep: shaping, cuticle care and a light buff.`,
+            `A tip sized to each nail is bonded and shaped.`,
+            `Builder gel, your colour or design, and a gel top coat, each cured under the lamp.`,
             `Cuticle oil to finish.`,
           ],
         },
         {
-          h2: ['How long they last ', 'and infills'],
+          h2: ['How long they last ', 'and removal'],
           body: [
-            `Both systems usually wear well for 3–4 weeks. As your nail grows, the extension moves forward and the balance point shifts, so leaving it much longer makes lifting and breaks more likely.`, // OWNER-REVIEW
-            `A BIAB infill (about ${m(X, 'infill')} minutes, ${$(X, 'infill')}) files back the old product and rebuilds the regrowth area, so your natural nail stays protected as it grows.`,
+            `Extensions usually wear well for about 3 weeks. As your nail grows the balance point moves forward, so leaving them much longer makes lifting and breaks more likely.`, // OWNER-REVIEW
+            `Have extensions soaked off professionally; pulling them off tears the natural nail.`,
           ],
         },
         {
@@ -676,54 +802,53 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           h2: ['Aftercare: ', 'Abby’s steps'],
           list: [
             `Wear gloves for cleaning and washing up.`,
-            `Use cuticle oil daily to keep the nail and gel flexible.`,
-            `Don’t use your nails as tools, and don’t pick or bite a lifted edge. Book a repair.`,
-            `Have extensions soaked off professionally; pulling them off tears the natural nail.`,
+            `Use cuticle oil daily.`,
+            `Don’t use your nails as tools, and don’t pick or bite a lifted edge. Message Abby for a repair.`,
           ],
         },
         { h2: ['Gel allergy ', 'and UV lamps'], body: nailSafety.en },
       ],
       faq: [
-        { q: 'Is BIAB the same as gel polish?', a: 'No. BIAB is a thicker builder gel that adds strength and structure; gel polish is a thin colour layer. BIAB can be worn clear, tinted, or with colour on top.' },
-        { q: 'How long does BIAB last?', a: 'Usually 3–4 weeks before an infill is due.' }, // OWNER-REVIEW
-        { q: 'Can Gel-X be infilled?', a: 'Abby soaks Gel-X off and applies a fresh set rather than infilling it, which keeps the tip and your natural nail well bonded.' }, // OWNER-REVIEW
-        { q: 'Will extensions ruin my natural nails?', a: 'Damage usually comes from peeling, biting or forcing extensions off. With proper soak-off removal and regular infills, your natural nails stay in good shape.' },
-        { q: 'Can I add nail art?', a: `Yes. Hand-painted art on top is booked as Handcrafted Nails, from ${$(H, 'nail-art')}.` },
+        { q: 'How much are nail extensions?', a: `${ext()} per nail, on top of the design you choose.` },
+        { q: 'Can I extend just a few nails?', a: 'Yes. You choose how many nails to extend, from one to ten, and pay only for those.' },
+        { q: 'Will extensions ruin my natural nails?', a: 'Damage usually comes from peeling, biting or forcing extensions off. With proper soak-off removal your natural nails stay in good shape.' },
+        { q: 'How do I book extensions?', a: 'On the booking page choose Gel Nails or Hand-painted Nail Art, pick your design, then set how many nails to extend.' },
         CANCEL.en,
       ],
       alt: {
-        hero: 'Almond-shaped Gel-X nail extensions in a soft pink finish, Abby Eyelash Burwood',
-        detail: 'Builder gel being shaped over a natural nail during a BIAB appointment',
+        hero: 'Almond-shaped nail extensions in a soft pink gel finish, Abby Eyelash Burwood',
+        detail: 'A nail tip being shaped during an extension appointment',
       },
     },
     zh: {
-      title: '宝活 Burwood 延长甲 | BIAB · Gel-X | Abby Eyelash',
-      description: `悉尼宝活 Burwood 延长甲：BIAB 加固甲 ${$(X, 'biab')}，Gel-X 延长甲 ${$(X, 'gel-x')}，约 ${m(X, 'gel-x')} 分钟；补甲 ${$(X, 'infill')}。怎么选、能维持多久和护理方法。`,
-      h1: ['宝活 Burwood ', '延长甲：BIAB 与 Gel-X'],
-      intro: `Abby 提供两种延长甲：BIAB 加固甲是用建构胶加固你的真指甲，也可以稍微加长；Gel-X 是覆盖整个甲面的软胶甲片，马上就有长度和甲型。在 Burwood NSW 2134 的 Abby Eyelash，BIAB ${$(X, 'biab')}，Gel-X ${$(X, 'gel-x')}，各约 ${m(X, 'gel-x')} 分钟；补甲 ${$(X, 'infill')}（约 ${m(X, 'infill')} 分钟）。大多数客人每 3–4 周来补甲或重做一套。`, // OWNER-REVIEW
+      title: '宝活 Burwood 延长甲 | 每只 $6 | Abby Eyelash',
+      description: `悉尼宝活 Burwood 甲片延长：每只 ${ext()}，可加在任何凝胶或手绘款上。流程、能维持多久和护理方法。`,
+      h1: ['宝活 Burwood ', '延长甲'],
+      intro: `延长甲是在真指甲上接上甲片、再用凝胶完成的加长方式，马上就有长度和甲型。在 Burwood NSW 2134 的 Abby Eyelash，延长每只 ${ext()}，可以加在任何${link('zh', G, '凝胶美甲')}或${link('zh', H, '手绘造型')}上，想加长几只就付几只。预约时先选款式，再选要延长几只。`,
       sections: [
         {
-          h2: ['BIAB 还是 Gel-X？', '怎么选'],
+          h2: ['价格', '怎么算'],
           list: [
-            `<strong>BIAB 加固甲</strong>：比甲油胶更厚的建构胶，叠在真指甲上增加硬度和弧度。适合想把自己的指甲留长又怕断、或想要自然微加长效果的人。长出来后可以补甲，不用全部卸掉。`,
-            `<strong>Gel-X 延长甲</strong>：预先塑形的软胶甲片，用甲片胶粘贴后照灯固化。适合自身指甲短、想马上拥有长度和固定甲型（杏仁、梯形、方形）的人。Gel-X 到期后泡卸重做，不做补甲。`, // OWNER-REVIEW
+            `先选款式：凝胶单色 ${$(G, 'solid')} 起，还有猫眼、极光、法式或手绘造型。`,
+            `再加选延长，每只 ${ext()}，一只到十只都可以。`,
+            `例如凝胶单色加十只延长，共 $${opt(G, 'solid').price + 10 * opt(X, 'extension').price}。`,
           ],
         },
         {
           h2: ['做延长甲时的', '流程'],
           steps: [
-            `沟通长度、甲型和颜色。`,
-            `修型、甲缘护理、轻磨甲面，再上干燥剂和结合剂。`,
-            `BIAB：分层上建构胶、照灯、打磨塑形。Gel-X：每根手指选合适的甲片，粘贴后照灯固化。`,
-            `上颜色或画图案，再上封层。`,
+            `确定长度和甲型（圆形、杏仁、方形等）。`,
+            `修型、甲缘护理、轻磨甲面。`,
+            `每根手指选合适的甲片，粘贴并塑形。`,
+            `上建构胶、颜色或图案，再上封层，每层照灯固化。`,
             `最后涂指缘油。`,
           ],
         },
         {
-          h2: ['能维持多久，', '什么时候补甲'],
+          h2: ['能维持多久，', '怎么卸'],
           body: [
-            `两种延长甲一般能戴 3–4 周。指甲长长后，延长部分会往前移、受力点改变，拖太久更容易翘边或断裂。`, // OWNER-REVIEW
-            `BIAB 补甲约 ${m(X, 'infill')} 分钟，${$(X, 'infill')}，会磨掉旧胶并重建新长出来的部分，让真指甲在生长时继续受到保护。`,
+            `延长甲一般能戴 3 周左右。指甲长长后受力点会往前移，拖太久更容易翘边或断裂。`, // OWNER-REVIEW
+            `请专业泡卸，硬拔会撕伤真指甲。`,
           ],
         },
         {
@@ -738,24 +863,22 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           h2: ['日常护理：', 'Abby 的建议'],
           list: [
             `做家务、洗碗时戴手套。`,
-            `每天涂指缘油，保持指甲和胶面柔韧。`,
-            `不要把指甲当工具用，翘边了别抠也别咬，请预约修补。`,
-            `请专业泡卸，硬拔会撕伤真指甲。`,
+            `每天涂指缘油。`,
+            `不要把指甲当工具用，翘边了别抠也别咬，请联系 Abby 修补。`,
           ],
         },
-        { h2: ['甲油胶过敏与', '美甲灯'], body: nailSafety.zh },
+        { h2: ['凝胶过敏与', '美甲灯'], body: nailSafety.zh },
       ],
       faq: [
-        { q: 'BIAB 和甲油胶一样吗？', a: '不一样。BIAB 是更厚的建构胶，用来增加硬度和结构；甲油胶是很薄的颜色层。BIAB 可以做透明、裸色，也可以再上颜色。' },
-        { q: 'BIAB 能维持多久？', a: '一般 3–4 周后需要补甲。' }, // OWNER-REVIEW
-        { q: 'Gel-X 可以补甲吗？', a: 'Abby 会把 Gel-X 泡卸后重新做一套，而不是补甲，这样甲片和真指甲贴合得更牢。' }, // OWNER-REVIEW
-        { q: '延长甲会伤真指甲吗？', a: '损伤通常来自撕、咬或硬拔。正确泡卸、按时补甲，真指甲就能保持健康。' },
-        { q: '可以加图案吗？', a: `可以，手绘图案请预约手绘定制美甲，${$(H, 'nail-art')} 起。` },
+        { q: '延长甲多少钱？', a: `每只 ${ext()}，另加你选的款式价格。` },
+        { q: '可以只延长几只吗？', a: '可以。一只到十只自己选，只按延长的数量收费。' },
+        { q: '延长甲会伤真指甲吗？', a: '损伤通常来自撕、咬或硬拔。正确泡卸，真指甲就能保持健康。' },
+        { q: '怎么预约延长甲？', a: '在预约页选凝胶美甲或手绘造型，选好款式后再选要延长几只。' },
         CANCEL.zh,
       ],
       alt: {
-        hero: 'Abby Eyelash（Burwood）完成的杏仁形淡粉色 Gel-X 延长甲',
-        detail: 'BIAB 加固甲过程中在真指甲上塑形建构胶',
+        hero: 'Abby Eyelash（Burwood）完成的杏仁形淡粉色延长甲',
+        detail: '延长甲过程中为甲片塑形',
       },
     },
   },

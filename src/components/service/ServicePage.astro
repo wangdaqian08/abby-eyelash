@@ -2,7 +2,7 @@
 // One service page (EN or ZH). All facts come from services.ts / site.ts / service-content.ts and render as static HTML.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ServiceImage from './ServiceImage.astro';
-import { fromPrice, groupAt, services, type Lang, type Service } from '../../data/services';
+import { bookableWith, groupAt, headline, priceText, services, type Lang, type Service } from '../../data/services';
 import { site } from '../../data/site';
 import { serviceContent } from '../../data/service-content';
 import { serviceStrings } from '../../i18n/service';
@@ -18,7 +18,7 @@ const t = serviceStrings[lang];
 const c = serviceContent(service.id, lang);
 const en = lang === 'en';
 
-const bookHref = `${localePath(lang, '/book')}?service=${service.id}`;
+const bookHref = `${localePath(lang, '/book')}?service=${bookableWith(service).id}`; // add-on-only services book via the service that offers them
 const wa = waHref(site.phone);
 const a = site.address;
 const addressLine = `${a.street}, ${a.locality} ${a.region} ${a.postcode}`;
@@ -87,10 +87,13 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
                   <th scope="row" class="px-5 py-5 font-serif text-lg font-medium sm:px-8">
                     {o.name[lang]}
                     {/* Mobile: duration moves under the name so long option names get the width. */}
-                    <span class="mt-1 block font-sans text-sm font-normal text-muted sm:hidden">{t.minutes(o.minutes)}</span>
+                    <span class="mt-1 block font-sans text-sm font-normal text-muted sm:hidden">{t.minutes(o.minutes)}{o.unit && ` / ${o.unit[lang]}`}</span>
                   </th>
-                  <td class="hidden whitespace-nowrap px-3 py-5 text-muted sm:table-cell">{t.minutes(o.minutes)}</td>
-                  <td class="whitespace-nowrap px-5 py-5 text-right font-medium sm:px-8">{t.price(o.price, o.from)}</td>
+                  <td class="hidden whitespace-nowrap px-3 py-5 text-muted sm:table-cell">{t.minutes(o.minutes)}{o.unit && ` / ${o.unit[lang]}`}</td>
+                  <td class="whitespace-nowrap px-5 py-5 text-right font-medium sm:px-8">
+                    {o.wasPrice && <s class="mr-2 font-normal text-muted"><span class="sr-only">{t.was} </span>${o.wasPrice}</s>}
+                    {priceText(o, lang)}
+                  </td>
                 </tr>
                 </Fragment>
               ))}
@@ -213,7 +216,7 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
                 <span aria-hidden="true" class="text-accent group-hover:text-on-primary group-focus-visible:text-on-primary">✦</span>
                 <span class="mt-3 font-serif text-xl">{s.name[lang]}</span>
                 <span class="mt-2 flex-1 text-sm text-muted group-hover:text-on-primary group-focus-visible:text-on-primary">{s.summary[lang]}</span>
-                <span class="mt-4 text-sm font-medium">{t.price(fromPrice(s), s.options.length > 1 || !!s.options[0].from)}</span>
+                <span class="mt-4 text-sm font-medium">{priceText(headline(s), lang)}</span>
               </a>
             </li>
           ))}
