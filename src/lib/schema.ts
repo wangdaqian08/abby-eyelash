@@ -58,7 +58,7 @@ const providerRef = (base: string | URL) => ({ '@type': BIZ_TYPE, '@id': abs(bas
 
 export function businessNode(base: string | URL, lang: Lang, image: string): Node {
   const sameAs = [site.google.reviewsUrl, site.social.instagram, site.social.xiaohongshu].filter(isRealProfileUrl);
-  const email = site.email.endsWith('@example.com') ? undefined : site.email;
+  const email = site.email && !site.email.endsWith('@example.com') ? site.email : undefined;
   return {
     ...providerRef(base),
     url: abs(base, localePath(lang, '/')),
