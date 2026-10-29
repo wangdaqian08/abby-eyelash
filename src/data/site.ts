@@ -16,7 +16,7 @@ export const site = {
   // Texts and WhatsApp only — Abby doesn't take calls, so links open SMS/WhatsApp, never tel:.
   phone: '+61 457 058 649', // E.164
   phoneDisplay: '0457 058 649',
-  email: '', // not published; empty hides it everywhere
+  email: '' as string, // not published; empty hides it everywhere
   timezone: 'Australia/Sydney',
   // About Abby — she chose not to publish these (2026-10-30). 0 / empty arrays hide the line.
   abby: {
@@ -36,11 +36,11 @@ export const site = {
   ],
   social: {
     instagram: 'https://www.instagram.com/a.b_flora/',
-    xiaohongshu: '', // not published; empty hides it
+    xiaohongshu: '' as string, // not published; empty hides it
     wechatId: 'AB_Flora',
   },
   google: {
-    reviewsUrl: '', // no Google Business Profile link yet; empty hides the review links
+    reviewsUrl: '' as string, // no Google Business Profile link yet; empty hides the review links
     mapsEmbed: '', // PLACEHOLDER — embed URL from Google Maps "Share > Embed a map"
     ga4Id: '', // PLACEHOLDER e.g. G-XXXXXXX — empty disables analytics
   },
