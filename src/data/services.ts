@@ -11,6 +11,7 @@ export interface ServiceOption {
   price: number;
   from?: boolean; // "from $X"
   extra?: boolean; // add-on, infill or removal: left out of the service's headline price
+  group?: L10n; // consecutive options with the same group are listed under one heading
 }
 
 export interface Service {
@@ -24,6 +25,11 @@ export interface Service {
   options: ServiceOption[];
 }
 
+const FULL_SET = { en: 'Full sets', zh: '全套' };
+const BOTTOM = { en: 'Bottom lashes', zh: '下睫毛' };
+const INFILL = { en: 'Infill', zh: '回补' };
+const REMOVAL = { en: 'Removal', zh: '卸睫毛' };
+
 export const services: Service[] = [
   {
     id: 'lash-extensions',
@@ -33,18 +39,18 @@ export const services: Service[] = [
     name: { en: 'Eyelash Extensions', zh: '嫁接睫毛' },
     // Prices from Abby's menu (2026-10-29). PLACEHOLDER minutes until she supplies real durations.
     options: [
-      { id: 'classic-natural', name: { en: 'Japanese classic – natural', zh: '日式单根 · 自然' }, minutes: 120, price: 80 },
-      { id: 'classic-full', name: { en: 'Japanese classic – full', zh: '日式单根 · 浓密' }, minutes: 120, price: 110 },
-      { id: 'hybrid-natural', name: { en: 'Hybrid – natural', zh: '开花 / 轻盈 · 自然' }, minutes: 120, price: 110 },
-      { id: 'hybrid-full', name: { en: 'Hybrid – full', zh: '开花 / 轻盈 · 浓密' }, minutes: 150, price: 140 },
-      { id: 'styled', name: { en: 'Styled set', zh: '造型款' }, minutes: 150, price: 130, from: true },
-      { id: 'bottom-natural', name: { en: 'Bottom lashes – natural', zh: '下睫毛 · 自然' }, minutes: 30, price: 25, extra: true },
-      { id: 'bottom-full', name: { en: 'Bottom lashes – full', zh: '下睫毛 · 浓密' }, minutes: 30, price: 35, extra: true },
+      { id: 'classic-natural', name: { en: 'Japanese classic – natural', zh: '日式单根 · 自然' }, minutes: 120, price: 80, group: FULL_SET },
+      { id: 'classic-full', name: { en: 'Japanese classic – full', zh: '日式单根 · 浓密' }, minutes: 120, price: 110, group: FULL_SET },
+      { id: 'hybrid-natural', name: { en: 'Hybrid – natural', zh: '开花 / 轻盈 · 自然' }, minutes: 120, price: 110, group: FULL_SET },
+      { id: 'hybrid-full', name: { en: 'Hybrid – full', zh: '开花 / 轻盈 · 浓密' }, minutes: 150, price: 140, group: FULL_SET },
+      { id: 'styled', name: { en: 'Styled set', zh: '造型款' }, minutes: 150, price: 130, from: true, group: FULL_SET },
+      { id: 'bottom-natural', name: { en: 'Bottom lashes – natural', zh: '下睫毛 · 自然' }, minutes: 30, price: 25, extra: true, group: BOTTOM },
+      { id: 'bottom-full', name: { en: 'Bottom lashes – full', zh: '下睫毛 · 浓密' }, minutes: 30, price: 35, extra: true, group: BOTTOM },
       // Infill = share of the full-set price; "from" = share of the cheapest set (Japanese classic – natural).
-      { id: 'infill-2w', name: { en: 'Infill – within 2 weeks', zh: '回补 · 2 周内' }, minutes: 60, price: 40, from: true, extra: true },
-      { id: 'infill-3w', name: { en: 'Infill – within 3 weeks', zh: '回补 · 3 周内' }, minutes: 60, price: 56, from: true, extra: true },
-      { id: 'infill-4w', name: { en: 'Infill – within 4 weeks', zh: '回补 · 4 周内' }, minutes: 75, price: 68, from: true, extra: true },
-      { id: 'removal', name: { en: 'Lash removal', zh: '卸睫毛' }, minutes: 30, price: 10, from: true, extra: true },
+      { id: 'infill-2w', name: { en: 'Infill – within 2 weeks', zh: '回补 · 2 周内' }, minutes: 60, price: 40, from: true, extra: true, group: INFILL },
+      { id: 'infill-3w', name: { en: 'Infill – within 3 weeks', zh: '回补 · 3 周内' }, minutes: 60, price: 56, from: true, extra: true, group: INFILL },
+      { id: 'infill-4w', name: { en: 'Infill – within 4 weeks', zh: '回补 · 4 周内' }, minutes: 75, price: 68, from: true, extra: true, group: INFILL },
+      { id: 'removal', name: { en: 'Lash removal', zh: '卸睫毛' }, minutes: 30, price: 10, from: true, extra: true, group: REMOVAL },
     ],
   },
   {
@@ -93,5 +99,9 @@ export const services: Service[] = [
 /** Headline "from" price for cards and the catalog: the cheapest main option. */
 export const fromPrice = (s: Service) => Math.min(...s.options.filter((o) => !o.extra).map((o) => o.price));
 
-export const findOption =(serviceId: string, optionId: string) =>
+/** The group heading to show before option `i`, if a new group starts there. */
+export const groupAt = (options: ServiceOption[], i: number) =>
+  options[i].group && options[i].group !== options[i - 1]?.group ? options[i].group : undefined;
+
+export const findOption = (serviceId: string, optionId: string) =>
   services.find((s) => s.id === serviceId)?.options.find((o) => o.id === optionId);

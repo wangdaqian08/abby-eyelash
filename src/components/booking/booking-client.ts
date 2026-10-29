@@ -1,5 +1,5 @@
 // Booking flow (vanilla TS): 1 Service → 2 Date → 3 Time → 4 Details → success.
-import { fromPrice, services, type Lang, type Service, type ServiceOption } from '../../data/services';
+import { fromPrice, groupAt, services, type Lang, type Service, type ServiceOption } from '../../data/services';
 import { site } from '../../data/site';
 import { bookingStrings } from '../../i18n/booking';
 import { daysInMonth, localDate, maxDate, validateDetails, weekday, zonedTimeToUtc, type Details } from '../../lib/availability';
@@ -170,7 +170,7 @@ export function start(root: HTMLElement) {
       ? `<fieldset class="mt-8"><legend class="font-serif text-xl">${t.chooseOption}</legend>
           <div class="mt-3 divide-y divide-border border-y border-border">${st.service.options
             .map(
-              (o) => `<label class="flex min-h-14 items-center justify-between gap-4 px-1 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring">
+              (o, i, all) => `${groupAt(all, i) ? `<p class="px-1 pb-2 pt-5 text-xs font-medium uppercase tracking-wider text-accent-ink">${groupAt(all, i)![lang]}</p>` : ''}<label class="flex min-h-14 items-center justify-between gap-4 px-1 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring">
                 <span class="flex items-center gap-3"><input type="radio" name="bk-option" value="${o.id}" class="size-4 accent-primary" ${o === st.option ? 'checked' : ''}><span>${o.name[lang]}</span></span>
                 <span class="shrink-0 text-right text-sm text-muted"><span class="block whitespace-nowrap text-fg">${price(o)}</span><span class="whitespace-nowrap">${mins(o.minutes)}</span></span>
               </label>`,
