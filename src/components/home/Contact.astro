@@ -44,11 +44,12 @@ const icon = 'mt-0.5 size-5 shrink-0 text-accent-ink';
       </ul>
     </div>
 
-    <div data-reveal class="flex flex-col gap-3">
+    {/* Safari turns the map card's aspect-ratio + content height into a ~336px min-width; min-w-0 here and on the card stops it overflowing 320px phones. */}
+    <div data-reveal class="flex min-w-0 flex-col gap-3">
       {site.google.mapsEmbed ? (
         <iframe src={site.google.mapsEmbed} title={t.mapTitle} loading="lazy" referrerpolicy="no-referrer-when-downgrade" class="aspect-[4/3] w-full border-0 bg-surface lg:aspect-auto lg:flex-1" />
       ) : (
-        <a href={mapsUrl(site)} data-track="map_click" target="_blank" rel="noopener" class="group flex aspect-[4/3] flex-col items-center justify-center gap-4 border border-border bg-surface p-8 text-center transition duration-300 ease-brand hover:-translate-y-1 hover:shadow-lift lg:aspect-auto lg:flex-1">
+        <a href={mapsUrl(site)} data-track="map_click" target="_blank" rel="noopener" class="group flex aspect-[4/3] min-w-0 flex-col items-center justify-center gap-4 border border-border bg-surface p-8 text-center transition duration-300 ease-brand hover:-translate-y-1 hover:shadow-lift lg:aspect-auto lg:flex-1">
           <svg class="size-10 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" /></svg>
           <span class="font-serif text-2xl">{site.name}</span>
           <span class="text-muted">{napAddress(site)}</span>

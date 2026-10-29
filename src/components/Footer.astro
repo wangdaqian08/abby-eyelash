@@ -18,7 +18,7 @@ const link = 'inline-flex min-h-11 items-center text-muted transition-colors dur
       <p class="font-serif text-2xl text-primary">{site.name}</p>
       <p class:list={[head, "mt-6"]}>{t.visit}</p>
       <address class="mt-3 not-italic text-muted">
-        <a href={mapsUrl(site)} data-track="map_click" target="_blank" rel="noopener" class="underline-offset-4 hover:text-fg hover:underline">{napAddress(site)}</a>
+        <a href={mapsUrl(site)} data-track="map_click" target="_blank" rel="noopener" class="inline-block py-1.5 underline-offset-4 hover:text-fg hover:underline">{napAddress(site)}</a>
       </address>
     </div>
 
