@@ -6,3 +6,4 @@ dist/
 .DS_Store
 .playwright-mcp/
 .idea/
+src/data/prices.generated.ts

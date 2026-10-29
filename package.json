@@ -3,9 +3,12 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "predev": "node scripts/prices.mjs",
     "dev": "astro dev",
+    "prebuild": "node scripts/prices.mjs",
     "build": "astro build",
     "preview": "wrangler pages dev ./dist",
+    "pretest": "node scripts/prices.mjs",
     "test": "node --test",
     "check:seo": "node scripts/check-seo.mjs dist",
     "indexnow": "node scripts/indexnow.mjs"
