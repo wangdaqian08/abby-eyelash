@@ -1,6 +1,6 @@
 // Shared UI copy (header, footer, home page) in EN + natively written Simplified Chinese,
 // plus small pure formatters. Only type imports here so `node --test` can load this file directly.
-import { fromPrice, type Lang, type Service } from '../data/services.ts';
+import { headline, priceText, type Lang, type Service } from '../data/services.ts';
 import type { Site } from '../data/site';
 
 const en = {
@@ -38,7 +38,7 @@ const en = {
     accent: 'made by hand',
     titleB: 'in Burwood.',
     // {name} {suburb} {region} {postcode} {owner} are filled from site.ts
-    body: '{name} is a lash and nail studio in {suburb} {region} {postcode}, Sydney, run by {owner}. Eyelash extensions, lash lifts, hand-painted nail art, gel polish and nail extensions — every appointment is done by {owner} herself.',
+    body: '{name} is a lash and nail studio in {suburb} {region} {postcode}, Sydney, run by {owner}. Eyelash extensions, keratin lash lifts, powder brows, gel nails, hand-painted nail art and nail extensions — every appointment is done by {owner} herself.',
     book: 'Book an appointment',
     services: 'Our services',
     rating: 'Google reviews',
@@ -48,7 +48,7 @@ const en = {
     eyebrow: 'What we offer',
     title: 'Five services,',
     accent: 'one pair of hands.',
-    intro: 'Lashes and nails are all Abby does, so each service gets her full attention. Prices and times below are the starting point — your exact quote depends on the look you choose.',
+    intro: 'Lashes, brows and nails are all Abby does, so each service gets her full attention. Prices and times below are the starting point — your exact quote depends on the look you choose.',
     details: 'Prices & details',
     ctaTitle: 'Know what you want?',
     ctaBody: 'Pick a service, a day and a time online in under a minute.',
@@ -90,20 +90,29 @@ const en = {
     accent: 'answered.',
     intro: 'Short answers to what clients ask most. Anything else — just ask when you book.',
   },
+  offers: {
+    eyebrow: 'Offers',
+    title: 'A little',
+    accent: 'thank you.',
+    items: [
+      { h: 'Birthday month', p: '20% off eyelash extensions and lash lifts during your birthday month.' },
+      { h: 'Refer a friend', p: 'Your friend gets $5 off their first visit, and you get a scratch card once they’ve had their appointment.' },
+    ],
+    note: 'Offers apply once the service is completed.',
+  },
   contact: {
     eyebrow: 'Hours & contact',
     title: 'When to',
     accent: 'visit.',
     address: 'Address',
-    phone: 'Phone',
+    phone: 'SMS / WhatsApp',
     email: 'Email',
-    // PLACEHOLDER — confirm walking directions once the real street address is known.
-    findUs: 'How to find us: a short walk from Burwood station and Westfield Burwood, on the Burwood Road side of the town centre.',
+    findUs: 'About a 5-minute walk from Burwood station. The exact address is sent when your booking is confirmed.',
     byAppointment: 'By appointment — Abby works alone, so please book ahead.',
     openMaps: 'Open in Google Maps',
     mapTitle: 'Map showing Abby Eyelash in Burwood',
     bookOnline: 'Book your appointment online',
-    call: 'Call to book',
+    call: 'WhatsApp to book',
   },
   closed: 'Closed',
 };
@@ -144,7 +153,7 @@ const zh: Strings = {
     titleA: '美睫与美甲，',
     accent: '一根一笔',
     titleB: '皆由手作。',
-    body: '{name} 是位于悉尼宝活（{suburb} {region} {postcode}）的美睫美甲工作室，由 {owner} 一人主理。嫁接睫毛、睫毛翘睫、手绘美甲、光疗甲与延长甲，每一位顾客都由 {owner} 亲手完成。',
+    body: '{name} 是位于悉尼宝活（{suburb} {region} {postcode}）的美睫美甲工作室，由 {owner} 一人主理。嫁接睫毛、角蛋白翘睫、半永久雾眉、凝胶美甲、手绘造型与延长甲，每一位顾客都由 {owner} 亲手完成。',
     book: '在线预约',
     services: '查看服务',
     rating: 'Google 评价',
@@ -154,7 +163,7 @@ const zh: Strings = {
     eyebrow: '服务项目',
     title: '五项服务，',
     accent: '同一双手。',
-    intro: 'Abby 只专注睫毛与美甲，所以每一项都做得用心。下方是起步价格与所需时间，最终价格以你选择的款式为准。',
+    intro: 'Abby 只专注睫毛、眉毛与美甲，所以每一项都做得用心。下方是起步价格与所需时间，最终价格以你选择的款式为准。',
     details: '价格与详情',
     ctaTitle: '已经想好做什么？',
     ctaBody: '在线选择项目、日期和时间，一分钟就能约好。',
@@ -196,20 +205,29 @@ const zh: Strings = {
     accent: '一次说清。',
     intro: '整理了顾客最常问的问题。还有其他疑问，预约时直接问 Abby 就好。',
   },
+  offers: {
+    eyebrow: '优惠活动',
+    title: '一点',
+    accent: '小心意。',
+    items: [
+      { h: '生日当月', p: '生日当月做嫁接睫毛或翘睫，享 8 折优惠。' },
+      { h: '介绍朋友', p: '被介绍的新朋友首次到店减 $5，朋友做完服务后，介绍人可获得一张刮刮卡。' },
+    ],
+    note: '优惠在服务完成后结算。',
+  },
   contact: {
     eyebrow: '营业时间与联系方式',
     title: '欢迎',
     accent: '到店。',
     address: '地址',
-    phone: '电话',
+    phone: '短信 / WhatsApp',
     email: '邮箱',
-    // PLACEHOLDER — confirm walking directions once the real street address is known.
-    findUs: '怎么来：从宝活火车站（Burwood station）和 Westfield Burwood 步行即可到达，位于 Burwood Road 一侧的市中心。',
+    findUs: '从宝活火车站（Burwood station）步行约 5 分钟。确认预约时会把详细地址发给你。',
     byAppointment: '仅限预约 —— Abby 一人工作，请提前预约。',
     openMaps: '在 Google 地图中打开',
     mapTitle: 'Abby Eyelash 在宝活的位置地图',
     bookOnline: '在线预约',
-    call: '致电预约',
+    call: 'WhatsApp 预约',
   },
   closed: '休息',
 };
@@ -220,22 +238,21 @@ export const common: Record<Lang, Strings> = { en, zh };
 export const fill = (s: string, vars: Record<string, string | number>) =>
   s.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
 
-/** "from $65 · 60–150 min" — computed from the service's options (services.ts is the only price source). */
+/** "from $80 · 50–75 min" · "$480 (was $580) · 120 min" · "$6 / nail" — computed from services.ts (the only price source). */
 export function priceLine(s: Service, lang: Lang) {
-  const min = fromPrice(s);
-  const mins = s.options.filter((o) => !o.extra).map((o) => o.minutes);
-  const lo = Math.min(...mins);
-  const hi = Math.max(...mins);
-  const from = s.options.length > 1 || s.options[0].from;
-  const price = from ? (lang === 'zh' ? `$${min} 起` : `from $${min}`) : `$${min}`;
-  return `${price} · ${lo === hi ? lo : `${lo}–${hi}`} ${lang === 'zh' ? '分钟' : 'min'}`;
+  const h = headline(s);
+  const was = h.wasPrice ? (lang === 'zh' ? `（原价 $${h.wasPrice}）` : ` (was $${h.wasPrice})`) : '';
+  const time = h.minutes && `${h.minutes[0] === h.minutes[1] ? h.minutes[0] : `${h.minutes[0]}–${h.minutes[1]}`} ${lang === 'zh' ? '分钟' : 'min'}`;
+  return [priceText(h, lang) + was, time].filter(Boolean).join(' · ');
 }
 
 /** Postal address on one line — identical text on every page and in both languages (must match GBP). */
 export const napAddress = (site: Pick<Site, 'address'>) =>
   `${site.address.street}, ${site.address.locality} ${site.address.region} ${site.address.postcode}`;
 
-export const telHref = (phone: string) => `tel:${phone.replace(/\s/g, '')}`;
+// Abby takes texts and WhatsApp only, so contact links never use tel:.
+export const smsHref = (phone: string) => `sms:${phone.replace(/\s/g, '')}`;
+export const waHref = (phone: string) => `https://wa.me/${phone.replace(/\D/g, '')}`;
 
 export const mapsUrl = (site: Pick<Site, 'name' | 'address'>) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${site.name}, ${napAddress(site)}`)}`;
@@ -253,17 +270,19 @@ const time = (hhmm: string, lang: Lang) => {
 };
 
 /** Group consecutive days with identical hours: [{ days: 'Monday – Friday', time: '9:00 am – 7:00 pm' }, …]. Missing days = closed. */
-export function hoursRows(hours: readonly { day: number; open: string; close: string }[], lang: Lang) {
+export function hoursRows(hours: readonly { day: number; open: string; close: string; nth?: number }[], lang: Lang) {
   const groups: { from: number; to: number; key: string; h?: (typeof hours)[number] }[] = [];
   for (const d of WEEK) {
     const h = hours.find((x) => x.day === d);
-    const key = h ? `${h.open}-${h.close}` : 'closed';
+    const key = h ? `${h.open}-${h.close}-${h.nth ?? ''}` : 'closed';
     const last = groups.at(-1);
     if (last?.key === key) last.to = d;
     else groups.push({ from: d, to: d, key, h });
   }
   return groups.map((g) => ({
-    days: g.from === g.to ? DAYS[lang][g.from] : `${DAYS[lang][g.from]}${lang === 'zh' ? '至' : ' – '}${DAYS[lang][g.to]}`,
+    days:
+      (g.from === g.to ? DAYS[lang][g.from] : `${DAYS[lang][g.from]}${lang === 'zh' ? '至' : ' – '}${DAYS[lang][g.to]}`) +
+      (g.h?.nth ? (lang === 'zh' ? `（仅每月第 ${g.h.nth} 个）` : ` (${['1st', '2nd', '3rd', '4th', '5th'][g.h.nth - 1]} of the month only)`) : ''),
     time: g.h ? `${time(g.h.open, lang)} – ${time(g.h.close, lang)}` : common[lang].closed,
   }));
 }
@@ -274,21 +293,25 @@ export const monthYear = (iso: string, lang: Lang) =>
 
 /**
  * Home FAQ — answers are always visible (GEO-STRATEGY #2) and each answer stands on its own.
- * `{phone}` / `{address}` are filled from site.ts. PLACEHOLDER: payment methods and parking details — confirm with Abby.
+ * `{phone}`, `{address}`, `{deposit}`, `{wechat}` and `{hours}` are filled from site.ts. PLACEHOLDER: payment methods — confirm with Abby.
  */
 export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
   en: [
     {
       q: 'How do I book, and what is the cancellation policy?',
-      a: 'Book online at any time, or call or text {phone}. Please give at least 24 hours’ notice to cancel or reschedule, so the time can be offered to another client.',
+      a: 'Book online at any time, or text or WhatsApp {phone}. After you book, a ${deposit} deposit by WeChat ({wechat}) secures your time. Please give at least {hours} hours’ notice to cancel or reschedule; within {hours} hours the deposit is not refunded and the time can’t be changed.',
     },
     {
       q: 'What payment methods do you accept?',
-      a: 'Payment is made at the end of your appointment by card (Visa, Mastercard, contactless) or cash. No deposit is needed to book online.',
+      a: 'A ${deposit} deposit is paid by WeChat ({wechat}) after you book. The rest is paid at the end of your appointment by card (Visa, Mastercard, contactless) or cash.',
     },
     {
-      q: 'Where is the studio, and where can I park?',
-      a: 'Abby Eyelash is at {address}, a short walk from Burwood station and Westfield Burwood. Westfield Burwood has a large shopping-centre car park, and there is time-limited street parking on the surrounding streets.',
+      q: 'Do you have any offers?',
+      a: 'Yes. Eyelash extensions and lash lifts are 20% off during your birthday month. If you refer a friend, they get $5 off their first visit and you get a scratch card once they’ve had their appointment.',
+    },
+    {
+      q: 'Where is the studio?',
+      a: 'Abby Eyelash is a home studio on {address}, about a 5-minute walk from Burwood station. The exact address is sent when your booking is confirmed.',
     },
     {
       q: 'What happens at my first visit?',
@@ -300,29 +323,33 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
     },
     {
       q: 'How long do lash extensions and lash lifts last?',
-      a: 'Lash extensions shed naturally with your own lashes, so most clients book an infill every 2–3 weeks. A lash lift and tint usually lasts 6–8 weeks.',
+      a: 'Lash extensions shed naturally with your own lashes, so most clients book an infill every 2–3 weeks. A keratin lash lift usually lasts 6–8 weeks.',
     },
     {
-      q: 'How long do gel polish and nail extensions last?',
-      a: 'Gel polish typically lasts 2–3 weeks without chipping. BIAB and Gel-X extensions are usually infilled or redone every 3–4 weeks as your natural nail grows.',
+      q: 'How long do gel nails and nail extensions last?',
+      a: 'Gel nails usually last 2–3 weeks before regrowth shows. Tip extensions ($6 per nail, added to any gel or hand-painted design) are usually redone after about 3 weeks.',
     },
   ],
   zh: [
     {
       q: '怎么预约？取消政策是什么？',
-      a: '可以随时在线预约，也可以致电或发短信至 {phone}。如需取消或改期，请至少提前 24 小时告知，以便把时间留给其他顾客。',
+      a: '可以随时在线预约，也可以发短信或 WhatsApp 至 {phone}。预约后请通过微信（{wechat}）支付 ${deposit} 订金确认时间。如需取消或改期，请至少提前 {hours} 小时告知；{hours} 小时以内取消或改期，订金不退，也不能更改时间。',
     },
     {
       q: '可以用哪些方式付款？',
-      a: '服务结束后付款，支持刷卡（Visa、Mastercard、手机或卡片感应支付）和现金。在线预约无需支付订金。',
+      a: '预约后通过微信（{wechat}）支付 ${deposit} 订金，其余费用在服务结束后付款，支持刷卡（Visa、Mastercard、手机或卡片感应支付）和现金。',
     },
     {
-      q: '工作室在哪里？方便停车吗？',
-      a: 'Abby Eyelash 的地址是 {address}，从宝活火车站（Burwood station）和 Westfield Burwood 步行即可到达。Westfield Burwood 设有大型商场停车场，周边街道也有限时路边车位。',
+      q: '有什么优惠吗？',
+      a: '有。生日当月做嫁接睫毛或翘睫享 8 折。介绍朋友来做，新朋友首次到店减 $5，朋友做完服务后，介绍人可获得一张刮刮卡。',
+    },
+    {
+      q: '工作室在哪里？',
+      a: 'Abby Eyelash 是位于 {address} 的家庭工作室，从宝活火车站（Burwood station）步行约 5 分钟。确认预约时会把详细地址发给你。',
     },
     {
       q: '第一次去需要注意什么？',
-      a: 'Abby 会先和你简单沟通想要的效果、自身睫毛或指甲的状况，以及是否有过敏或敏感情况。做睫毛请素颜、保持眼部清洁；做美甲如有在别处做的光疗或延长甲未卸，请在预约时说明。',
+      a: 'Abby 会先和你简单沟通想要的效果、自身睫毛或指甲的状况，以及是否有过敏或敏感情况。做睫毛请素颜、保持眼部清洁；做美甲如有在别处做的凝胶甲或延长甲未卸，请在预约时说明。',
     },
     {
       q: '可以先做皮肤测试吗？',
@@ -330,11 +357,11 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
     },
     {
       q: '嫁接睫毛和翘睫能维持多久？',
-      a: '嫁接睫毛会随自身睫毛自然脱落，大多数顾客每 2–3 周补一次。翘睫加染色一般可维持 6–8 周。',
+      a: '嫁接睫毛会随自身睫毛自然脱落，大多数顾客每 2–3 周补一次。角蛋白翘睫一般可维持 6–8 周。',
     },
     {
-      q: '光疗甲和延长甲能维持多久？',
-      a: '光疗甲油一般可维持 2–3 周不易剥落。BIAB 和 Gel-X 延长甲随着自甲生长，通常每 3–4 周需要补甲或重做。',
+      q: '凝胶美甲和延长甲能维持多久？',
+      a: '凝胶美甲一般能维持 2–3 周，之后甲根会露出新长的指甲。甲片延长（每只 $6，可加在任何凝胶或手绘款上）一般约 3 周后重做。',
     },
   ],
 };

@@ -78,7 +78,7 @@ Delivered as `docs/OWNER-ACTIONS.md`, a checklist in plain English with Chinese 
 |---|---|---|
 | **Google Search Console** (domain property, sitemap submitted) | Performance > Web (includes AIO/AI Mode clicks) **and** the Generative AI performance report (impressions; no clicks or queries). | OA-G10, OA-G11 |
 | **Bing Webmaster Tools** | AI Performance: citations, cited pages, sampled grounding queries, citation share. Bing also feeds Copilot and probably part of ChatGPT. | OA-B1, OA-B2 |
-| **GA4** | A custom channel group "AI assistants" placed **above Referral**, using the referrer regex from OA §3.9, plus `utm_source=chatgpt.com`. Conversions: `book_click`, `booking_submitted`, `call_click`, `map_click`, `social_click`, `review_click`. | OA-G12, OA-O2 |
+| **GA4** | A custom channel group "AI assistants" placed **above Referral**, using the referrer regex from OA §3.9, plus `utm_source=chatgpt.com`. Conversions: `book_click`, `booking_submitted`, `message_click`, `map_click`, `social_click`, `review_click`. | OA-G12, OA-O2 |
 | **Cloudflare bot analytics** | Confirms that OAI-SearchBot, PerplexityBot, Claude-SearchBot and Bingbot actually fetch pages. | OA-CF1 |
 | **Monthly prompt panel** (`docs/geo-prompt-panel.md`) | 20 fixed prompts (10 EN, 10 ZH) × 3–5 runs × 6 engines (ChatGPT, Gemini, Google AIO/AI Mode, Perplexity, Copilot, Claude), run from a Sydney location. Record: Abby mentioned (%), site cited (%), and **fact accuracy** (hours, price, address). Accuracy errors get fixed at the source. | OA-S14 (method = expert synthesis) |
 | **Business outcome** | Bookings, calls and direction taps, not just sessions (clicks fall when AI summaries appear: Pew, n=900). | OA-S13, OA-G4 |

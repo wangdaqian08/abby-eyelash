@@ -8,7 +8,7 @@ import FaqList from '../ui/FaqList.astro';
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const t = common[lang].faq;
-const items = homeFaq[lang].map(({ q, a }) => ({ q, a: fill(a, { phone: site.phoneDisplay, address: napAddress(site) }) }));
+const items = homeFaq[lang].map(({ q, a }) => ({ q, a: fill(a, { phone: site.phoneDisplay, address: napAddress(site), deposit: site.booking.deposit, wechat: site.social.wechatId, hours: site.booking.cancelHours }) }));
 ---
 <section id="faq" class="py-16 md:py-24">
   <div class="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_1.6fr] lg:gap-16">

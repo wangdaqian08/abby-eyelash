@@ -1,7 +1,7 @@
 // POST /api/book — trust boundary: validate everything, verify Turnstile, re-check the slot, insert a PENDING event.
 // Abby's email notification is sent by the browser after success (Web3Forms forbids server-side calls on the free plan).
 import { site } from '../../src/data/site.ts';
-import { services } from '../../src/data/services.ts';
+import { allDurations, parseAddons, quote } from '../../src/data/services.ts';
 import { slotsForDate, validateDetails, zonedTimeToUtc, normalisePhone } from '../../src/lib/availability.ts';
 import { availabilityCacheKey, busyBetween, demoAllowed, insertEvent, isConfigured, type GoogleEnv } from '../../src/lib/google-calendar.ts';
 
@@ -42,18 +42,19 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     notes: str('notes'),
     service: str('service'),
     option: str('option'),
+    addons: str('addons'),
     date: str('date'),
     time: str('time'),
     lang: str('lang') === 'zh' ? 'zh' : 'en',
   };
 
   const errors: Record<string, string> = validateDetails(b);
-  const service = services.find((s) => s.id === b.service);
-  const option = service?.options.find((o) => o.id === b.option);
-  if (!service) errors.service = 'invalid';
-  else if (!option) errors.option = 'invalid';
+  const addons = parseAddons(b.addons);
+  const booking = addons && quote(b.service, b.option, addons);
+  if (!booking) errors.option = 'invalid';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(b.date) || !/^\d{2}:\d{2}$/.test(b.time)) errors.time = 'invalid';
-  if (Object.keys(errors).length || !service || !option) return json({ error: 'validation', errors }, 400);
+  if (Object.keys(errors).length || !booking) return json({ error: 'validation', errors }, 400);
+  const { service, option, extras, minutes } = booking;
 
   const demo = !isConfigured(env);
   const mayDemo = demoAllowed(env, request.url);
@@ -71,25 +72,26 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 
   const buffer = site.booking.bufferMinutes * 60_000;
   const start = zonedTimeToUtc(b.date, b.time, site.timezone);
-  const end = start + option.minutes * 60_000;
+  const end = start + minutes * 60_000;
   try {
     const busy = await busyBetween(env, { start: start - buffer, end: end + buffer }, site.timezone);
-    if (!slotsForDate(b.date, option.minutes, busy, Date.now(), site).includes(b.time)) {
+    if (!slotsForDate(b.date, minutes, busy, Date.now(), site).includes(b.time)) {
       await purgeAvailability(request.url, b.date.slice(0, 7));
       return json({ error: 'slot_taken' }, 409);
     }
-    const label = `${service.name.en} – ${option.name.en}`;
+    const label = [`${service.name.en} – ${option.name.en}`, ...extras.map((e) => `${e.option.name.en}${e.units > 1 ? ` × ${e.units}` : ''}`)].join(' + ');
     const summary = `⏳ PENDING – ${plain(b.name)} – ${label}`;
     const description = [
       `Name: ${plain(b.name)}`,
       `Phone: ${normalisePhone(b.phone)}`,
       `Email: ${plain(b.email)}`,
-      `Service: ${label} (${option.minutes} min)`,
-      `Price: ${option.from ? 'from ' : ''}$${option.price}`,
+      `Service: ${label} (${minutes} min)`,
+      `Price: ${booking.from ? 'from ' : ''}$${booking.price}`,
+      `Deposit: $${site.booking.deposit} by WeChat — not yet received`,
       `Language: ${b.lang === 'zh' ? 'Chinese' : 'English'}`,
       `Notes: ${plain(b.notes) || '-'}`,
       '',
-      'Booked via the website. Confirm with the customer by call/SMS, then rename this event (remove "⏳ PENDING").',
+      'Booked via the website. Confirm with the customer by SMS/WhatsApp, collect the deposit, then rename this event (remove "⏳ PENDING").',
     ].join('\n');
     if (demo) console.log('[demo] booking not saved to a calendar:', summary);
     else await insertEvent(env, { summary, description, start, end, timeZone: site.timezone });
@@ -101,12 +103,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   return json({ ok: true, demo });
 };
 
-// Drop cached availability for every service/option of the month (each option has its own slot grid).
+// Drop cached availability for every possible booking length this month (the cache is keyed by duration).
 async function purgeAvailability(url: string, month: string) {
   const cache = (globalThis as { caches?: { default?: Cache } }).caches?.default;
   if (!cache) return;
   const origin = new URL(url).origin;
-  await Promise.all(
-    services.flatMap((s) => s.options.map((o) => cache.delete(availabilityCacheKey(origin, s.id, o.id, month)).catch(() => false))),
-  );
+  await Promise.all(allDurations().map((m) => cache.delete(availabilityCacheKey(origin, m, month)).catch(() => false)));
 }

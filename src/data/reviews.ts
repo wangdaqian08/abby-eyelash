@@ -17,7 +17,7 @@ export const reviews: Review[] = [
   { name: '王小姐', lang: 'zh', rating: 5, date: '2026-09-02', text: '手绘美甲太好看了！跟 Abby 说了想要的感觉，她现场帮我调整设计，细节很精致，戴了三周都没有翘边。', dummy: true },
   { name: 'Emily R.', lang: 'en', rating: 5, date: '2026-08-21', text: 'First lash lift and I’m hooked. Abby explained every step, did a patch test beforehand and the curl has lasted beautifully.', dummy: true },
   { name: 'Chen Y.', lang: 'zh', rating: 5, date: '2026-08-07', text: '离宝活车站很近，下班过来很方便。环境干净安静，Abby 做睫毛很细心，整个过程几乎睡着了。', dummy: true },
-  { name: 'Hannah K.', lang: 'en', rating: 4, date: '2026-07-15', text: 'Lovely BIAB set that has held up well with a lot of typing at work. Booking online was simple and Abby texted to confirm the same day.', dummy: true },
+  { name: 'Hannah K.', lang: 'en', rating: 4, date: '2026-07-15', text: 'Lovely gel set that has held up well with a lot of typing at work. Booking online was simple and Abby texted to confirm the same day.', dummy: true },
   { name: 'Lily Z.', lang: 'zh', rating: 5, date: '2026-06-30', text: '做了浓密款睫毛，效果自然不夸张，朋友都问在哪里做的。Abby 还很耐心地讲了护理方法，推荐！', dummy: true },
 ];
 

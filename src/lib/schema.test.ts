@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fromPrice, services } from '../data/services.ts';
+import { headline, services } from '../data/services.ts';
 import { buildGraph, isRealProfileUrl, pagePath, priceRange } from './schema.ts';
 
 const SITE = 'https://example.org';
@@ -31,11 +31,13 @@ test('home: business node with required props and catalog mirroring services.ts'
       assert.ok(biz[k], `${p} missing ${k}`);
     assert.match(biz.telephone, /^\+\d{8,15}$/);
     assert.equal(biz.address.postalCode, '2134');
-    assert.equal(biz.openingHoursSpecification.flatMap((h: any) => h.dayOfWeek).length, 7);
+    assert.equal(biz.openingHoursSpecification.flatMap((h: any) => h.dayOfWeek).length, 6); // monthly Sunday isn't a weekly day
     const items = biz.hasOfferCatalog.itemListElement;
     assert.equal(items.length, services.length);
     services.forEach((s, i) => {
-      assert.equal(items[i].price ?? items[i].priceSpecification.minPrice, fromPrice(s));
+      const h = headline(s);
+      if (h.onRequest) assert.ok(!('price' in items[i]) && !items[i].priceSpecification, `${s.id}: on-request has no price`);
+      else assert.equal(items[i].price ?? items[i].priceSpecification.minPrice, h.price);
       assert.equal(items[i].itemOffered.name, s.name[lang]);
     });
   }
@@ -48,11 +50,13 @@ test('service pages: Service offers equal services.ts prices, breadcrumb, dateMo
     const [svc] = byType(g, 'Service');
     assert.equal(svc.provider['@id'], SITE + '/#business');
     assert.equal(svc.areaServed.name, 'Burwood NSW 2134');
-    assert.equal(svc.offers.length, s.options.length);
-    s.options.forEach((o, i) => {
+    const priced = s.options.filter((o) => !o.onRequest); // on-request options carry no offer
+    assert.equal(svc.offers.length, priced.length);
+    priced.forEach((o, i) => {
       const off = svc.offers[i];
       assert.equal(off.priceCurrency, 'AUD');
-      if (o.from) assert.equal(off.priceSpecification.minPrice, o.price);
+      if (o.unit) assert.equal(off.priceSpecification.unitText, o.unit.en);
+      else if (o.from) assert.equal(off.priceSpecification.minPrice, o.price);
       else assert.equal(off.price, o.price);
     });
     assert.equal(byType(g, 'BreadcrumbList')[0].itemListElement[1].item, `${SITE}/zh/${s.slug}/`);
@@ -69,7 +73,7 @@ test('/book has no BreadcrumbList (none is visible there); extra nodes are appen
 test('helpers', () => {
   assert.equal(pagePath('/zh/book'), '/book/');
   assert.equal(pagePath('/zh'), '/');
-  assert.equal(priceRange(), '$35–$140');
+  assert.equal(priceRange(), '$70–$480'); // add-ons, removal and on-request designs excluded
   assert.equal(isRealProfileUrl('https://www.instagram.com/'), false);
   assert.equal(isRealProfileUrl('https://www.google.com/maps'), false);
   assert.equal(isRealProfileUrl('https://www.instagram.com/abbyeyelash'), true);

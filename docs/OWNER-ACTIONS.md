@@ -34,7 +34,7 @@ Time estimates are our rough guesses, not from the sources.
 - [ ] Primary category: **Eyelash salon**. Secondary category: **Nail salon**.
 - [ ] Business name, address, phone: copy exactly from `src/data/site.ts`. Website: the new domain.
 - [ ] Opening hours: same as the website. Update Google when hours change (public holidays too).
-- [ ] Add **each service with its price**, using the same names and prices as the website: Eyelash Extensions (Japanese classic, hybrid, styled, bottom lashes, infill, removal), Lash Lift, Handcrafted Nails (hand-painted nail art), Nail Polish (gel, regular), Nail Extensions (BIAB, Gel-X, infill). How to add: [Google: add or edit services](https://support.google.com/business/answer/9455399).
+- [ ] Add **each service with its price**, using the same names and prices as the website: Eyelash Extensions (Japanese classic, hybrid, styled, bottom lashes, infill, removal), Keratin Lash Lift, Powder Brows, Gel Nails (solid, cat-eye, aurora, French), Hand-painted Nail Art (price on request), Nail Extensions ($6 per nail). How to add: [Google: add or edit services](https://support.google.com/business/answer/9455399).
 - [ ] Description (English): who you are, what you do, Burwood location, one or two real facts about your work. No keyword lists, no suburb lists.
 - [ ] Photos: real photos of your work and the studio (see the shot list at the end). Add new ones regularly.
 - [ ] Booking link: the website booking page.
