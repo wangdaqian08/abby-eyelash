@@ -58,10 +58,10 @@ const drafts: Draft[] = [
   },
   {
     id: 'lash-lift',
-    summary: { en: 'Lift and tint your natural lashes — no extensions, results last 6–8 weeks.', zh: '提升并染色自然睫毛，无需嫁接，效果约 6–8 周。' },
+    summary: { en: 'A keratin lift that curls your natural lashes — no extensions, results last 6–8 weeks.', zh: '角蛋白翘睫，让自然睫毛卷翘上扬，无需嫁接，效果约 6–8 周。' },
     slug: 'lash-lift-burwood',
     name: { en: 'Lash Lift', zh: '睫毛翘睫' },
-    options: [{ id: 'lift-tint', name: { en: 'Lash lift & tint', zh: '翘睫 + 染色' } }],
+    options: [{ id: 'keratin-lift', name: { en: 'Keratin lash lift', zh: '角蛋白翘睫' } }],
   },
   {
     id: 'handcrafted-nails',

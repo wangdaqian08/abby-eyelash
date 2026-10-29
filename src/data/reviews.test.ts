@@ -27,7 +27,7 @@ test('hoursRows groups consecutive days, Monday first, and formats per locale', 
 
 test('priceLine derives "from" price and duration range from services.ts', () => {
   const by = (id: string) => services.find((s) => s.id === id)!;
-  assert.equal(priceLine(by('lash-extensions'), 'en'), 'from $80 · 120–150 min');
+  assert.equal(priceLine(by('lash-extensions'), 'en'), 'from $80 · 50–75 min');
   assert.equal(priceLine(by('lash-lift'), 'en'), '$80 · 60 min');
   assert.equal(priceLine(by('handcrafted-nails'), 'zh'), '$80 起 · 90 分钟');
 });

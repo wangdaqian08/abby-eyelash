@@ -7,7 +7,7 @@ const en = {
   eyebrow: 'Abby Eyelash · Burwood',
   book: 'Book this service',
   bookShort: 'Book now',
-  call: 'Call or text',
+  call: 'WhatsApp',
   priceEyebrow: 'Prices',
   priceTitle: ['Price & ', 'duration.'] as [string, string],
   colOption: 'Option',
@@ -22,10 +22,9 @@ const en = {
   locTitle: ['Find the studio ', 'in Burwood.'] as [string, string],
   address: 'Address',
   hours: 'Opening hours',
-  phone: 'Phone',
+  phone: 'SMS / WhatsApp',
   wechat: 'WeChat',
-  // OWNER-REVIEW PLACEHOLDER: confirm walking time/landmarks once the real street address is known.
-  findUs: 'A short walk from Burwood station and Westfield Burwood. Exact directions are sent with your booking confirmation.',
+  findUs: 'About a 5-minute walk from Burwood station. The exact address is sent when your booking is confirmed.',
   map: 'Open in Google Maps',
   review: 'Leave us a review on Google',
   days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -34,7 +33,7 @@ const en = {
   relatedEyebrow: 'More services',
   relatedTitle: ['Also at ', 'Abby Eyelash.'] as [string, string],
   ctaTitle: ['Ready when ', 'you are.'] as [string, string],
-  ctaBody: 'Choose a time online and Abby will confirm by phone or SMS.',
+  ctaBody: 'Choose a time online and Abby will confirm by SMS or WhatsApp.',
 };
 
 type Strings = typeof en;
@@ -45,7 +44,7 @@ const zh: Strings = {
   eyebrow: 'Abby Eyelash · 宝活 Burwood',
   book: '预约此项目',
   bookShort: '立即预约',
-  call: '电话 / 短信',
+  call: 'WhatsApp',
   priceEyebrow: '价格',
   priceTitle: ['价格与', '时长'],
   colOption: '项目',
@@ -60,10 +59,9 @@ const zh: Strings = {
   locTitle: ['工作室位于', '宝活 Burwood'],
   address: '地址',
   hours: '营业时间',
-  phone: '电话',
+  phone: '短信 / WhatsApp',
   wechat: '微信',
-  // OWNER-REVIEW PLACEHOLDER: confirm walking time/landmarks once the real street address is known.
-  findUs: '步行可达 Burwood 火车站和 Westfield Burwood。确认预约时会把详细路线发给你。',
+  findUs: '从宝活火车站（Burwood station）步行约 5 分钟。确认预约时会把详细地址发给你。',
   map: '在 Google 地图中打开',
   review: '在 Google 上给我们留下评价',
   days: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
@@ -72,7 +70,7 @@ const zh: Strings = {
   relatedEyebrow: '更多项目',
   relatedTitle: ['Abby Eyelash 的', '其他项目'],
   ctaTitle: ['选一个', '适合你的时间'],
-  ctaBody: '在线选择时间，Abby 会通过电话或短信与你确认。',
+  ctaBody: '在线选择时间，Abby 会通过短信或 WhatsApp 与你确认。',
 };
 
 export const serviceStrings: Record<Lang, Strings> = { en, zh };

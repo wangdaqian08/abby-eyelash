@@ -20,7 +20,7 @@ type Field = keyof Details | 'service' | 'option' | 'time';
 
 const TZ = site.timezone;
 const MIN = 60_000;
-const phoneHref = `tel:${site.phone.replace(/\s/g, '')}`;
+const phoneHref = `sms:${site.phone.replace(/\s/g, '')}`; // Abby takes texts/WhatsApp, not calls
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const fill = (s: string, v: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''));
@@ -284,7 +284,7 @@ export function start(root: HTMLElement) {
     const d = st.details;
     return `<form data-form novalidate class="max-w-xl">
       <h2 data-focus tabindex="-1" class="text-2xl outline-none sm:text-3xl">${t.detailsTitle}</h2>
-      <p class="mt-2 text-muted">${t.detailsSubtitle}</p>
+      <p class="mt-2 text-muted">${fill(t.detailsSubtitle, { deposit: site.booking.deposit })}</p>
       <div data-errsum role="alert" tabindex="-1" hidden class="mt-6 border-l-2 border-danger bg-surface-2 p-4 text-sm outline-none"></div>
       <div class="mt-6 grid gap-5">
         ${field('name', t.fName, `<input ${attrs('name')} required maxlength="80" autocomplete="name" class="${INPUT}" value="${esc(d.name)}">`)}
@@ -436,7 +436,7 @@ export function start(root: HTMLElement) {
         price: price(st.option!),
         notes: d.notes.trim() || '-',
         language: lang,
-        status: 'PENDING — confirm by call/SMS, then rename the calendar event',
+        status: 'PENDING — confirm by SMS/WhatsApp, collect the deposit, then rename the calendar event',
       }),
     }).catch(() => {});
   }
@@ -450,7 +450,8 @@ export function start(root: HTMLElement) {
     const title = fill(t.calendarTitle, { service: `${st.service!.name[lang]} · ${o.name[lang]}` });
     const a = site.address;
     const location = `${site.name}, ${a.street}, ${a.locality} ${a.region} ${a.postcode}`;
-    const details = `${t.pending}\n${t.successBody}\n${site.phoneDisplay}`;
+    const successBody = fill(t.successBody, { deposit: site.booking.deposit, wechat: site.social.wechatId, hours: site.booking.cancelHours });
+    const details = `${t.pending}\n${successBody}\n${site.phoneDisplay}`;
     const gcal = `https://calendar.google.com/calendar/render?${new URLSearchParams({ action: 'TEMPLATE', text: title, dates: `${stamp(start)}/${stamp(end)}`, details, location, ctz: TZ })}`;
     const icsText = (s: string) => s.replace(/([\\;,])/g, '\\$1').replace(/\n/g, '\\n');
     const ics = [
@@ -475,7 +476,7 @@ export function start(root: HTMLElement) {
       <p class="mt-2">${esc(fill(t.successThanks, { name: st.name ?? '' }))}</p>
       <p class="mt-4 inline-flex items-center gap-2 bg-surface-2 px-3 py-1.5 text-sm font-medium text-accent-ink"><span aria-hidden="true" class="size-2 rounded-full bg-accent"></span>${t.pending}</p>
       <div class="mt-6">${summary()}</div>
-      <p class="mt-6">${t.successBody}</p>
+      <p class="mt-6">${successBody}</p>
       <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <a href="${gcal}" target="_blank" rel="noopener" class="${BTN_PRIMARY}${tracking}">${t.addGoogle}</a>
         <a href="${icsUrl}" download="abby-eyelash-booking.ics" class="${BTN_OUTLINE}${tracking}">${t.downloadIcs}</a>

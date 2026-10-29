@@ -58,7 +58,7 @@ const config = {
       <div data-view class="min-h-[620px] lg:min-h-[480px]">
         <noscript>
           <p>{t.noscript.replace('{phone}', site.phoneDisplay)}</p>
-          <a class="mt-4 inline-block underline underline-offset-4" href={`tel:${site.phone.replace(/\s/g, '')}`}>{site.phoneDisplay}</a>
+          <a class="mt-4 inline-block underline underline-offset-4" href={`sms:${site.phone.replace(/\s/g, '')}`}>{site.phoneDisplay}</a>
         </noscript>
       </div>
     </div>

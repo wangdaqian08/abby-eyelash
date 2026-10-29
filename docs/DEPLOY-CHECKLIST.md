@@ -114,9 +114,9 @@ Replace `https://SITE` with your address.
    |---|---|
    | `booking_start` | a customer picks a service on `/book` |
    | `booking_submitted` | a booking request is saved (with value in AUD) |
-   | `book_click`, `call_click`, `map_click`, `social_click`, `review_click` | taps on links that carry a `data-track` attribute |
+   | `book_click`, `message_click`, `map_click`, `social_click`, `review_click` | taps on links that carry a `data-track` attribute |
 
-   Each event appears in GA4 after it first fires (use the site once yourself). Then go to **Admin** → **Data display** → **Events** → click the **star** next to `booking_submitted`, `book_click`, `call_click` and `map_click`. Docs: <https://support.google.com/analytics/answer/13128484>.
+   Each event appears in GA4 after it first fires (use the site once yourself). Then go to **Admin** → **Data display** → **Events** → click the **star** next to `booking_submitted`, `book_click`, `message_click` and `map_click`. Docs: <https://support.google.com/analytics/answer/13128484>.
 
 ## H. Bing (Copilot, Bing AI answers, and part of ChatGPT search)
 

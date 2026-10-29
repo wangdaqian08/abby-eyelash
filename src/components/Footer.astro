@@ -2,7 +2,7 @@
 // Site footer: NAP (identical text everywhere, from site.ts), hours, contact, socials, service links, language switch.
 import { services, type Lang } from '../data/services';
 import { site } from '../data/site';
-import { common, hoursRows, mapsUrl, napAddress, telHref } from '../i18n/common';
+import { common, hoursRows, mapsUrl, napAddress, smsHref, waHref } from '../i18n/common';
 import { localePath } from '../lib/i18n';
 import LangSwitch from './ui/LangSwitch.astro';
 
@@ -42,13 +42,14 @@ const link = 'inline-flex min-h-11 items-center text-muted transition-colors dur
     <div>
       <p class:list={head}>{t.contact}</p>
       <ul class="mt-2">
-        <li><a href={telHref(site.phone)} data-track="call_click" class={link}>{site.phoneDisplay}</a></li>
-        <li><a href={`mailto:${site.email}`} class={link}>{site.email}</a></li>
+        <li><a href={smsHref(site.phone)} data-track="message_click" class={link}>SMS {site.phoneDisplay}</a></li>
+        <li><a href={waHref(site.phone)} data-track="message_click" target="_blank" rel="noopener" class={link}>WhatsApp</a></li>
+        {site.email && <li><a href={`mailto:${site.email}`} class={link}>{site.email}</a></li>}
       </ul>
       <p class:list={[head, "mt-6"]}>{t.follow}</p>
       <ul class="mt-2">
         <li><a href={site.social.instagram} data-track="social_click" target="_blank" rel="noopener" class={link}>Instagram</a></li>
-        <li><a href={site.social.xiaohongshu} data-track="social_click" target="_blank" rel="noopener" class={link}>{lang === 'zh' ? '小红书' : 'Xiaohongshu (RED)'}</a></li>
+        {site.social.xiaohongshu && <li><a href={site.social.xiaohongshu} data-track="social_click" target="_blank" rel="noopener" class={link}>{lang === 'zh' ? '小红书' : 'Xiaohongshu (RED)'}</a></li>}
         <li>
           <button type="button" data-copy={site.social.wechatId} data-copied={t.copied} data-track="social_click" aria-label={`${t.copyWechat}: ${site.social.wechatId}`} class:list={[link, 'text-left']}>
             {t.wechat}: <span class="ml-1 text-fg">{site.social.wechatId}</span><span data-copy-status class="ml-2 text-accent-ink" aria-live="polite"></span>
