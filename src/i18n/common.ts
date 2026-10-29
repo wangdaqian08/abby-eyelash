@@ -273,17 +273,19 @@ const time = (hhmm: string, lang: Lang) => {
 };
 
 /** Group consecutive days with identical hours: [{ days: 'Monday – Friday', time: '9:00 am – 7:00 pm' }, …]. Missing days = closed. */
-export function hoursRows(hours: readonly { day: number; open: string; close: string }[], lang: Lang) {
+export function hoursRows(hours: readonly { day: number; open: string; close: string; nth?: number }[], lang: Lang) {
   const groups: { from: number; to: number; key: string; h?: (typeof hours)[number] }[] = [];
   for (const d of WEEK) {
     const h = hours.find((x) => x.day === d);
-    const key = h ? `${h.open}-${h.close}` : 'closed';
+    const key = h ? `${h.open}-${h.close}-${h.nth ?? ''}` : 'closed';
     const last = groups.at(-1);
     if (last?.key === key) last.to = d;
     else groups.push({ from: d, to: d, key, h });
   }
   return groups.map((g) => ({
-    days: g.from === g.to ? DAYS[lang][g.from] : `${DAYS[lang][g.from]}${lang === 'zh' ? '至' : ' – '}${DAYS[lang][g.to]}`,
+    days:
+      (g.from === g.to ? DAYS[lang][g.from] : `${DAYS[lang][g.from]}${lang === 'zh' ? '至' : ' – '}${DAYS[lang][g.to]}`) +
+      (g.h?.nth ? (lang === 'zh' ? `（仅每月第 ${g.h.nth} 个）` : ` (${['1st', '2nd', '3rd', '4th', '5th'][g.h.nth - 1]} of the month only)`) : ''),
     time: g.h ? `${time(g.h.open, lang)} – ${time(g.h.close, lang)}` : common[lang].closed,
   }));
 }

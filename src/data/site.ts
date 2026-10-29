@@ -24,16 +24,17 @@ export const site = {
     certifications: [] as string[],
     products: [] as string[],
   },
-  // 24h "HH:MM"; day 0 = Sunday.
+  // 24h "HH:MM"; day 0 = Sunday. `close` is the LAST START time (20:00 = the latest an appointment can begin).
+  // Sundays: only the 3rd Sunday of the month (nth: 3); every other Sunday is closed.
   hours: [
-    { day: 0, open: '10:00', close: '17:00' },
-    { day: 1, open: '09:00', close: '19:00' },
-    { day: 2, open: '09:00', close: '19:00' },
-    { day: 3, open: '09:00', close: '19:00' },
-    { day: 4, open: '09:00', close: '19:00' },
-    { day: 5, open: '09:00', close: '19:00' },
-    { day: 6, open: '09:00', close: '18:00' },
-  ],
+    { day: 1, open: '10:00', close: '20:00' },
+    { day: 2, open: '10:00', close: '20:00' },
+    { day: 3, open: '10:00', close: '20:00' },
+    { day: 4, open: '10:00', close: '20:00' },
+    { day: 5, open: '10:00', close: '20:00' },
+    { day: 6, open: '10:00', close: '20:00' },
+    { day: 0, open: '09:00', close: '20:00', nth: 3 },
+  ] as { day: number; open: string; close: string; nth?: number }[],
   social: {
     instagram: 'https://www.instagram.com/a.b_flora/',
     xiaohongshu: '' as string, // not published; empty hides it

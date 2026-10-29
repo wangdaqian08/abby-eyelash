@@ -15,11 +15,13 @@ test('launch guard throws only when LAUNCH=1 and dummy data remains', () => {
 
 test('hoursRows groups consecutive days, Monday first, and formats per locale', () => {
   assert.deepEqual(hoursRows(site.hours, 'en'), [
-    { days: 'Monday – Friday', time: '9:00 am – 7:00 pm' },
-    { days: 'Saturday', time: '9:00 am – 6:00 pm' },
-    { days: 'Sunday', time: '10:00 am – 5:00 pm' },
+    { days: 'Monday – Saturday', time: '10:00 am – 8:00 pm' },
+    { days: 'Sunday (3rd of the month only)', time: '9:00 am – 8:00 pm' },
   ]);
-  assert.deepEqual(hoursRows(site.hours, 'zh')[0], { days: '周一至周五', time: '9:00 – 19:00' });
+  assert.deepEqual(hoursRows(site.hours, 'zh'), [
+    { days: '周一至周六', time: '10:00 – 20:00' },
+    { days: '周日（仅每月第 3 个）', time: '9:00 – 20:00' },
+  ]);
   const noMonday = site.hours.filter((h) => h.day !== 1);
   assert.deepEqual(hoursRows(noMonday, 'en')[0], { days: 'Monday', time: 'Closed' });
   assert.equal(hoursRows([{ day: 2, open: '12:00', close: '00:30' }], 'en')[1].time, '12:00 pm – 12:30 am');

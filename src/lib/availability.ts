@@ -3,8 +3,15 @@
 
 export interface Rules {
   timezone: string;
-  hours: readonly { day: number; open: string; close: string }[]; // day 0 = Sunday
+  /** day 0 = Sunday; `close` is the LAST START time; `nth` limits the day to its nth occurrence in the month (3 = third Sunday). */
+  hours: readonly Hours[];
   booking: { slotMinutes: number; bufferMinutes: number; minNoticeHours: number; maxAdvanceDays: number };
+}
+export interface Hours {
+  day: number;
+  open: string;
+  close: string;
+  nth?: number;
 }
 export interface Interval {
   start: number;
@@ -64,6 +71,9 @@ export function addDays(date: string, n: number): string {
 }
 
 export const weekday = (date: string) => new Date(`${date}T00:00:00Z`).getUTCDay();
+/** Hours that apply on `date`, if the business is open that day. */
+export const hoursOn = (date: string, r: Pick<Rules, 'hours'>) =>
+  r.hours.find((x) => x.day === weekday(date) && (!x.nth || Math.ceil(+date.slice(8) / 7) === x.nth));
 const toMin = (hhmm: string) => +hhmm.slice(0, 2) * 60 + +hhmm.slice(3, 5);
 const toHHMM = (m: number) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
 
@@ -80,13 +90,13 @@ export const maxDate = (now: number, r: Rules) => addDays(localDate(now, r.timez
 export function slotsForDate(date: string, minutes: number, busy: Interval[], now: number, r: Rules): string[] {
   const { slotMinutes, bufferMinutes, minNoticeHours } = r.booking;
   if (date < localDate(now, r.timezone) || date > maxDate(now, r)) return [];
-  const h = r.hours.find((x) => x.day === weekday(date));
+  const h = hoursOn(date, r);
   if (!h) return [];
   const earliest = now + minNoticeHours * 60 * MIN;
   const buf = bufferMinutes * MIN;
   const close = toMin(h.close);
   const out: string[] = [];
-  for (let m = toMin(h.open); m + minutes <= close; m += slotMinutes) {
+  for (let m = toMin(h.open); m <= close; m += slotMinutes) {
     const time = toHHMM(m);
     const start = zonedTimeToUtc(date, time, r.timezone);
     const end = start + minutes * MIN;
@@ -97,6 +107,25 @@ export function slotsForDate(date: string, minutes: number, busy: Interval[], no
   return out;
 }
 
+/**
+ * Abby's preferred starts among `slots` (free starts on `date`): on an empty day 11:00 and evening (17:00+);
+ * otherwise the free starts right before or right after an existing booking, so the day stays compact.
+ */
+export function recommendedSlots(date: string, slots: string[], minutes: number, busy: Interval[], r: Rules): string[] {
+  const dayStart = zonedTimeToUtc(date, '00:00', r.timezone);
+  const dayEnd = zonedTimeToUtc(addDays(date, 1), '00:00', r.timezone);
+  const today = busy.filter((b) => b.start < dayEnd && b.end > dayStart);
+  if (!today.length) return slots.filter((s) => s === '11:00' || s >= '17:00');
+  const buf = r.booking.bufferMinutes * MIN;
+  const step = r.booking.slotMinutes * MIN;
+  return slots.filter((s) => {
+    const start = zonedTimeToUtc(date, s, r.timezone);
+    const end = start + minutes * MIN;
+    // gap to the neighbouring booking (after its buffer) is shorter than one slot step
+    return today.some((b) => (start >= b.end + buf && start - (b.end + buf) < step) || (end + buf <= b.start && b.start - (end + buf) < step));
+  });
+}
+
 /** Days of `month` ("YYYY-MM") with at least one slot → their slots. */
 export function monthAvailability(month: string, minutes: number, busy: Interval[], now: number, r: Rules) {
   const days: Record<string, string[]> = {};
@@ -105,6 +134,16 @@ export function monthAvailability(month: string, minutes: number, busy: Interval
     if (s.length) days[date] = s;
   }
   return days;
+}
+
+/** Recommended starts for each day of a monthAvailability() result (days without any are left out). */
+export function monthRecommended(days: Record<string, string[]>, minutes: number, busy: Interval[], r: Rules) {
+  const out: Record<string, string[]> = {};
+  for (const [date, slots] of Object.entries(days)) {
+    const rec = recommendedSlots(date, slots, minutes, busy, r);
+    if (rec.length) out[date] = rec;
+  }
+  return out;
 }
 
 /** UTC window worth querying for busy times in `month` (padded by the buffer), or null if nothing is bookable. */

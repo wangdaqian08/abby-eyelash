@@ -44,7 +44,8 @@ const offer = (name: string, price: number, from = false): Node => ({
 
 const hours = () => {
   const groups = new Map<string, string[]>();
-  for (const h of site.hours) {
+  // A monthly day (3rd Sunday) can't be expressed as a weekly dayOfWeek, so it is left out rather than overstated.
+  for (const h of site.hours.filter((x) => !x.nth)) {
     const key = `${h.open}-${h.close}`;
     groups.set(key, [...(groups.get(key) ?? []), DAYS[h.day]]);
   }
