@@ -3,6 +3,7 @@
 // Body strings are trusted HTML (rendered with set:html) so they can carry citation links.
 // Every `// OWNER-REVIEW` marks a claim Abby must confirm before launch (products, aftercare, policies).
 import { services, type Lang } from './services';
+import { site } from './site';
 
 export interface Section {
   h2: [string, string]; // "Line one " + <em>accent</em>
@@ -37,6 +38,13 @@ const span = (s: string, ...os: string[]) => {
 // Options priced as a share of the full set (lash infill tiers), and "$X–$Y" for ranged prices — both from prices.csv.
 const shares = (s: string) => services.find((v) => v.id === s)!.options.filter((o) => o.pct);
 const range = (s: string, o: string) => (opt(s, o).maxPrice ? `$${opt(s, o).price}–$${opt(s, o).maxPrice}` : $(s, o));
+
+const { deposit, cancelHours: h } = site.booking;
+// One cancellation answer for every service page, built from site.ts so the rule can't drift between pages.
+const CANCEL = {
+  en: { q: 'What is your cancellation policy?', a: `A $${deposit} deposit by WeChat (${site.social.wechatId}) secures your booking. Please give at least ${h} hours’ notice to cancel or reschedule; within ${h} hours the deposit is not refunded and the time can’t be changed.` },
+  zh: { q: '取消预约有什么规定？', a: `预约需通过微信（${site.social.wechatId}）支付 $${deposit} 订金。如需取消或改期，请至少提前 ${h} 小时告知；${h} 小时以内取消或改期，订金不退，也不能更改时间。` },
+};
 
 const cite = (href: string, text: string) =>
   `<a href="${href}" target="_blank" rel="noopener" class="underline underline-offset-4 hover:text-fg">${text}</a>`;
@@ -107,7 +115,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `After 4 weeks: full price`,
           ],
           after: [
-            `For example, an infill on a Japanese classic natural set (${$(L, 'classic-natural')}) within 2 weeks is ${$(L, 'infill-2w')}. Removal is ${range(L, 'removal')}.`,
+            `For example, an infill on a Japanese classic natural set (${$(L, 'classic-natural')}) within 2 weeks is ${$(L, 'infill-2w')}. Removal on its own is ${range(L, 'removal')}; it’s free if your last set was done here and you’re having a new set straight after.`,
           ],
         },
         {
@@ -141,9 +149,9 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: 'How long does a full set take?', a: `About ${span(L, 'classic-natural', 'classic-full', 'hybrid-natural', 'hybrid-full', 'styled')} minutes for a full set. An infill takes about ${span(L, 'infill-2w', 'infill-3w', 'infill-4w')} minutes.` },
         { q: 'Can I wear mascara with extensions?', a: 'You usually won’t need it. If you do, use a water-based mascara on the tips only, never waterproof, and remove it with an oil-free cleanser.' }, // OWNER-REVIEW
         { q: 'Do eyelash extensions damage natural lashes?', a: 'Lash loss is a known risk, mostly from extensions that are too heavy, rubbing, or pulling them off. Sizing the set to your own lashes and having them removed professionally keeps that risk low.' },
-        { q: 'How do I get them removed?', a: `Book a removal (${range(L, 'removal')}) with Abby. She dissolves the adhesive with a professional remover so your natural lashes aren’t pulled out. Never pick them off.` }, // OWNER-REVIEW: removal time
+        { q: 'How do I get them removed?', a: `Book a removal with Abby: ${range(L, 'removal')} on its own, or free if your last set was done here and you’re having a new set straight after. She dissolves the adhesive with a professional remover so your natural lashes aren’t pulled out. Never pick them off.` }, // OWNER-REVIEW: removal time
         { q: 'I reacted to lash glue before. Can I still have extensions?', a: 'Tell Abby before booking. A patch test is essential, and after a significant reaction a lash lift may be the better choice.' }, // OWNER-REVIEW
-        { q: 'What is your cancellation policy?', a: 'Please give at least 24 hours’ notice to cancel or reschedule.' }, // OWNER-REVIEW (SPEC placeholder)
+        CANCEL.en,
       ],
       alt: {
         hero: 'Close-up of a Japanese classic eyelash extension set applied by Abby at her Burwood studio',
@@ -187,7 +195,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `超过 4 周：原价`,
           ],
           after: [
-            `例如日式单根自然款（${$(L, 'classic-natural')}）2 周内回补为 ${$(L, 'infill-2w')}。卸睫毛 ${range(L, 'removal')}。`,
+            `例如日式单根自然款（${$(L, 'classic-natural')}）2 周内回补为 ${$(L, 'infill-2w')}。单独卸睫毛 ${range(L, 'removal')}；如果上一次是在这里做的，卸完接着做新睫毛，免收卸睫毛费。`,
           ],
         },
         {
@@ -221,9 +229,9 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: '做一套要多久？', a: `全套约 ${span(L, 'classic-natural', 'classic-full', 'hybrid-natural', 'hybrid-full', 'styled')} 分钟，回补约 ${span(L, 'infill-2w', 'infill-3w', 'infill-4w')} 分钟。` },
         { q: '嫁接后还能涂睫毛膏吗？', a: '一般不需要。如果要涂，只在睫毛尾端用水性睫毛膏，不要用防水款，并用无油清洁产品卸掉。' }, // OWNER-REVIEW
         { q: '嫁接睫毛会伤真睫毛吗？', a: '睫毛脱落确实是已知风险，多数来自睫毛过重、经常揉或自己拔。按你的真睫毛选合适的款式，并由专业人员卸除，风险就能降到很低。' },
-        { q: '想卸掉怎么办？', a: `预约 Abby 帮你卸（${range(L, 'removal')}）。她会用专业卸睫膏溶解胶水，不会扯掉真睫毛。请不要自己拔。` }, // OWNER-REVIEW: removal time
+        { q: '想卸掉怎么办？', a: `预约 Abby 帮你卸：单独卸睫毛 ${range(L, 'removal')}；上一次在这里做、卸完接着做新睫毛的免费。她会用专业卸睫膏溶解胶水，不会扯掉真睫毛。请不要自己拔。` }, // OWNER-REVIEW: removal time
         { q: '以前对睫毛胶过敏，还能做吗？', a: '请在预约前告诉 Abby。一定要先做皮试；如果以前反应比较严重，翘睫可能更适合你。' }, // OWNER-REVIEW
-        { q: '取消预约有什么规定？', a: '如需取消或改期，请至少提前 24 小时告知。' }, // OWNER-REVIEW
+        CANCEL.zh,
       ],
       alt: {
         hero: 'Abby 在 Burwood 工作室完成的日式单根嫁接睫毛近照',
@@ -234,10 +242,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
 
   [LL]: {
     en: {
-      title: 'Lash Lift & Tint in Burwood | Abby Eyelash',
-      description: `Lash lift and tint in Burwood NSW: ${$(LL, 'lift-tint')}, about ${m(LL, 'lift-tint')} minutes, results last 6–8 weeks. What happens, aftercare, patch tests and who it suits.`,
-      h1: ['Lash lift & tint ', 'in Burwood.'],
-      intro: `A lash lift curls your own lashes upward from the root with a lifting solution, and a tint darkens them so they look longer without mascara or extensions. At Abby Eyelash in Burwood NSW 2134, a lash lift and tint is ${$(LL, 'lift-tint')} and takes about ${m(LL, 'lift-tint')} minutes. Results usually last 6–8 weeks, until those lashes naturally grow out.`,
+      title: 'Keratin Lash Lift in Burwood | Abby Eyelash',
+      description: `Keratin lash lift in Burwood NSW: ${$(LL, 'keratin-lift')}, about ${m(LL, 'keratin-lift')} minutes, results last 6–8 weeks. What happens, aftercare, patch tests and who it suits.`,
+      h1: ['Keratin lash lift ', 'in Burwood.'],
+      intro: `A keratin lash lift curls your own lashes upward from the root with a lifting solution and a keratin treatment, so they look longer and more open without mascara or extensions. Tinting is not included. At Abby Eyelash in Burwood NSW 2134, a keratin lash lift is ${$(LL, 'keratin-lift')} and takes about ${m(LL, 'keratin-lift')} minutes. Results usually last 6–8 weeks, until those lashes naturally grow out.`,
       sections: [
         {
           h2: ['Who a lash lift ', 'suits'],
@@ -252,7 +260,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `Your lashes are cleansed so they’re free of oil and makeup.`,
             `A soft silicone shield, sized to your lash length, is placed on the eyelid and your lashes are combed up onto it.`,
             `Lifting solution goes on the lashes (not the skin) for a time set by your lash thickness, followed by a setting solution.`,
-            `Tint is applied to darken the lashes, then everything is gently cleaned off and the lashes are conditioned.`,
+            `Everything is gently cleaned off and a keratin treatment conditions the lashes.`,
           ],
           after: [`Your eyes stay closed the whole time, and most clients find it relaxing.`],
         },
@@ -283,7 +291,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         {
           h2: ['Patch tests ', 'and sensitive eyes'],
           body: [
-            `The lifting and tint solutions are used very close to your eyes. A Cleveland Clinic ophthalmologist notes that ${cite(CLEVELAND, 'sensitivity to fragrances or added chemicals is common')}, showing as redness, swelling or a rash, and recommends a patch test beforehand, while pointing out that a patch test is not a guarantee.`,
+            `The lifting solutions are used very close to your eyes. A Cleveland Clinic ophthalmologist notes that ${cite(CLEVELAND, 'sensitivity to fragrances or added chemicals is common')}, showing as redness, swelling or a rash, and recommends a patch test beforehand, while pointing out that a patch test is not a guarantee.`,
             `First-time clients can have a free patch test at least 48 hours before their lift. If anything stings during the treatment, tell Abby straight away so she can rinse it. If irritation lasts after you leave, see your GP or optometrist.`, // OWNER-REVIEW: patch-test price/timing, products used
             `Please wait if you have an eye infection or have had recent eye surgery.`, // OWNER-REVIEW
           ],
@@ -294,18 +302,18 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: 'Lash lift or eyelash extensions?', a: `A lift uses your own lashes, needs no refills and lasts 6–8 weeks. Extensions add length and fullness but need a refill every 2–3 weeks.` },
         { q: 'Can I wear mascara after a lift?', a: 'Yes, after 24 hours. Water-based mascara is easiest to remove without disturbing the curl.' }, // OWNER-REVIEW
         { q: 'My lashes are short. Will a lift work?', a: 'Lashes need enough length to wrap onto the shield. Abby checks this at the start and will tell you honestly if a lift won’t show much.' },
-        { q: 'What is your cancellation policy?', a: 'Please give at least 24 hours’ notice to cancel or reschedule.' }, // OWNER-REVIEW
+        CANCEL.en,
       ],
       alt: {
-        hero: 'Natural lashes curled and tinted after a lash lift at Abby Eyelash, Burwood',
+        hero: 'Natural lashes curled upward after a keratin lash lift at Abby Eyelash, Burwood',
         detail: 'Lashes combed onto a silicone shield during a lash lift',
       },
     },
     zh: {
-      title: '宝活 Burwood 睫毛翘睫 + 染色 | Abby Eyelash',
-      description: `悉尼宝活 Burwood 翘睫 + 染色：${$(LL, 'lift-tint')}，约 ${m(LL, 'lift-tint')} 分钟，效果约 6–8 周。流程、术后护理、皮试和适合人群说明。`,
-      h1: ['宝活 Burwood ', '翘睫 + 染色'],
-      intro: `翘睫（也叫睫毛翘、角蛋白翘睫）是用专用药水把你自己的睫毛从根部往上定型，再染深颜色，不用睫毛膏、不用嫁接也显得更长。在 Burwood NSW 2134 的 Abby Eyelash，翘睫 + 染色 ${$(LL, 'lift-tint')}，约 ${m(LL, 'lift-tint')} 分钟。效果一般维持 6–8 周，直到这批睫毛自然换掉。`,
+      title: '宝活 Burwood 角蛋白翘睫 | Abby Eyelash',
+      description: `悉尼宝活 Burwood 角蛋白翘睫：${$(LL, 'keratin-lift')}，约 ${m(LL, 'keratin-lift')} 分钟，效果约 6–8 周。流程、术后护理、皮试和适合人群说明。`,
+      h1: ['宝活 Burwood ', '角蛋白翘睫'],
+      intro: `翘睫（也叫睫毛翘、角蛋白翘睫）是用专用药水把你自己的睫毛从根部往上定型，再做角蛋白护理，不用睫毛膏、不用嫁接也显得更长更有神。不含染色。在 Burwood NSW 2134 的 Abby Eyelash，角蛋白翘睫 ${$(LL, 'keratin-lift')}，约 ${m(LL, 'keratin-lift')} 分钟。效果一般维持 6–8 周，直到这批睫毛自然换掉。`,
       sections: [
         {
           h2: ['哪些人', '适合翘睫'],
@@ -320,7 +328,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `清洁睫毛，去掉油脂和眼妆。`,
             `按你的睫毛长度选合适的硅胶垫贴在眼皮上，把睫毛梳到垫子上。`,
             `软化药水只涂在睫毛上，不碰皮肤，停留时间按睫毛粗细调整，然后上定型药水。`,
-            `染色让睫毛更黑，最后清洁干净并做营养护理。`,
+            `最后清洁干净，用角蛋白给睫毛做营养护理。`,
           ],
           after: [`全程闭眼，大多数客人都觉得很放松。`],
         },
@@ -362,10 +370,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: '翘睫和嫁接睫毛怎么选？', a: '翘睫用的是你自己的睫毛，不用补，维持 6–8 周；嫁接能增加长度和浓密度，但每 2–3 周要补一次。' },
         { q: '翘睫后能涂睫毛膏吗？', a: '24 小时后可以。水性睫毛膏最好卸，不容易破坏卷度。' }, // OWNER-REVIEW
         { q: '睫毛很短也能做吗？', a: '睫毛需要有一定长度才能贴到硅胶垫上。Abby 开始前会先看，如果效果不明显会直接告诉你。' },
-        { q: '取消预约有什么规定？', a: '如需取消或改期，请至少提前 24 小时告知。' }, // OWNER-REVIEW
+        CANCEL.zh,
       ],
       alt: {
-        hero: 'Abby Eyelash（Burwood）翘睫 + 染色后自然上翘的睫毛',
+        hero: 'Abby Eyelash（Burwood）角蛋白翘睫后自然上翘的睫毛',
         detail: '翘睫过程中睫毛被梳到硅胶垫上定型',
       },
     },
@@ -427,7 +435,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: 'Can you copy a design I found online?', a: 'Abby uses it as a reference and paints her own version by hand, adjusting the scale and colours so it suits your nails.' },
         { q: 'How long will hand-painted nails last?', a: 'Usually 2–3 weeks on a gel base. Wearing gloves for chores and using cuticle oil helps.' }, // OWNER-REVIEW
         { q: 'Can I have nail art on extensions?', a: 'Yes. Pair it with BIAB or Gel-X and mention it when booking.' },
-        { q: 'What is your cancellation policy?', a: 'Please give at least 24 hours’ notice to cancel or reschedule.' }, // OWNER-REVIEW
+        CANCEL.en,
       ],
       alt: {
         hero: 'Hand-painted floral nail art by Abby on short natural nails, Burwood',
@@ -489,7 +497,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: '网上看到的款式能照着做吗？', a: '可以作为参考。Abby 会亲手画出自己的版本，并调整比例和颜色，让它更适合你的指甲。' },
         { q: '手绘美甲能维持多久？', a: '做在甲油胶底上一般 2–3 周。做家务戴手套、常涂指缘油会更持久。' }, // OWNER-REVIEW
         { q: '延长甲上可以画图案吗？', a: '可以，搭配 BIAB 或 Gel-X，预约时备注即可。' },
-        { q: '取消预约有什么规定？', a: '如需取消或改期，请至少提前 24 小时告知。' }, // OWNER-REVIEW
+        CANCEL.zh,
       ],
       alt: {
         hero: 'Abby 在 Burwood 为自然短甲手绘的小花美甲',
@@ -554,7 +562,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: 'Is gel bad for my nails?', a: 'Most damage comes from peeling gel off or rough removal, which strips layers of the nail. Having it soaked off properly and using cuticle oil keeps nails in good condition.' }, // OWNER-REVIEW
         { q: 'Which lasts longer for a holiday?', a: 'Gel. It is dry when you leave and usually lasts 2–3 weeks, while regular polish lasts around a week.' },
         { q: 'Can I add nail art?', a: `Yes. Hand-painted designs are booked as Handcrafted Nails, from ${$(H, 'nail-art')}.` },
-        { q: 'What is your cancellation policy?', a: 'Please give at least 24 hours’ notice to cancel or reschedule.' }, // OWNER-REVIEW
+        CANCEL.en,
       ],
       alt: {
         hero: 'Glossy nude gel manicure on short rounded nails, Abby Eyelash Burwood',
@@ -616,7 +624,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: '光疗甲伤指甲吗？', a: '损伤大多来自硬撕或粗暴卸甲，会把甲面一层层带掉。专业泡卸、平时涂指缘油，指甲就能保持健康。' }, // OWNER-REVIEW
         { q: '去旅行选哪种更持久？', a: '光疗甲。做完就干，一般维持 2–3 周；普通甲油大约一周。' },
         { q: '可以加图案吗？', a: `可以，手绘款请预约手绘定制美甲，${$(H, 'nail-art')} 起。` },
-        { q: '取消预约有什么规定？', a: '如需取消或改期，请至少提前 24 小时告知。' }, // OWNER-REVIEW
+        CANCEL.zh,
       ],
       alt: {
         hero: 'Abby Eyelash（Burwood）完成的裸色光疗甲，短圆甲型',
@@ -681,7 +689,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: 'Can Gel-X be infilled?', a: 'Abby soaks Gel-X off and applies a fresh set rather than infilling it, which keeps the tip and your natural nail well bonded.' }, // OWNER-REVIEW
         { q: 'Will extensions ruin my natural nails?', a: 'Damage usually comes from peeling, biting or forcing extensions off. With proper soak-off removal and regular infills, your natural nails stay in good shape.' },
         { q: 'Can I add nail art?', a: `Yes. Hand-painted art on top is booked as Handcrafted Nails, from ${$(H, 'nail-art')}.` },
-        { q: 'What is your cancellation policy?', a: 'Please give at least 24 hours’ notice to cancel or reschedule.' }, // OWNER-REVIEW
+        CANCEL.en,
       ],
       alt: {
         hero: 'Almond-shaped Gel-X nail extensions in a soft pink finish, Abby Eyelash Burwood',
@@ -743,7 +751,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: 'Gel-X 可以补甲吗？', a: 'Abby 会把 Gel-X 泡卸后重新做一套，而不是补甲，这样甲片和真指甲贴合得更牢。' }, // OWNER-REVIEW
         { q: '延长甲会伤真指甲吗？', a: '损伤通常来自撕、咬或硬拔。正确泡卸、按时补甲，真指甲就能保持健康。' },
         { q: '可以加图案吗？', a: `可以，手绘图案请预约手绘定制美甲，${$(H, 'nail-art')} 起。` },
-        { q: '取消预约有什么规定？', a: '如需取消或改期，请至少提前 24 小时告知。' }, // OWNER-REVIEW
+        CANCEL.zh,
       ],
       alt: {
         hero: 'Abby Eyelash（Burwood）完成的杏仁形淡粉色 Gel-X 延长甲',

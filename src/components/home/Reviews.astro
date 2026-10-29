@@ -33,9 +33,9 @@ const t = common[lang].reviews;
       ))}
     </ul>
 
-    <div class="mt-12 flex flex-col items-center gap-4">
+    {site.google.reviewsUrl && <div class="mt-12 flex flex-col items-center gap-4">
       <Button href={site.google.reviewsUrl} lang={lang} variant="inverse" track="review_click" target="_blank" rel="noopener">{t.readAll}</Button>
       <a href={site.google.reviewsUrl} data-track="review_click" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center text-sm text-on-primary/90 underline underline-offset-4 hover:text-on-primary">{t.leave}</a>
-    </div>
+    </div>}
   </div>
 </section>

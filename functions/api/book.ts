@@ -89,7 +89,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       `Language: ${b.lang === 'zh' ? 'Chinese' : 'English'}`,
       `Notes: ${plain(b.notes) || '-'}`,
       '',
-      'Booked via the website. Confirm with the customer by call/SMS, then rename this event (remove "⏳ PENDING").',
+      'Booked via the website. Confirm with the customer by SMS/WhatsApp, collect the deposit, then rename this event (remove "⏳ PENDING").',
     ].join('\n');
     if (demo) console.log('[demo] booking not saved to a calendar:', summary);
     else await insertEvent(env, { summary, description, start, end, timeZone: site.timezone });

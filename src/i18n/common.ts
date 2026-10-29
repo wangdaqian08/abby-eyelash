@@ -90,20 +90,29 @@ const en = {
     accent: 'answered.',
     intro: 'Short answers to what clients ask most. Anything else — just ask when you book.',
   },
+  offers: {
+    eyebrow: 'Offers',
+    title: 'A little',
+    accent: 'thank you.',
+    items: [
+      { h: 'Birthday month', p: '20% off eyelash extensions and lash lifts during your birthday month.' },
+      { h: 'Refer a friend', p: 'Your friend gets $5 off their first visit, and you get a scratch card once they’ve had their appointment.' },
+    ],
+    note: 'Offers apply once the service is completed.',
+  },
   contact: {
     eyebrow: 'Hours & contact',
     title: 'When to',
     accent: 'visit.',
     address: 'Address',
-    phone: 'Phone',
+    phone: 'SMS / WhatsApp',
     email: 'Email',
-    // PLACEHOLDER — confirm walking directions once the real street address is known.
-    findUs: 'How to find us: a short walk from Burwood station and Westfield Burwood, on the Burwood Road side of the town centre.',
+    findUs: 'About a 5-minute walk from Burwood station. The exact address is sent when your booking is confirmed.',
     byAppointment: 'By appointment — Abby works alone, so please book ahead.',
     openMaps: 'Open in Google Maps',
     mapTitle: 'Map showing Abby Eyelash in Burwood',
     bookOnline: 'Book your appointment online',
-    call: 'Call to book',
+    call: 'WhatsApp to book',
   },
   closed: 'Closed',
 };
@@ -196,20 +205,29 @@ const zh: Strings = {
     accent: '一次说清。',
     intro: '整理了顾客最常问的问题。还有其他疑问，预约时直接问 Abby 就好。',
   },
+  offers: {
+    eyebrow: '优惠活动',
+    title: '一点',
+    accent: '小心意。',
+    items: [
+      { h: '生日当月', p: '生日当月做嫁接睫毛或翘睫，享 8 折优惠。' },
+      { h: '介绍朋友', p: '被介绍的新朋友首次到店减 $5，朋友做完服务后，介绍人可获得一张刮刮卡。' },
+    ],
+    note: '优惠在服务完成后结算。',
+  },
   contact: {
     eyebrow: '营业时间与联系方式',
     title: '欢迎',
     accent: '到店。',
     address: '地址',
-    phone: '电话',
+    phone: '短信 / WhatsApp',
     email: '邮箱',
-    // PLACEHOLDER — confirm walking directions once the real street address is known.
-    findUs: '怎么来：从宝活火车站（Burwood station）和 Westfield Burwood 步行即可到达，位于 Burwood Road 一侧的市中心。',
+    findUs: '从宝活火车站（Burwood station）步行约 5 分钟。确认预约时会把详细地址发给你。',
     byAppointment: '仅限预约 —— Abby 一人工作，请提前预约。',
     openMaps: '在 Google 地图中打开',
     mapTitle: 'Abby Eyelash 在宝活的位置地图',
     bookOnline: '在线预约',
-    call: '致电预约',
+    call: 'WhatsApp 预约',
   },
   closed: '休息',
 };
@@ -235,7 +253,9 @@ export function priceLine(s: Service, lang: Lang) {
 export const napAddress = (site: Pick<Site, 'address'>) =>
   `${site.address.street}, ${site.address.locality} ${site.address.region} ${site.address.postcode}`;
 
-export const telHref = (phone: string) => `tel:${phone.replace(/\s/g, '')}`;
+// Abby takes texts and WhatsApp only, so contact links never use tel:.
+export const smsHref = (phone: string) => `sms:${phone.replace(/\s/g, '')}`;
+export const waHref = (phone: string) => `https://wa.me/${phone.replace(/\D/g, '')}`;
 
 export const mapsUrl = (site: Pick<Site, 'name' | 'address'>) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${site.name}, ${napAddress(site)}`)}`;
@@ -274,21 +294,25 @@ export const monthYear = (iso: string, lang: Lang) =>
 
 /**
  * Home FAQ — answers are always visible (GEO-STRATEGY #2) and each answer stands on its own.
- * `{phone}` / `{address}` are filled from site.ts. PLACEHOLDER: payment methods and parking details — confirm with Abby.
+ * `{phone}`, `{address}`, `{deposit}`, `{wechat}` and `{hours}` are filled from site.ts. PLACEHOLDER: payment methods — confirm with Abby.
  */
 export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
   en: [
     {
       q: 'How do I book, and what is the cancellation policy?',
-      a: 'Book online at any time, or call or text {phone}. Please give at least 24 hours’ notice to cancel or reschedule, so the time can be offered to another client.',
+      a: 'Book online at any time, or text or WhatsApp {phone}. After you book, a ${deposit} deposit by WeChat ({wechat}) secures your time. Please give at least {hours} hours’ notice to cancel or reschedule; within {hours} hours the deposit is not refunded and the time can’t be changed.',
     },
     {
       q: 'What payment methods do you accept?',
-      a: 'Payment is made at the end of your appointment by card (Visa, Mastercard, contactless) or cash. No deposit is needed to book online.',
+      a: 'A ${deposit} deposit is paid by WeChat ({wechat}) after you book. The rest is paid at the end of your appointment by card (Visa, Mastercard, contactless) or cash.',
     },
     {
-      q: 'Where is the studio, and where can I park?',
-      a: 'Abby Eyelash is at {address}, a short walk from Burwood station and Westfield Burwood. Westfield Burwood has a large shopping-centre car park, and there is time-limited street parking on the surrounding streets.',
+      q: 'Do you have any offers?',
+      a: 'Yes. Eyelash extensions and lash lifts are 20% off during your birthday month. If you refer a friend, they get $5 off their first visit and you get a scratch card once they’ve had their appointment.',
+    },
+    {
+      q: 'Where is the studio?',
+      a: 'Abby Eyelash is a home studio on {address}, about a 5-minute walk from Burwood station. The exact address is sent when your booking is confirmed.',
     },
     {
       q: 'What happens at my first visit?',
@@ -300,7 +324,7 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
     },
     {
       q: 'How long do lash extensions and lash lifts last?',
-      a: 'Lash extensions shed naturally with your own lashes, so most clients book an infill every 2–3 weeks. A lash lift and tint usually lasts 6–8 weeks.',
+      a: 'Lash extensions shed naturally with your own lashes, so most clients book an infill every 2–3 weeks. A keratin lash lift usually lasts 6–8 weeks.',
     },
     {
       q: 'How long do gel polish and nail extensions last?',
@@ -310,15 +334,19 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
   zh: [
     {
       q: '怎么预约？取消政策是什么？',
-      a: '可以随时在线预约，也可以致电或发短信至 {phone}。如需取消或改期，请至少提前 24 小时告知，以便把时间留给其他顾客。',
+      a: '可以随时在线预约，也可以发短信或 WhatsApp 至 {phone}。预约后请通过微信（{wechat}）支付 ${deposit} 订金确认时间。如需取消或改期，请至少提前 {hours} 小时告知；{hours} 小时以内取消或改期，订金不退，也不能更改时间。',
     },
     {
       q: '可以用哪些方式付款？',
-      a: '服务结束后付款，支持刷卡（Visa、Mastercard、手机或卡片感应支付）和现金。在线预约无需支付订金。',
+      a: '预约后通过微信（{wechat}）支付 ${deposit} 订金，其余费用在服务结束后付款，支持刷卡（Visa、Mastercard、手机或卡片感应支付）和现金。',
     },
     {
-      q: '工作室在哪里？方便停车吗？',
-      a: 'Abby Eyelash 的地址是 {address}，从宝活火车站（Burwood station）和 Westfield Burwood 步行即可到达。Westfield Burwood 设有大型商场停车场，周边街道也有限时路边车位。',
+      q: '有什么优惠吗？',
+      a: '有。生日当月做嫁接睫毛或翘睫享 8 折。介绍朋友来做，新朋友首次到店减 $5，朋友做完服务后，介绍人可获得一张刮刮卡。',
+    },
+    {
+      q: '工作室在哪里？',
+      a: 'Abby Eyelash 是位于 {address} 的家庭工作室，从宝活火车站（Burwood station）步行约 5 分钟。确认预约时会把详细地址发给你。',
     },
     {
       q: '第一次去需要注意什么？',
@@ -330,7 +358,7 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
     },
     {
       q: '嫁接睫毛和翘睫能维持多久？',
-      a: '嫁接睫毛会随自身睫毛自然脱落，大多数顾客每 2–3 周补一次。翘睫加染色一般可维持 6–8 周。',
+      a: '嫁接睫毛会随自身睫毛自然脱落，大多数顾客每 2–3 周补一次。角蛋白翘睫一般可维持 6–8 周。',
     },
     {
       q: '光疗甲和延长甲能维持多久？',
