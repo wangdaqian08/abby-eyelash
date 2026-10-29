@@ -59,6 +59,22 @@ const hours = () => {
   });
 };
 
+// The 3rd-Sunday opening as dated specialOpeningHoursSpecification entries for the next 6 months, computed at build.
+// shortcut: dates are fixed at build time; a deploy at least every few months keeps them current.
+export const specialHours = (now = Date.now()) => {
+  const today = new Date(now).toISOString().slice(0, 10);
+  const out: Node[] = [];
+  for (const h of site.hours.filter((x) => x.nth)) {
+    for (let i = 0; i < 6; i++) {
+      const start = new Date(now);
+      const first = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + i, 1));
+      const date = new Date(first.getTime() + (((h.day - first.getUTCDay() + 7) % 7) + 7 * (h.nth! - 1)) * 86_400_000).toISOString().slice(0, 10);
+      if (date >= today) out.push({ '@type': 'OpeningHoursSpecification', validFrom: date, validThrough: date, opens: h.open, closes: h.close });
+    }
+  }
+  return out;
+};
+
 const providerRef = (base: string | URL) => ({ '@type': BIZ_TYPE, '@id': abs(base, '/#business'), name: site.name });
 
 export function businessNode(base: string | URL, lang: Lang, image: string): Node {
@@ -80,6 +96,7 @@ export function businessNode(base: string | URL, lang: Lang, image: string): Nod
     },
     geo: { '@type': 'GeoCoordinates', latitude: site.geo.lat, longitude: site.geo.lng },
     openingHoursSpecification: hours(),
+    specialOpeningHoursSpecification: specialHours(),
     priceRange: priceRange(),
     ...(sameAs.length && { sameAs }),
     founder: { '@type': 'Person', '@id': abs(base, '/#abby'), name: site.owner },

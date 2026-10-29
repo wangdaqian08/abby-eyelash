@@ -4,7 +4,7 @@ import type { Lang } from '../data/services';
 const en = {
   metaTitle: 'Book an appointment | Abby Eyelash, Burwood',
   metaDescription:
-    'Book eyelash extensions, lash lifts and nails with Abby in Burwood NSW. Choose a service, date and time online — we confirm by SMS or WhatsApp.',
+    'Book eyelash extensions, lash lifts, powder brows or gel nails with Abby in Burwood NSW. Pick a service and time online; we confirm by SMS or WhatsApp.',
   eyebrow: 'Online booking',
   titleA: 'Book your ',
   titleB: 'appointment.',
@@ -86,7 +86,7 @@ type Strings = typeof en;
 
 const zh: Strings = {
   metaTitle: '在线预约 | Abby Eyelash · Burwood 美睫美甲',
-  metaDescription: '在线预约 Abby 的嫁接睫毛、翘睫与美甲服务（悉尼 Burwood）。选择项目、日期和时间，我们会通过短信或 WhatsApp 确认。',
+  metaDescription: '在线预约 Abby 的嫁接睫毛、翘睫、雾眉与美甲服务（悉尼 Burwood）。选择项目、日期和时间，我们会通过短信或 WhatsApp 确认。',
   eyebrow: '在线预约',
   titleA: '预约你的',
   titleB: '专属时间',

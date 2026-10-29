@@ -386,7 +386,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       title: 'Powder Brows in Burwood | Semi-Permanent | Abby Eyelash',
       description: `Semi-permanent powder brows by Abby in Burwood NSW: ${$(B, 'powder')} (was $${was(B, 'powder')}), about ${m(B, 'powder')} minutes, one free touch-up within 3 months. Healing and aftercare.`,
       h1: ['Powder brows ', 'in Burwood.'],
-      intro: `Powder brows are a semi-permanent brow treatment: fine dots of cosmetic pigment are placed in the skin to build a soft, filled-in look, like a light brow powder that doesn’t wash off. At Abby Eyelash in Burwood NSW 2134, powder brows are currently ${$(B, 'powder')} (usually $${was(B, 'powder')}) and take about ${m(B, 'powder')} minutes, including mapping the shape with you. One touch-up within 3 months is included free.`,
+      intro: `Powder brows (also called ombré brows or a powder brow tattoo) are a semi-permanent brow treatment: fine dots of cosmetic pigment are placed in the skin to build a soft, filled-in look, like a light brow powder that doesn’t wash off. At Abby Eyelash in Burwood NSW 2134, powder brows are currently ${$(B, 'powder')} (usually $${was(B, 'powder')}) and take about ${m(B, 'powder')} minutes, including mapping the shape with you. One touch-up within 3 months is included free.`,
       sections: [
         {
           h2: ['Who powder brows ', 'suit'],
@@ -447,7 +447,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       title: '宝活 Burwood 半永久雾眉 | Abby Eyelash',
       description: `悉尼宝活 Burwood 半永久雾眉：现价 ${$(B, 'powder')}（原价 $${was(B, 'powder')}），约 ${m(B, 'powder')} 分钟，3 个月内免费补色一次。流程、恢复期与护理说明。`,
       h1: ['宝活 Burwood ', '半永久雾眉'],
-      intro: `雾眉是一种半永久眉妆：用很细的点状手法把色料打入皮肤浅层，形成柔和的粉雾感，像淡淡的眉粉，但不会被洗掉。在 Burwood NSW 2134 的 Abby Eyelash，雾眉现价 ${$(B, 'powder')}（原价 $${was(B, 'powder')}），约 ${m(B, 'powder')} 分钟，包含和你一起设计眉形。3 个月内免费补色一次。`,
+      intro: `雾眉（也就是常说的半永久纹眉、粉雾眉）是一种半永久眉妆：用很细的点状手法把色料打入皮肤浅层，形成柔和的粉雾感，像淡淡的眉粉，但不会被洗掉。在 Burwood NSW 2134 的 Abby Eyelash，雾眉现价 ${$(B, 'powder')}（原价 $${was(B, 'powder')}），约 ${m(B, 'powder')} 分钟，包含和你一起设计眉形。3 个月内免费补色一次。`,
       sections: [
         {
           h2: ['哪些人', '适合雾眉'],
@@ -636,7 +636,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       title: 'Gel Nails Burwood | Cat-Eye · Aurora · French | Abby Eyelash',
       description: `Gel nails in Burwood NSW by Abby: solid colour ${$(G, 'solid')}, cat-eye or aurora ${$(G, 'cat-eye')}, French ${$(G, 'french')}, builder gel included. Extensions ${ext()} per nail.`,
       h1: ['Gel nails ', 'in Burwood.'],
-      intro: `Gel nails are coloured gel cured under a lamp, so they leave the studio dry and glossy and stay chip-resistant for weeks. At Abby Eyelash in Burwood NSW 2134, every gel set includes a builder gel layer for strength: solid colour is ${$(G, 'solid')} (about ${m(G, 'solid')} minutes), cat-eye and aurora are ${$(G, 'cat-eye')} (about ${m(G, 'cat-eye')} minutes), and French is ${$(G, 'french')} (about ${m(G, 'french')} minutes). Extensions can be added for ${ext()} per nail.`,
+      intro: `Gel nails (a gel manicure) are coloured gel cured under a lamp, so they leave the studio dry and glossy and stay chip-resistant for weeks. At Abby Eyelash in Burwood NSW 2134, every gel set includes a builder gel layer for strength: solid colour is ${$(G, 'solid')} (about ${m(G, 'solid')} minutes), cat-eye and aurora are ${$(G, 'cat-eye')} (about ${m(G, 'cat-eye')} minutes), and French is ${$(G, 'french')} (about ${m(G, 'french')} minutes). Extensions can be added for ${ext()} per nail.`,
       sections: [
         {
           h2: ['Four finishes: ', 'which one?'],

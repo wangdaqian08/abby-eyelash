@@ -34,11 +34,11 @@ const en = {
   },
   hero: {
     eyebrow: 'Burwood, Sydney',
-    titleA: 'Lashes & nails,',
+    titleA: 'Lashes, brows & nails,',
     accent: 'made by hand',
     titleB: 'in Burwood.',
     // {name} {suburb} {region} {postcode} {owner} are filled from site.ts
-    body: '{name} is a lash and nail studio in {suburb} {region} {postcode}, Sydney, run by {owner}. Eyelash extensions, keratin lash lifts, powder brows, gel nails, hand-painted nail art and nail extensions — every appointment is done by {owner} herself.',
+    body: '{name} is a lash, brow and nail studio in {suburb} {region} {postcode}, Sydney, run by {owner}. Eyelash extensions, keratin lash lifts, powder brows, gel nails, hand-painted nail art and nail extensions — every appointment is done by {owner} herself.',
     book: 'Book an appointment',
     services: 'Our services',
     rating: 'Google reviews',
@@ -150,10 +150,10 @@ const zh: Strings = {
   },
   hero: {
     eyebrow: '悉尼 · 宝活 Burwood',
-    titleA: '美睫与美甲，',
+    titleA: '美睫、雾眉与美甲，',
     accent: '一根一笔',
     titleB: '皆由手作。',
-    body: '{name} 是位于悉尼宝活（{suburb} {region} {postcode}）的美睫美甲工作室，由 {owner} 一人主理。嫁接睫毛、角蛋白翘睫、半永久雾眉、凝胶美甲、手绘造型与延长甲，每一位顾客都由 {owner} 亲手完成。',
+    body: '{name} 是位于悉尼宝活（{suburb} {region} {postcode}）的美睫、雾眉与美甲工作室，由 {owner} 一人主理。嫁接睫毛、角蛋白翘睫、半永久雾眉、凝胶美甲、手绘造型与延长甲，每一位顾客都由 {owner} 亲手完成。',
     book: '在线预约',
     services: '查看服务',
     rating: 'Google 评价',
