@@ -101,7 +101,7 @@ export function businessNode(base: string | URL, lang: Lang, image: string): Nod
     specialOpeningHoursSpecification: specialHours(),
     priceRange: priceRange(),
     ...(sameAs.length && { sameAs }),
-    founder: { '@type': 'Person', '@id': abs(base, '/#abby'), name: site.owner },
+    founder: { '@type': 'Person', '@id': abs(base, '/#abby'), name: site.owner, knowsLanguage: ['zh', 'en'] }, // visible in the home FAQ
     // Mirrors the home service cards: one "from $X" (or exact) price per service, linking to its page.
     hasOfferCatalog: {
       '@type': 'OfferCatalog',

@@ -80,7 +80,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
   [L]: {
     en: {
       title: 'Eyelash Extensions in Burwood | Abby Eyelash',
-      description: `Japanese classic and hybrid eyelash extensions by Abby in Burwood NSW. Full sets from ${$(L, 'classic-natural')}, infills from ${$(L, 'infill-2w')}. Aftercare and patch tests.`,
+      description: `Japanese classic and hybrid eyelash extensions by Abby in Burwood NSW. Full sets from ${$(L, 'classic-natural')}, infills from ${$(L, 'infill-2w')}. Aftercare and allergy advice.`,
       h1: ['Eyelash extensions ', 'in Burwood.'],
       intro: `Eyelash extensions are single synthetic lashes bonded one at a time to your natural lashes with a cosmetic adhesive. At Abby Eyelash in Burwood NSW 2134, a Japanese classic set is ${$(L, 'classic-natural')} natural or ${$(L, 'classic-full')} full (about ${span(L, 'classic-natural', 'classic-full')} minutes), and a hybrid set is ${$(L, 'hybrid-natural')} natural or ${$(L, 'hybrid-full')} full. Each extension lasts as long as the natural lash it sits on, so most clients book an infill every 2–3 weeks; the price depends on how soon you come back.`,
       sections: [
@@ -139,10 +139,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           ],
         },
         {
-          h2: ['Patch tests ', 'and sensitive eyes'],
+          h2: ['Allergies ', 'and sensitive eyes'],
           body: [
-            `The American Academy of Ophthalmology ${cite(AAO, 'lists allergic reactions to the glue, eyelid or eye infection, and lash loss')} as possible risks. It advises choosing a trained technician who works hygienically, checking the adhesive’s ingredients, and asking for a patch test before your first set.`,
-            `Abby uses a cyanoacrylate-based lash adhesive and can show you its ingredient list. First-time clients can have a free patch test at least 48 hours before their appointment. A patch test lowers the risk but can’t rule out a reaction.`, // OWNER-REVIEW: adhesive brand, patch-test price/timing
+            `The American Academy of Ophthalmology ${cite(AAO, 'lists allergic reactions to the glue, eyelid or eye infection, and lash loss')} as possible risks. It advises choosing a trained technician who works hygienically, and checking the adhesive’s ingredients.`,
+            `Abby uses a cyanoacrylate-based lash adhesive and can show you its ingredient list. She doesn’t offer patch tests, so if you’ve reacted to lash glue before or have very sensitive eyes, tell her before you book.`, // OWNER-REVIEW: adhesive brand
             `If your eyes become painful, very red or swollen, or your vision changes, don’t remove the extensions yourself. The AAO advises seeing an eye doctor straight away. Please wait if you have an eye infection or recent eye surgery.`, // OWNER-REVIEW: contraindication list
           ],
         },
@@ -152,7 +152,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: 'Can I wear mascara with extensions?', a: 'You usually won’t need it. If you do, use a water-based mascara on the tips only, never waterproof, and remove it with an oil-free cleanser.' }, // OWNER-REVIEW
         { q: 'Do eyelash extensions damage natural lashes?', a: 'Lash loss is a known risk, mostly from extensions that are too heavy, rubbing, or pulling them off. Sizing the set to your own lashes and having them removed professionally keeps that risk low.' },
         { q: 'How do I get them removed?', a: `Book a removal with Abby: ${range(L, 'removal')} on its own, or free if your last set was done here and you’re having a new set straight after. She dissolves the adhesive with a professional remover so your natural lashes aren’t pulled out. Never pick them off.` }, // OWNER-REVIEW: removal time
-        { q: 'I reacted to lash glue before. Can I still have extensions?', a: 'Tell Abby before booking. A patch test is essential, and after a significant reaction a lash lift may be the better choice.' }, // OWNER-REVIEW
+        { q: 'I reacted to lash glue before. Can I still have extensions?', a: 'Tell Abby before booking so she can advise you. Abby doesn’t offer patch tests; after a significant reaction, extensions may not be right for you.' }, // OWNER-REVIEW
         CANCEL.en,
       ],
       alt: {
@@ -162,7 +162,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
     },
     zh: {
       title: '宝活 Burwood 嫁接睫毛 | Abby Eyelash 美睫',
-      description: `悉尼宝活 Burwood 嫁接睫毛：日式单根 ${$(L, 'classic-natural')} 起，回补 ${$(L, 'infill-2w')} 起。Abby 亲手逐根嫁接，附术后护理、回补价格和皮试说明。`,
+      description: `悉尼宝活 Burwood 嫁接睫毛：日式单根 ${$(L, 'classic-natural')} 起，回补 ${$(L, 'infill-2w')} 起。Abby 亲手逐根嫁接，附术后护理、回补价格和过敏说明。`,
       h1: ['宝活 Burwood ', '嫁接睫毛'],
       intro: `嫁接睫毛（也叫种睫毛、接睫毛）是用专用睫毛胶，把一根根合成睫毛逐根粘在你的真睫毛上。在 Burwood NSW 2134 的 Abby Eyelash，日式单根自然款 ${$(L, 'classic-natural')}、浓密款 ${$(L, 'classic-full')}（约 ${span(L, 'classic-natural', 'classic-full')} 分钟），开花 / 轻盈自然款 ${$(L, 'hybrid-natural')}、浓密款 ${$(L, 'hybrid-full')}。嫁接的睫毛会随真睫毛自然脱落，大多数客人每 2–3 周回补一次，越早回补越便宜。`,
       sections: [
@@ -219,10 +219,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           ],
         },
         {
-          h2: ['皮试与', '敏感眼睛'],
+          h2: ['过敏与', '敏感眼睛'],
           body: [
-            `美国眼科学会（AAO）列出的可能风险包括${cite(AAO, '对睫毛胶过敏、眼睑或眼部感染以及睫毛脱落')}，并建议选择受过培训、注重卫生的美睫师，了解胶水成分，第一次做之前先做皮试。`,
-            `Abby 使用氰基丙烯酸酯类睫毛胶，可以给你看成分表。首次到店的客人可以在预约前至少 48 小时免费做皮试。皮试能降低风险，但不能完全排除过敏。`, // OWNER-REVIEW: adhesive brand, patch-test price/timing
+            `美国眼科学会（AAO）列出的可能风险包括${cite(AAO, '对睫毛胶过敏、眼睑或眼部感染以及睫毛脱落')}，并建议选择受过培训、注重卫生的美睫师，并了解胶水成分。`,
+            `Abby 使用氰基丙烯酸酯类睫毛胶，可以给你看成分表。她不提供皮试，所以如果你以前对睫毛胶有过反应，或眼睛特别敏感，请在预约前告诉她。`, // OWNER-REVIEW: adhesive brand
             `如果眼睛疼痛、明显发红肿胀或视力有变化，不要自己卸，AAO 建议尽快看眼科医生。有眼部感染或近期做过眼部手术，请先暂缓。`, // OWNER-REVIEW
           ],
         },
@@ -232,7 +232,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: '嫁接后还能涂睫毛膏吗？', a: '一般不需要。如果要涂，只在睫毛尾端用水性睫毛膏，不要用防水款，并用无油清洁产品卸掉。' }, // OWNER-REVIEW
         { q: '嫁接睫毛会伤真睫毛吗？', a: '睫毛脱落确实是已知风险，多数来自睫毛过重、经常揉或自己拔。按你的真睫毛选合适的款式，并由专业人员卸除，风险就能降到很低。' },
         { q: '想卸掉怎么办？', a: `预约 Abby 帮你卸：单独卸睫毛 ${range(L, 'removal')}；上一次在这里做、卸完接着做新睫毛的免费。她会用专业卸睫膏溶解胶水，不会扯掉真睫毛。请不要自己拔。` }, // OWNER-REVIEW: removal time
-        { q: '以前对睫毛胶过敏，还能做吗？', a: '请在预约前告诉 Abby。一定要先做皮试；如果以前反应比较严重，翘睫可能更适合你。' }, // OWNER-REVIEW
+        { q: '以前对睫毛胶过敏，还能做吗？', a: '请在预约前告诉 Abby，她会给你建议。Abby 不提供皮试；如果以前反应比较严重，嫁接睫毛可能不适合你。' }, // OWNER-REVIEW
         CANCEL.zh,
       ],
       alt: {
@@ -245,7 +245,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
   [LL]: {
     en: {
       title: 'Keratin Lash Lift in Burwood | Abby Eyelash',
-      description: `Keratin lash lift in Burwood NSW: ${$(LL, 'keratin-lift')}, about ${m(LL, 'keratin-lift')} minutes, results last 6–8 weeks. What happens, aftercare, patch tests and who it suits.`,
+      description: `Keratin lash lift in Burwood NSW: ${$(LL, 'keratin-lift')}, about ${m(LL, 'keratin-lift')} minutes, results last 6–8 weeks. What happens, aftercare, sensitive eyes and who it suits.`,
       h1: ['Keratin lash lift ', 'in Burwood.'],
       intro: `A keratin lash lift curls your own lashes upward from the root with a lifting solution and a keratin treatment, so they look longer and more open without mascara or extensions. Tinting is not included. At Abby Eyelash in Burwood NSW 2134, a keratin lash lift is ${$(LL, 'keratin-lift')} and takes about ${m(LL, 'keratin-lift')} minutes. Results usually last 6–8 weeks, until those lashes naturally grow out.`,
       sections: [
@@ -291,10 +291,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           ],
         },
         {
-          h2: ['Patch tests ', 'and sensitive eyes'],
+          h2: ['Allergies ', 'and sensitive eyes'],
           body: [
-            `The lifting solutions are used very close to your eyes. A Cleveland Clinic ophthalmologist notes that ${cite(CLEVELAND, 'sensitivity to fragrances or added chemicals is common')}, showing as redness, swelling or a rash, and recommends a patch test beforehand, while pointing out that a patch test is not a guarantee.`,
-            `First-time clients can have a free patch test at least 48 hours before their lift. If anything stings during the treatment, tell Abby straight away so she can rinse it. If irritation lasts after you leave, see your GP or optometrist.`, // OWNER-REVIEW: patch-test price/timing, products used
+            `The lifting solutions are used very close to your eyes. A Cleveland Clinic ophthalmologist notes that ${cite(CLEVELAND, 'sensitivity to fragrances or added chemicals is common')}, showing as redness, swelling or a rash.`,
+            `Abby doesn’t offer patch tests, so tell her before you book if you have sensitive eyes or have reacted to lash products before. If anything stings during the treatment, tell Abby straight away so she can rinse it. If irritation lasts after you leave, see your GP or optometrist.`, // OWNER-REVIEW: products used
             `Please wait if you have an eye infection or have had recent eye surgery.`, // OWNER-REVIEW
           ],
         },
@@ -313,7 +313,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
     },
     zh: {
       title: '宝活 Burwood 角蛋白翘睫 | Abby Eyelash',
-      description: `悉尼宝活 Burwood 角蛋白翘睫：${$(LL, 'keratin-lift')}，约 ${m(LL, 'keratin-lift')} 分钟，效果约 6–8 周。流程、术后护理、皮试和适合人群说明。`,
+      description: `悉尼宝活 Burwood 角蛋白翘睫：${$(LL, 'keratin-lift')}，约 ${m(LL, 'keratin-lift')} 分钟，效果约 6–8 周。流程、术后护理、敏感眼睛和适合人群说明。`,
       h1: ['宝活 Burwood ', '角蛋白翘睫'],
       intro: `翘睫（也叫睫毛翘、角蛋白翘睫）是用专用药水把你自己的睫毛从根部往上定型，再做角蛋白护理，不用睫毛膏、不用嫁接也显得更长更有神。不含染色。在 Burwood NSW 2134 的 Abby Eyelash，角蛋白翘睫 ${$(LL, 'keratin-lift')}，约 ${m(LL, 'keratin-lift')} 分钟。效果一般维持 6–8 周，直到这批睫毛自然换掉。`,
       sections: [
@@ -359,10 +359,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           ],
         },
         {
-          h2: ['皮试与', '敏感眼睛'],
+          h2: ['过敏与', '敏感眼睛'],
           body: [
-            `翘睫药水要在离眼睛很近的地方使用。克利夫兰诊所的眼科医生指出，${cite(CLEVELAND, '对香料或添加化学成分敏感的情况很常见')}，表现为发红、肿胀或起疹，并建议事先做皮试，同时提醒皮试并不能百分之百保证不过敏。`,
-            `首次到店的客人可以在预约前至少 48 小时免费做皮试。过程中如果感到刺痛，请马上告诉 Abby，她会立刻冲洗。离店后仍有不适，请看家庭医生（GP）或验光师。`, // OWNER-REVIEW
+            `翘睫药水要在离眼睛很近的地方使用。克利夫兰诊所的眼科医生指出，${cite(CLEVELAND, '对香料或添加化学成分敏感的情况很常见')}，表现为发红、肿胀或起疹。`,
+            `Abby 不提供皮试，如果你眼睛敏感，或以前对睫毛产品有过反应，请在预约前告诉她。过程中如果感到刺痛，请马上告诉 Abby，她会立刻冲洗。离店后仍有不适，请看家庭医生（GP）或验光师。`, // OWNER-REVIEW
             `有眼部感染或近期做过眼部手术，请先暂缓。`, // OWNER-REVIEW
           ],
         },
@@ -410,7 +410,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           body: [
             `Straight after the appointment the brows look darker and sharper than the final result. Over the first one to two weeks they flake lightly and soften, and some areas can look patchy while the skin heals; this is normal.`, // OWNER-REVIEW: healing timeline
             `Your free touch-up within 3 months fills any spots that didn’t hold and fine-tunes the shape. Touch-ups aren’t booked online: message Abby by WhatsApp, SMS or WeChat to arrange it.`,
-            `Powder brows usually last one to three years, depending on your skin, sun exposure and skincare. A paid colour refresh keeps them looking fresh after that.`, // OWNER-REVIEW: longevity, refresh pricing
+            `After that, colour refreshes are priced by how long it has been: within 3–6 months 30% of the price, within 6–12 months 50%, and after a year the full price. How fast pigment fades depends on your skin, sun exposure and skincare.`,
           ],
         },
         {
@@ -433,7 +433,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       ],
       faq: [
         { q: 'Does it hurt?', a: 'Most clients describe it as a scratchy feeling rather than pain. Tell Abby if anything feels uncomfortable and she will pause.' }, // OWNER-REVIEW: numbing
-        { q: 'How long do powder brows last?', a: 'Usually one to three years. Oily skin, sun and some skincare make pigment fade faster.' }, // OWNER-REVIEW
+        { q: 'How much is a colour refresh later?', a: 'Free within 3 months, 30% of the price within 3–6 months, 50% within 6–12 months, and the full price after a year.' },
         { q: 'Is the touch-up included?', a: `Yes. One touch-up within 3 months of your appointment is free. Message Abby to book it; it isn’t available online.` },
         { q: 'Powder brows or microblading?', a: 'Microblading draws hair-like strokes; powder brows build a soft shaded finish with tiny dots. Abby offers powder brows.' },
         CANCEL.en,
@@ -471,7 +471,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           body: [
             `刚做完时颜色会比最终效果深、线条也更明显。之后一到两周会轻微脱皮、慢慢变柔和，恢复期间局部看起来不均匀是正常的。`, // OWNER-REVIEW
             `3 个月内的免费补色，会补上没有留住颜色的地方，并微调眉形。补色不开放在线预约，请通过 WhatsApp、短信或微信联系 Abby 约时间。`,
-            `雾眉一般能维持一到三年，取决于肤质、日晒和护肤习惯。之后可以付费补色，让颜色保持新鲜。`, // OWNER-REVIEW
+            `之后补色按距离上次的时间收费：3–6 个月内收价格的 30%（手工费），6–12 个月内收 50%，超过一年按原价。颜色褪得快慢取决于肤质、日晒和护肤习惯。`,
           ],
         },
         {
@@ -494,7 +494,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       ],
       faq: [
         { q: '做雾眉疼吗？', a: '大多数客人觉得是轻微的刮擦感，而不是疼。如果有不舒服可以随时告诉 Abby，她会停下来。' }, // OWNER-REVIEW
-        { q: '雾眉能维持多久？', a: '一般一到三年。油性皮肤、日晒和部分护肤品会让颜色褪得更快。' }, // OWNER-REVIEW
+        { q: '之后补色怎么收费？', a: '3 个月内免费，3–6 个月内收价格的 30%（手工费），6–12 个月内收 50%，超过一年按原价。' },
         { q: '补色包含在价格里吗？', a: '包含。做完后 3 个月内免费补色一次，请直接联系 Abby 预约，不开放在线预约。' },
         { q: '雾眉和线条眉有什么区别？', a: '线条眉是画出一根根仿真眉毛；雾眉是用细小的点做出柔和的粉雾效果。Abby 做的是雾眉。' },
         CANCEL.zh,

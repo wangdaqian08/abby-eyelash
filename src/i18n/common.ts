@@ -299,7 +299,7 @@ export const monthYear = (iso: string, lang: Lang) =>
 
 /**
  * Home FAQ — answers are always visible (GEO-STRATEGY #2) and each answer stands on its own.
- * `{phone}`, `{address}`, `{deposit}`, `{wechat}` and `{hours}` are filled from site.ts. PLACEHOLDER: payment methods — confirm with Abby.
+ * `{phone}`, `{address}`, `{deposit}`, `{wechat}` and `{hours}` are filled from site.ts.
  */
 export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
   en: [
@@ -309,7 +309,7 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
     },
     {
       q: 'What payment methods do you accept?',
-      a: 'A ${deposit} deposit is paid by WeChat ({wechat}) after you book. The rest is paid at the end of your appointment by card (Visa, Mastercard, contactless) or cash.',
+      a: 'A ${deposit} deposit is paid by WeChat ({wechat}) after you book. The rest is paid in cash at the end of your appointment.',
     },
     {
       q: 'Do you have any offers?',
@@ -324,8 +324,12 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
       a: 'Abby starts with a short chat about the look you want, your natural lashes or nails, and any allergies or sensitivities. For lash services, please arrive with clean, make-up-free eyes; for nails, remove any old gel or extensions done elsewhere, or mention it when booking.',
     },
     {
-      q: 'Can I have a patch test first?',
-      a: 'Yes. If you have sensitive eyes, known allergies or it is your first time with lash extensions or a lash lift, ask for a patch test when you book. A small amount of product is applied and you wait 24–48 hours before the full appointment.',
+      q: 'Do you offer patch tests?',
+      a: 'No, Abby doesn’t offer patch tests. If you have sensitive eyes, known allergies or have reacted to lash glue or lifting products before, tell her when you book so she can advise whether the service suits you.',
+    },
+    {
+      q: 'What languages does Abby speak?',
+      a: 'Mandarin and English.',
     },
     {
       q: 'How long do lash extensions and lash lifts last?',
@@ -343,7 +347,7 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
     },
     {
       q: '可以用哪些方式付款？',
-      a: '预约后通过微信（{wechat}）支付 ${deposit} 订金，其余费用在服务结束后付款，支持刷卡（Visa、Mastercard、手机或卡片感应支付）和现金。',
+      a: '预约后通过微信（{wechat}）支付 ${deposit} 订金，其余费用在服务结束后以现金支付。',
     },
     {
       q: '有什么优惠吗？',
@@ -358,8 +362,12 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
       a: 'Abby 会先和你简单沟通想要的效果、自身睫毛或指甲的状况，以及是否有过敏或敏感情况。做睫毛请素颜、保持眼部清洁；做美甲如有在别处做的凝胶甲或延长甲未卸，请在预约时说明。',
     },
     {
-      q: '可以先做皮肤测试吗？',
-      a: '可以。如果你眼睛敏感、有已知过敏，或是第一次嫁接睫毛、做翘睫，预约时请说明需要做测试。会先少量试用产品，观察 24–48 小时后再做正式项目。',
+      q: '可以先做皮试吗？',
+      a: 'Abby 不提供皮试。如果你眼睛敏感、有已知过敏，或以前对睫毛胶、翘睫药水有过反应，预约时请告诉她，她会建议你是否适合做。',
+    },
+    {
+      q: 'Abby 会说哪些语言？',
+      a: '国语（普通话）和英语。',
     },
     {
       q: '嫁接睫毛和翘睫能维持多久？',
