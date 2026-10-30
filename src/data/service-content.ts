@@ -57,6 +57,7 @@ const CANCER = 'https://cancer.org.au/iheard/do-the-uv-lights-used-in-nail-salon
 const L = 'lash-extensions', LL = 'lash-lift', B = 'powder-brows', G = 'gel-nails', H = 'handcrafted-nails', X = 'nail-extensions';
 const was = (s: string, o: string) => opt(s, o).wasPrice;
 const ext = () => `$${opt(X, 'extension').price}`; // per nail
+const pct = (s: string, o: string, n: number) => `$${Math.round((opt(s, o).price * n) / 100)}`; // share of the current price
 const link = (lang: Lang, id: string, text: string) => {
   const s = services.find((v) => v.id === id)!;
   return `<a href="${lang === 'zh' ? '/zh' : ''}/${s.slug}/" class="underline underline-offset-4 hover:text-fg">${text}</a>`;
@@ -410,7 +411,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           body: [
             `Straight after the appointment the brows look darker and sharper than the final result. Over the first one to two weeks they flake lightly and soften, and some areas can look patchy while the skin heals; this is normal.`, // OWNER-REVIEW: healing timeline
             `Your free touch-up within 3 months fills any spots that didn’t hold and fine-tunes the shape. Touch-ups aren’t booked online: message Abby by WhatsApp, SMS or WeChat to arrange it.`,
-            `After that, colour refreshes are priced by how long it has been: within 3–6 months 30% of the price, within 6–12 months 50%, and after a year the full price. How fast pigment fades depends on your skin, sun exposure and skincare.`,
+            `After that, colour refreshes are priced by how long it has been: within 3–6 months 30% of the current price (${pct(B, 'powder', 30)}), within 6–12 months 50% (${pct(B, 'powder', 50)}), and after a year the full price. How fast pigment fades depends on your skin, sun exposure and skincare.`,
           ],
         },
         {
@@ -433,7 +434,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       ],
       faq: [
         { q: 'Does it hurt?', a: 'Most clients describe it as a scratchy feeling rather than pain. Tell Abby if anything feels uncomfortable and she will pause.' }, // OWNER-REVIEW: numbing
-        { q: 'How much is a colour refresh later?', a: 'Free within 3 months, 30% of the price within 3–6 months, 50% within 6–12 months, and the full price after a year.' },
+        { q: 'How much is a colour refresh later?', a: `Free within 3 months, ${pct(B, 'powder', 30)} (30%) within 3–6 months, ${pct(B, 'powder', 50)} (50%) within 6–12 months, and the full price after a year.` },
         { q: 'Is the touch-up included?', a: `Yes. One touch-up within 3 months of your appointment is free. Message Abby to book it; it isn’t available online.` },
         { q: 'Powder brows or microblading?', a: 'Microblading draws hair-like strokes; powder brows build a soft shaded finish with tiny dots. Abby offers powder brows.' },
         CANCEL.en,
@@ -471,7 +472,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           body: [
             `刚做完时颜色会比最终效果深、线条也更明显。之后一到两周会轻微脱皮、慢慢变柔和，恢复期间局部看起来不均匀是正常的。`, // OWNER-REVIEW
             `3 个月内的免费补色，会补上没有留住颜色的地方，并微调眉形。补色不开放在线预约，请通过 WhatsApp、短信或微信联系 Abby 约时间。`,
-            `之后补色按距离上次的时间收费：3–6 个月内收价格的 30%（手工费），6–12 个月内收 50%，超过一年按原价。颜色褪得快慢取决于肤质、日晒和护肤习惯。`,
+            `之后补色按距离上次的时间收费：3–6 个月内收现价的 30%（手工费，${pct(B, 'powder', 30)}），6–12 个月内收 50%（${pct(B, 'powder', 50)}），超过一年按原价。颜色褪得快慢取决于肤质、日晒和护肤习惯。`,
           ],
         },
         {
@@ -494,7 +495,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       ],
       faq: [
         { q: '做雾眉疼吗？', a: '大多数客人觉得是轻微的刮擦感，而不是疼。如果有不舒服可以随时告诉 Abby，她会停下来。' }, // OWNER-REVIEW
-        { q: '之后补色怎么收费？', a: '3 个月内免费，3–6 个月内收价格的 30%（手工费），6–12 个月内收 50%，超过一年按原价。' },
+        { q: '之后补色怎么收费？', a: `3 个月内免费，3–6 个月内 ${pct(B, 'powder', 30)}（现价的 30%，手工费），6–12 个月内 ${pct(B, 'powder', 50)}（50%），超过一年按原价。` },
         { q: '补色包含在价格里吗？', a: '包含。做完后 3 个月内免费补色一次，请直接联系 Abby 预约，不开放在线预约。' },
         { q: '雾眉和线条眉有什么区别？', a: '线条眉是画出一根根仿真眉毛；雾眉是用细小的点做出柔和的粉雾效果。Abby 做的是雾眉。' },
         CANCEL.zh,
