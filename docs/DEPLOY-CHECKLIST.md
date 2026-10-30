@@ -138,6 +138,8 @@ Protocol: <https://www.indexnow.org/documentation>.
 
 ## I. Monthly routine (15 minutes)
 
+- **Redeploy once a month** (Deployments → latest → ⋯ → Retry deployment) even if nothing changed. The page data lists the next six "3rd Sunday" openings and is computed at build time, so a site that is never rebuilt eventually stops showing them.
+
 - Search Console: Performance and Generative AI report. Bing: AI Performance. GA4: the **AI assistants** channel and key events.
 - Cloudflare → AI Crawl Control: confirm that OAI-SearchBot, PerplexityBot, Claude-SearchBot and Bingbot fetch pages and are not blocked.
 - Run the EN/ZH prompt panel in `docs/geo-prompt-panel.md` and fix any wrong facts (hours, prices, address) at the source.

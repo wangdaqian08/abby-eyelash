@@ -34,11 +34,11 @@ const en = {
   },
   hero: {
     eyebrow: 'Burwood, Sydney',
-    titleA: 'Lashes & nails,',
+    titleA: 'Lashes, brows & nails,',
     accent: 'made by hand',
     titleB: 'in Burwood.',
     // {name} {suburb} {region} {postcode} {owner} are filled from site.ts
-    body: '{name} is a lash and nail studio in {suburb} {region} {postcode}, Sydney, run by {owner}. Eyelash extensions, keratin lash lifts, powder brows, gel nails, hand-painted nail art and nail extensions — every appointment is done by {owner} herself.',
+    body: '{name} is a lash, brow and nail studio in {suburb} {region} {postcode}, Sydney, run by {owner}. Eyelash extensions, keratin lash lifts, powder brows, gel nails, hand-painted nail art and nail extensions — every appointment is done by {owner} herself.',
     book: 'Book an appointment',
     services: 'Our services',
     rating: 'Google reviews',
@@ -46,7 +46,7 @@ const en = {
   },
   services: {
     eyebrow: 'What we offer',
-    title: 'Five services,',
+    title: 'Six services,',
     accent: 'one pair of hands.',
     intro: 'Lashes, brows and nails are all Abby does, so each service gets her full attention. Prices and times below are the starting point — your exact quote depends on the look you choose.',
     details: 'Prices & details',
@@ -108,7 +108,8 @@ const en = {
     phone: 'SMS / WhatsApp',
     email: 'Email',
     findUs: 'About a 5-minute walk from Burwood station. The exact address is sent when your booking is confirmed.',
-    byAppointment: 'By appointment — Abby works alone, so please book ahead.',
+    byAppointment: 'By appointment only — Abby works alone, so please book ahead. Messages only (SMS or WhatsApp): she can’t take calls while working.',
+    lastStart: 'Hours are booking times: the last appointment starts at {time}.',
     openMaps: 'Open in Google Maps',
     mapTitle: 'Map showing Abby Eyelash in Burwood',
     bookOnline: 'Book your appointment online',
@@ -150,10 +151,10 @@ const zh: Strings = {
   },
   hero: {
     eyebrow: '悉尼 · 宝活 Burwood',
-    titleA: '美睫与美甲，',
+    titleA: '美睫、雾眉与美甲，',
     accent: '一根一笔',
     titleB: '皆由手作。',
-    body: '{name} 是位于悉尼宝活（{suburb} {region} {postcode}）的美睫美甲工作室，由 {owner} 一人主理。嫁接睫毛、角蛋白翘睫、半永久雾眉、凝胶美甲、手绘造型与延长甲，每一位顾客都由 {owner} 亲手完成。',
+    body: '{name} 是位于悉尼宝活（{suburb} {region} {postcode}）的美睫、雾眉与美甲工作室，由 {owner} 一人主理。嫁接睫毛、角蛋白翘睫、半永久雾眉、凝胶美甲、手绘造型与延长甲，每一位顾客都由 {owner} 亲手完成。',
     book: '在线预约',
     services: '查看服务',
     rating: 'Google 评价',
@@ -161,7 +162,7 @@ const zh: Strings = {
   },
   services: {
     eyebrow: '服务项目',
-    title: '五项服务，',
+    title: '六项服务，',
     accent: '同一双手。',
     intro: 'Abby 只专注睫毛、眉毛与美甲，所以每一项都做得用心。下方是起步价格与所需时间，最终价格以你选择的款式为准。',
     details: '价格与详情',
@@ -223,7 +224,8 @@ const zh: Strings = {
     phone: '短信 / WhatsApp',
     email: '邮箱',
     findUs: '从宝活火车站（Burwood station）步行约 5 分钟。确认预约时会把详细地址发给你。',
-    byAppointment: '仅限预约 —— Abby 一人工作，请提前预约。',
+    byAppointment: '仅限预约 —— Abby 一人工作，请提前预约。只接受短信或 WhatsApp 联系，工作时无法接听电话。',
+    lastStart: '以上为可预约时间，最晚 {time} 开始。',
     openMaps: '在 Google 地图中打开',
     mapTitle: 'Abby Eyelash 在宝活的位置地图',
     bookOnline: '在线预约',
@@ -269,6 +271,10 @@ const time = (hhmm: string, lang: Lang) => {
   return lang === 'zh' ? `${h}:${mm}` : `${h % 12 || 12}:${mm} ${h < 12 ? 'am' : 'pm'}`;
 };
 
+/** "8:00 pm" / "20:00": the latest start time across the week (site.hours `close` is the last start). */
+export const lastStartLine = (hours: readonly { close: string }[], lang: Lang) =>
+  fill(common[lang].contact.lastStart, { time: time(hours.map((h) => h.close).sort().at(-1)!, lang) });
+
 /** Group consecutive days with identical hours: [{ days: 'Monday – Friday', time: '9:00 am – 7:00 pm' }, …]. Missing days = closed. */
 export function hoursRows(hours: readonly { day: number; open: string; close: string; nth?: number }[], lang: Lang) {
   const groups: { from: number; to: number; key: string; h?: (typeof hours)[number] }[] = [];
@@ -293,7 +299,7 @@ export const monthYear = (iso: string, lang: Lang) =>
 
 /**
  * Home FAQ — answers are always visible (GEO-STRATEGY #2) and each answer stands on its own.
- * `{phone}`, `{address}`, `{deposit}`, `{wechat}` and `{hours}` are filled from site.ts. PLACEHOLDER: payment methods — confirm with Abby.
+ * `{phone}`, `{address}`, `{deposit}`, `{wechat}` and `{hours}` are filled from site.ts.
  */
 export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
   en: [
@@ -303,7 +309,7 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
     },
     {
       q: 'What payment methods do you accept?',
-      a: 'A ${deposit} deposit is paid by WeChat ({wechat}) after you book. The rest is paid at the end of your appointment by card (Visa, Mastercard, contactless) or cash.',
+      a: 'A ${deposit} deposit is paid by WeChat ({wechat}) after you book. The rest is paid in cash at the end of your appointment.',
     },
     {
       q: 'Do you have any offers?',
@@ -318,8 +324,12 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
       a: 'Abby starts with a short chat about the look you want, your natural lashes or nails, and any allergies or sensitivities. For lash services, please arrive with clean, make-up-free eyes; for nails, remove any old gel or extensions done elsewhere, or mention it when booking.',
     },
     {
-      q: 'Can I have a patch test first?',
-      a: 'Yes. If you have sensitive eyes, known allergies or it is your first time with lash extensions or a lash lift, ask for a patch test when you book. A small amount of product is applied and you wait 24–48 hours before the full appointment.',
+      q: 'Do you offer patch tests?',
+      a: 'No, Abby doesn’t offer patch tests. If you have sensitive eyes, known allergies or have reacted to lash glue or lifting products before, tell her when you book so she can advise whether the service suits you.',
+    },
+    {
+      q: 'What languages does Abby speak?',
+      a: 'Mandarin and English.',
     },
     {
       q: 'How long do lash extensions and lash lifts last?',
@@ -337,7 +347,7 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
     },
     {
       q: '可以用哪些方式付款？',
-      a: '预约后通过微信（{wechat}）支付 ${deposit} 订金，其余费用在服务结束后付款，支持刷卡（Visa、Mastercard、手机或卡片感应支付）和现金。',
+      a: '预约后通过微信（{wechat}）支付 ${deposit} 订金，其余费用在服务结束后以现金支付。',
     },
     {
       q: '有什么优惠吗？',
@@ -352,8 +362,12 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
       a: 'Abby 会先和你简单沟通想要的效果、自身睫毛或指甲的状况，以及是否有过敏或敏感情况。做睫毛请素颜、保持眼部清洁；做美甲如有在别处做的凝胶甲或延长甲未卸，请在预约时说明。',
     },
     {
-      q: '可以先做皮肤测试吗？',
-      a: '可以。如果你眼睛敏感、有已知过敏，或是第一次嫁接睫毛、做翘睫，预约时请说明需要做测试。会先少量试用产品，观察 24–48 小时后再做正式项目。',
+      q: '可以先做皮试吗？',
+      a: 'Abby 不提供皮试。如果你眼睛敏感、有已知过敏，或以前对睫毛胶、翘睫药水有过反应，预约时请告诉她，她会建议你是否适合做。',
+    },
+    {
+      q: 'Abby 会说哪些语言？',
+      a: '国语（普通话）和英语。',
     },
     {
       q: '嫁接睫毛和翘睫能维持多久？',

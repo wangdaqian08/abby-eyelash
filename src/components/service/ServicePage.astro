@@ -7,7 +7,7 @@ import { site } from '../../data/site';
 import { serviceContent } from '../../data/service-content';
 import { serviceStrings } from '../../i18n/service';
 import { localePath } from '../../lib/i18n';
-import { hoursRows, smsHref, waHref } from '../../i18n/common';
+import { hoursRows, lastStartLine, smsHref, waHref } from '../../i18n/common';
 
 interface Props {
   lang: Lang;
@@ -49,7 +49,7 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
         </nav>
         <p class:list={[eyebrow, 'mt-6']}>{t.eyebrow}</p>
         <h1 class="mt-4 text-5xl leading-[1.08] lg:text-7xl [&_em]:block">{c.h1[0]}<em>{c.h1[1]}</em></h1>
-        <p class="mt-6 max-w-xl text-lg leading-relaxed">{c.intro}</p>
+        <p class="mt-6 max-w-xl text-lg leading-relaxed" set:html={c.intro} />
         <div class="mt-8 flex flex-wrap gap-3">
           <a href={bookHref} data-track="book_click" class:list={[btn, 'bg-primary text-on-primary hover:bg-primary/90']}>{t.book}</a>
           <a href={wa} data-track="message_click" target="_blank" rel="noopener" class:list={[btn, 'border border-primary text-primary hover:bg-surface-2']}>{t.call}</a>
@@ -196,6 +196,7 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
                 ))}
               </tbody>
             </table>
+            <p class="mt-2 text-sm text-muted">{lastStartLine(site.hours, lang)}</p>
           </dd>
         </div>
       </dl>

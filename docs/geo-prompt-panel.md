@@ -24,7 +24,7 @@ Only the two "brand" prompts per language name Abby. All others must not.
 | E03 | Near station | eyelash extensions near Burwood station |
 | E04 | Near station | gel nails near Burwood station |
 | E05 | Service-specific | Is a lash lift or lash extensions better for short straight lashes? Where can I get either in Burwood? |
-| E06 | Service-specific | What's the difference between BIAB and Gel-X nails, and who does them near Burwood? |
+| E06 | Service-specific | Where can I get powder brows (semi-permanent brows) in Burwood, and how much do they cost? |
 | E07 | Price | how much do eyelash extensions cost in Burwood Sydney |
 | E08 | Price | how much is a gel manicure in Burwood NSW |
 | E09 | Brand | Abby Eyelash Burwood opening hours and address |
@@ -39,7 +39,7 @@ Only the two "brand" prompts per language name Abby. All others must not.
 | Z03 | Near station | Burwood 火车站附近的美睫店 |
 | Z04 | Near station | Burwood 火车站附近做光疗甲 |
 | Z05 | Service-specific | 睫毛翘睫和嫁接睫毛哪个更适合我？Burwood 有推荐的店吗？ |
-| Z06 | Service-specific | BIAB 和 Gel-X 延长甲有什么区别？Burwood 哪里可以做？ |
+| Z06 | Service-specific | Burwood 哪里可以做半永久雾眉？大概多少钱？ |
 | Z07 | Price | Burwood 嫁接睫毛一般多少钱 |
 | Z08 | Price | Burwood 做光疗美甲大概多少钱 |
 | Z09 | Brand | Abby Eyelash Burwood 营业时间和地址 |

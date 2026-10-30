@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { headline, services } from '../data/services.ts';
-import { buildGraph, isRealProfileUrl, pagePath, priceRange } from './schema.ts';
+import { buildGraph, isRealProfileUrl, pagePath, priceRange, specialHours } from './schema.ts';
 
 const SITE = 'https://example.org';
 const IMG = SITE + '/og-default.jpg';
@@ -50,10 +50,10 @@ test('service pages: Service offers equal services.ts prices, breadcrumb, dateMo
     const [svc] = byType(g, 'Service');
     assert.equal(svc.provider['@id'], SITE + '/#business');
     assert.equal(svc.areaServed.name, 'Burwood NSW 2134');
-    const priced = s.options.filter((o) => !o.onRequest); // on-request options carry no offer
-    assert.equal(svc.offers.length, priced.length);
-    priced.forEach((o, i) => {
+    assert.equal(svc.offers.length, s.options.length);
+    s.options.forEach((o, i) => {
       const off = svc.offers[i];
+      if (o.onRequest) return assert.ok(!('price' in off) && !off.priceSpecification, `${o.id}: on-request offer has no price`);
       assert.equal(off.priceCurrency, 'AUD');
       if (o.unit) assert.equal(off.priceSpecification.unitText, o.unit.en);
       else if (o.from) assert.equal(off.priceSpecification.minPrice, o.price);
@@ -78,4 +78,10 @@ test('helpers', () => {
   assert.equal(isRealProfileUrl('https://www.google.com/maps'), false);
   assert.equal(isRealProfileUrl('https://www.instagram.com/abbyeyelash'), true);
   assert.equal(isRealProfileUrl('https://maps.app.goo.gl/abc123'), true);
+});
+
+test('specialHours lists the coming 3rd Sundays with their hours', () => {
+  const days = specialHours(Date.parse('2026-11-01T00:00:00Z')).map((h: any) => `${h.validFrom}/${h.opens}-${h.closes}`);
+  assert.deepEqual(days.slice(0, 3), ['2026-11-15/09:00-20:00', '2026-12-20/09:00-20:00', '2027-01-17/09:00-20:00']);
+  assert.ok(specialHours(Date.parse('2026-11-16T00:00:00Z')).every((h: any) => h.validFrom > '2026-11-15'), 'past dates dropped');
 });

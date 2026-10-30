@@ -3,6 +3,7 @@
 import { site } from '../data/site.ts';
 import { headline, services, type Lang, type Service } from '../data/services.ts';
 import { localePath, neutralPath } from './i18n.ts';
+import { common } from '../i18n/common.ts';
 
 type Node = Record<string, unknown>;
 const BIZ_TYPE = ['BeautySalon', 'NailSalon'];
@@ -35,14 +36,14 @@ export const priceRange = () => {
   return `$${Math.min(...all)}–$${Math.max(...all)}`;
 };
 
-const offer = (name: string, price: number, from = false, unit?: string): Node => ({
+const offer = (name: string, price: number, from = false, unit?: string, maxPrice?: number): Node => ({
   '@type': 'Offer',
   name,
   priceCurrency: 'AUD',
   ...(unit
     ? { price, priceSpecification: { '@type': 'UnitPriceSpecification', price, priceCurrency: 'AUD', unitText: unit } }
     : from
-      ? { priceSpecification: { '@type': 'PriceSpecification', minPrice: price, priceCurrency: 'AUD' } }
+      ? { priceSpecification: { '@type': 'PriceSpecification', minPrice: price, ...(maxPrice && { maxPrice }), priceCurrency: 'AUD' } }
       : { price }),
 });
 
@@ -59,6 +60,22 @@ const hours = () => {
   });
 };
 
+// The 3rd-Sunday opening as dated specialOpeningHoursSpecification entries for the next 6 months, computed at build.
+// shortcut: dates are fixed at build time; a deploy at least every few months keeps them current.
+export const specialHours = (now = Date.now()) => {
+  const today = new Date(now).toISOString().slice(0, 10);
+  const out: Node[] = [];
+  for (const h of site.hours.filter((x) => x.nth)) {
+    for (let i = 0; i < 6; i++) {
+      const start = new Date(now);
+      const first = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + i, 1));
+      const date = new Date(first.getTime() + (((h.day - first.getUTCDay() + 7) % 7) + 7 * (h.nth! - 1)) * 86_400_000).toISOString().slice(0, 10);
+      if (date >= today) out.push({ '@type': 'OpeningHoursSpecification', validFrom: date, validThrough: date, opens: h.open, closes: h.close });
+    }
+  }
+  return out;
+};
+
 const providerRef = (base: string | URL) => ({ '@type': BIZ_TYPE, '@id': abs(base, '/#business'), name: site.name });
 
 export function businessNode(base: string | URL, lang: Lang, image: string): Node {
@@ -69,6 +86,7 @@ export function businessNode(base: string | URL, lang: Lang, image: string): Nod
     url: abs(base, localePath(lang, '/')),
     image,
     telephone: site.phone.replace(/[^\d+]/g, ''),
+    description: `${common[lang].contact.byAppointment} ${common[lang].contact.findUs}`, // same sentences as the visible contact block
     ...(email && { email }),
     address: {
       '@type': 'PostalAddress',
@@ -80,9 +98,10 @@ export function businessNode(base: string | URL, lang: Lang, image: string): Nod
     },
     geo: { '@type': 'GeoCoordinates', latitude: site.geo.lat, longitude: site.geo.lng },
     openingHoursSpecification: hours(),
+    specialOpeningHoursSpecification: specialHours(),
     priceRange: priceRange(),
     ...(sameAs.length && { sameAs }),
-    founder: { '@type': 'Person', '@id': abs(base, '/#abby'), name: site.owner },
+    founder: { '@type': 'Person', '@id': abs(base, '/#abby'), name: site.owner, knowsLanguage: ['zh', 'en'] }, // visible in the home FAQ
     // Mirrors the home service cards: one "from $X" (or exact) price per service, linking to its page.
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
@@ -119,7 +138,10 @@ export function serviceNode(base: string | URL, lang: Lang, s: Service): Node {
         addressCountry: site.address.country,
       },
     },
-    offers: s.options.filter((o) => !o.onRequest).map((o) => offer(o.name[lang], o.price, !!o.from, o.unit?.en)),
+    // On-request designs keep an Offer with no price, so the per-nail add-on isn't read as the service price.
+    offers: s.options.map((o) =>
+      o.onRequest ? { '@type': 'Offer', name: o.name[lang] } : offer(o.name[lang], o.price, !!o.from, o.unit?.en, o.maxPrice),
+    ),
   };
 }
 
@@ -164,7 +186,8 @@ export function buildGraph({ site: base, lang, pathname, title, image, updated, 
     nodes.push(serviceNode(base, lang, service));
     crumb = breadcrumbNode(base, lang, url, service.name[lang]);
   }
-  const modified = service?.updated ?? updated;
+  // Home pages show every service's prices, so their date is the newest service date (matches sitemap lastmod).
+  const modified = service?.updated ?? updated ?? (pagePath(pathname) === '/' ? services.map((s) => s.updated).sort().at(-1) : undefined);
   nodes.push({
     '@type': 'WebPage',
     '@id': url + '#webpage',
