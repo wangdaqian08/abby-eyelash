@@ -5,12 +5,12 @@ const show = import.meta.env.PUBLIC_THEME_PREVIEW !== 'false';
 const themes = ['mocha', 'rose', 'sage', 'plum'];
 ---
 {show && (
-  <div role="group" aria-labelledby="theme-preview-label" class="fixed bottom-3 left-3 z-40 flex items-center gap-1 border border-border bg-surface/95 py-1 pl-3 pr-1 shadow-[var(--shadow-lift)] backdrop-blur">
+  <div role="group" aria-labelledby="theme-preview-label" class="fixed bottom-3 left-3 z-40 flex items-center gap-1 bg-surface-3/95 py-1 pl-3 pr-1 shadow-[var(--shadow-lift)] backdrop-blur">
     <span id="theme-preview-label" class="mr-1 text-xs text-muted">Theme preview</span>
     {themes.map((th) => (
       <button type="button" data-set-theme={th} aria-pressed="false" aria-label={th} title={th} class="group inline-flex size-11 items-center justify-center">
         {/* the swatch scopes the theme tokens to itself, so bg-primary shows that theme's colour */}
-        <span data-theme={th} class="size-6 rounded-full bg-primary ring-offset-2 ring-offset-surface group-aria-pressed:ring-2 group-aria-pressed:ring-fg" />
+        <span data-theme={th} class="size-6 rounded-full bg-primary ring-offset-2 ring-offset-surface group-aria-pressed:ring-2 group-aria-pressed:ring-accent" />
       </button>
     ))}
   </div>

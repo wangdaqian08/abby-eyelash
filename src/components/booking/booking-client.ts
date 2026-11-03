@@ -34,7 +34,7 @@ const ICON = {
   details: svg('<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>'),
   prev: svg('<path d="m15 18-6-6 6-6"/>'),
   next: svg('<path d="m9 18 6-6-6-6"/>'),
-  alert: svg('<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>', 'size-4 shrink-0'),
+  alert: svg('<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>', 'size-[1em] shrink-0 translate-y-[0.125em]'),
   check: svg('<path d="M20 6 9 17l-5-5"/>', 'size-6'),
   chevron: svg('<path d="m6 9 6 6 6-6"/>', 'pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-muted'),
 };
@@ -42,7 +42,7 @@ const STEP_ICONS = [ICON.service, ICON.date, ICON.time, ICON.details];
 
 const BTN = 'inline-flex min-h-12 items-center justify-center gap-2 px-6 font-medium uppercase transition duration-200 active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50';
 const BTN_PRIMARY = `${BTN} bg-primary text-on-primary hover:bg-primary/90`;
-const BTN_OUTLINE = `${BTN} border border-primary text-primary hover:bg-surface-2`;
+const BTN_OUTLINE = `${BTN} border border-primary/30 text-primary hover:bg-surface-2`;
 const INPUT = 'block h-12 w-full appearance-none bg-surface-2 px-4 text-base text-fg placeholder:text-muted aria-invalid:outline-2 aria-invalid:outline-danger';
 
 export function start(root: HTMLElement) {
@@ -140,7 +140,7 @@ export function start(root: HTMLElement) {
         const done = n < st.step;
         const current = n === st.step;
         const text = done && values[i] ? values[i]! : label;
-        const inner = `<span class="flex size-9 shrink-0 items-center justify-center rounded-full border ${done || current ? 'border-primary text-primary' : 'border-border text-muted'}">${STEP_ICONS[i]}</span>
+        const inner = `<span class="flex size-9 shrink-0 items-center justify-center rounded-full border ${done || current ? 'border-primary/30 bg-surface-2 text-primary' : 'border-border text-muted'}">${STEP_ICONS[i]}</span>
           <span class="text-sm ${done ? 'font-medium text-primary' : current ? 'text-fg' : 'text-muted'}">${esc(text)}</span>`;
         return `<li ${current ? 'aria-current="step"' : ''}>
           ${i ? '<span aria-hidden="true" class="ml-[17px] block h-7 border-l border-dashed border-muted/40"></span>' : ''}
@@ -174,7 +174,7 @@ export function start(root: HTMLElement) {
     const card = (s: Service) => {
       const h = headline(s);
       const range = h.minutes![0] === h.minutes![1] ? mins(h.minutes![0]) : `${h.minutes![0]}–${mins(h.minutes![1])}`;
-      return `<label class="flex min-h-16 items-center gap-3 border border-border p-4 transition-colors duration-200 hover:border-primary has-checked:border-primary has-checked:bg-surface-2 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring">
+      return `<label class="flex min-h-16 items-center gap-3 border border-border p-4 transition-colors duration-200 hover:bg-surface-2 has-checked:border-primary/40 has-checked:bg-surface-2 has-focus-visible:focus-ring">
         <input type="radio" name="bk-service" value="${s.id}" class="sr-only" ${s === st.service ? 'checked' : ''}>
         <span aria-hidden="true" class="text-accent">✦</span>
         <span><span class="block font-medium">${s.name[lang]}</span><span class="text-sm text-muted">${range} · ${price(h)}</span></span>
@@ -299,7 +299,7 @@ export function start(root: HTMLElement) {
         return time === st.time
           ? `<li class="grid grid-cols-2 gap-2"><span class="flex h-12 items-center justify-center bg-muted text-on-primary">${label}${tag && `<span class="sr-only">, ${t.recommended}</span>`}</span>
               <button type="button" data-action="to-details" aria-label="${t.next}: ${label}" class="h-12 bg-primary font-medium text-on-primary transition duration-200 hover:bg-primary/90 active:scale-[.97]">${t.next}</button></li>`
-          : `<li><button type="button" data-time="${time}" class="h-12 w-full border border-border text-muted transition-colors duration-200 hover:border-primary hover:text-fg">${label}${tag}</button></li>`;
+          : `<li><button type="button" data-time="${time}" class="h-12 w-full border border-border text-muted transition-colors duration-200 hover:bg-surface-2 hover:text-fg">${label}${tag}</button></li>`;
       })
       .join('');
     return `<h3 data-slots-heading tabindex="-1" class="font-sans text-base font-normal outline-none">${fmtDate(st.date, { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
