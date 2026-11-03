@@ -1,7 +1,10 @@
 // Usage: node scripts/photos.mjs <sourceDir>  — crops every manifest photo into src/assets/photos/<dir>/<id>.jpg
+// A manifest entry whose source file is missing is skipped and its existing master kept.
+// Video (not generated here): ffmpeg -i ~/Desktop/abby-eyelash/nails/VID_20260817下午92540427.MP4 -an -vf "scale=720:-2" -c:v libx264 -crf 28 -preset slow -movflags +faststart public/media/nails-yellow-french.mp4
+// Its poster is one saved frame (/tmp/abby-video-poster.jpg, the nail-video-poster entry); once /tmp is cleared this script skips it and keeps the master.
 import sharp from 'sharp';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { isAbsolute, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { photos } from '../src/data/photos.ts';
@@ -14,6 +17,7 @@ const dims = { '4:3': [LONG, 1200], '3:4': [1200, LONG] };
 
 for (const p of photos) {
   let file = isAbsolute(p.source) ? p.source : join(src, p.source);
+  if (!existsSync(file)) { console.log(`skip ${p.id}: source missing (${file}), keeping existing master`); continue; }
   let tmp;
   if (/\.heic$/i.test(file)) { // macOS-only: sips converts HEIC, which sharp cannot read
     tmp = join(tmpdir(), `${p.id}-heic.jpg`);
@@ -22,8 +26,8 @@ for (const p of photos) {
   }
   let img = sharp(file).rotate(); // apply EXIF orientation
   if (p.box) {
-    const { width, height } = await sharp(await img.toBuffer()).metadata();
-    img = sharp(await img.toBuffer()).extract({
+    const { data, info: { width, height } } = await img.toBuffer({ resolveWithObject: true });
+    img = sharp(data).extract({
       left: Math.round(p.box.left * width), top: Math.round(p.box.top * height),
       width: Math.round(p.box.width * width), height: Math.round(p.box.height * height),
     });

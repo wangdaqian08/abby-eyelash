@@ -24,12 +24,9 @@ const nail = (n: string, source: string, en: string, zh: string, extra: Extra = 
 
 export const photos: Photo[] = [
   lash('classic-natural', '单根自然.jpg', 'Japanese classic natural lash extensions on a brown eye, Burwood', '棕色眼睛上的日式单根自然款嫁接睫毛，细密整齐，Burwood'),
-  lash('classic-natural-2', '单根自然2.JPG', 'Japanese classic natural lash extensions on a hazel eye, fine and evenly spaced', '榛色眼睛上的日式单根自然款嫁接睫毛，纤细均匀'),
   lash('classic-full-bottom', '单根浓+下睫毛.JPG', 'Japanese classic full lash extensions with dense bottom lashes on a brown eye, Burwood', '棕色眼睛上的日式单根浓密款嫁接睫毛，搭配浓密下睫毛，Burwood'),
-  lash('classic-colour-bottom', '单根自然+彩色+下睫毛.JPG', 'Natural classic lash extensions with a blue accent lash at the outer corner and bottom lashes', '日式单根自然款嫁接睫毛，眼尾点缀蓝色睫毛，搭配下睫毛'),
   lash('hybrid-natural', '轻盈-自然.jpg', 'Light hybrid natural lash extensions with soft fanned tips on a grey-green eye, Burwood', '灰绿色眼睛上的开花轻盈自然款嫁接睫毛，睫毛尖柔和散开，Burwood'),
   lash('hybrid-full', '开花-浓密.JPG', 'Hybrid full volume lash extensions, long and dense with a fanned finish, Burwood', '开花浓密款嫁接睫毛，纤长浓密、根根散开，Burwood'),
-  lash('hybrid-full-2', '开花-浓密2.JPG', 'Hybrid full volume lash extensions on a light brown eye, sweeping toward the outer corner', '浅棕色眼睛上的开花浓密款嫁接睫毛，向眼尾自然拉长'),
   lash('hybrid-full-bottom', '开花-浓密+下睫毛.JPG', 'Hybrid full volume lash extensions with fine bottom lashes on a dark brown eye', '深棕色眼睛上的开花浓密款嫁接睫毛，搭配纤细下睫毛', { ratio: '4:3' }),
   lash('styled-fairy', '造型款-仙子.JPG', 'Fairy styled lash set with a few long wispy spikes on top, Burwood', '仙子造型款嫁接睫毛，上睫毛间插几根纤长尖翘的长毛，Burwood'),
   lash('styled-layered', '造型款-单根层次.JPG', 'Layered classic styled lash set, fine single lashes in staggered lengths', '单根层次造型款嫁接睫毛，纤细单根长短错落'),
@@ -38,10 +35,10 @@ export const photos: Photo[] = [
   lash('styled-manga', '造型款-漫画.JPG', 'Manga styled lash set with spiky, defined lash clusters on a hazel eye', '榛色眼睛上的漫画造型款嫁接睫毛，睫毛簇分明、根根尖翘', { box: { left: 0, top: 0, width: 0.64, height: 0.5 } }),
   lash('styled-liner', '造型款-眼线加浓.JPG', 'Liner-effect thickened styled lash set, dense and dark along the lash line, on a blue-grey eye', '蓝灰色眼睛上的眼线加浓造型款嫁接睫毛，睫毛根部浓黑如眼线'),
   lash('styled-liner-2', '造型款-眼线加浓2.JPG', 'Liner-effect thickened styled lash set with dense lashes and defined brows, brown eye', '棕色眼睛上的眼线加浓造型款嫁接睫毛，睫毛浓密，眉形清晰'),
-  lash('styled-liner-bottom', '造型款-眼线加浓+下睫毛.JPG', 'Liner-effect styled lash set with dense top and bottom lashes on a dark brown eye', '深棕色眼睛上的眼线加浓造型款嫁接睫毛，上下睫毛浓密', { box: { left: 0.02, top: 0, width: 0.8, height: 0.52 } }),
+  lash('styled-liner-bottom', '造型款-眼线加浓+下睫毛.JPG', 'Liner-effect styled lash set with dense top and bottom lashes on a dark brown eye', '深棕色眼睛上的眼线加浓造型款嫁接睫毛，上下睫毛浓密', { box: { left: 0.08, top: 0.56, width: 0.68, height: 0.44 } }),
   lash('styled-sunflower', '造型款-太阳花+下睫毛.JPG', 'Sunflower styled lash set with radiating long lashes and bottom lashes', '太阳花造型款嫁接睫毛，长睫毛向外放射，搭配下睫毛'),
   lash('styled-pompom', '造型款-小绒花+下睫毛.JPG', 'Little pompom styled lash set with long, spiky wispy lashes, worn with a lilac face mask', '戴着淡紫色口罩的客人，小绒花造型款嫁接睫毛，睫毛纤长尖翘'),
-  lash('styled-bottom', '造型款+下睫毛.jpg', 'Styled lash set with long, flared top lashes and bottom lashes', '造型款嫁接睫毛，上睫毛纤长向外散开，搭配下睫毛', { box: { left: 0.06, top: 0, width: 0.92, height: 0.504 } }),
+  lash('styled-bottom', '造型款+下睫毛.jpg', 'Styled lash set with long, flared top lashes and bottom lashes', '造型款嫁接睫毛，上睫毛纤长向外散开，搭配下睫毛', { box: { left: 0.02, top: 0.55, width: 0.86, height: 0.45 } }),
   lash('styled-bottom-2', '造型款+下睫毛2.JPG', 'Styled lash set with spiky, dark top lashes and defined bottom lashes on a brown eye', '棕色眼睛上的造型款嫁接睫毛，上睫毛浓黑尖翘，下睫毛分明'),
   lash('styled-close', '造型款.JPG', 'Close-up of a styled lash set with long, dark, criss-crossed lashes on a green-brown eye', '绿棕色眼睛上的造型款嫁接睫毛特写，睫毛浓黑纤长、交错有致'),
   lash('selfie', '造型款.HEIC', "Client's face close-up showing dark, wispy styled lash extensions", '客人面部近景，展示深色纤长的造型款嫁接睫毛', { ratio: '3:4' }),
@@ -132,12 +129,21 @@ export const styledLooks: { photo: string; name: L10n }[] = [
   { photo: 'styled-close', name: { en: 'Styled close-up', zh: '造型款特写' } },
 ];
 
-export const servicePhotos: Record<string, { hero?: string; detail?: string; beforeAfter?: [string, string] }> = {
-  'lash-extensions': { hero: 'styled-mermaid-selfie', detail: 'hybrid-full-bottom' },
-  'lash-lift': { hero: 'lift-2', beforeAfter: ['lift-1', 'lift-3'] },
-  'gel-nails': { hero: 'nail-3406', detail: 'nail-2020' },
-  'handcrafted-nails': { hero: 'nail-8351', detail: 'nail-4630' },
-  'nail-extensions': { hero: 'nail-2112', detail: 'nail-6920' },
+/** Per service slot: manifest photo, optional object-position, optional literal aspect classes (default in ServicePage). */
+export interface ServiceSlots {
+  hero?: string; heroPos?: string; heroAspect?: string;
+  detail?: string; detailPos?: string; detailAspect?: string;
+  beforeAfter?: [string, string];
+}
+// Slots follow the master's ratio (4:3 lash, 3:4 nails shown 4:5) so no eye, nail or watermark is cropped. Literal classes so Tailwind sees them.
+const LASH = 'aspect-[4/3]';
+const NAIL = 'aspect-[4/5]';
+export const servicePhotos: Record<string, ServiceSlots> = {
+  'lash-extensions': { hero: 'styled-mermaid-selfie', heroAspect: NAIL, heroPos: '50% 0%', detail: 'hybrid-full-bottom', detailAspect: LASH },
+  'lash-lift': { hero: 'lift-2', heroAspect: LASH, beforeAfter: ['lift-1', 'lift-3'] },
+  'gel-nails': { hero: 'nail-3406', heroAspect: NAIL, detail: 'nail-2020', detailAspect: NAIL },
+  'handcrafted-nails': { hero: 'nail-8351', heroAspect: NAIL, heroPos: '50% 100%', detail: 'nail-4630', detailAspect: NAIL },
+  'nail-extensions': { hero: 'nail-2112', heroAspect: NAIL, heroPos: '50% 100%', detail: 'nail-6920', detailAspect: NAIL },
 };
 
 export const homeHero = 'selfie';

@@ -2,6 +2,8 @@
 
 Abby's own photos are in place everywhere except the places below. Everything else is listed in `src/data/photos.ts`.
 
+To add a photo: edit `src/data/photos.ts`, then run `node scripts/photos.mjs ~/Desktop/abby-eyelash` (macOS is needed for HEIC, via `sips`).
+
 ## About collage (stock photos)
 
 These are free-licence stock photos from Unsplash (Unsplash License: free to use, no attribution required).

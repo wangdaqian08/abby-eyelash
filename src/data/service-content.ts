@@ -19,7 +19,7 @@ export interface ServiceContent {
   intro: string;
   sections: Section[];
   faq: { q: string; a: string }[];
-  alt: { hero: string; detail: string };
+  alt?: { hero: string; detail: string }; // placeholder slots only (powder brows); photos use their manifest alt
 }
 
 const opt = (s: string, o: string) => {
@@ -156,10 +156,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: 'I reacted to lash glue before. Can I still have extensions?', a: 'Tell Abby before booking so she can advise you. Abby doesn’t offer patch tests; after a significant reaction, extensions may not be right for you.' }, // OWNER-REVIEW
         CANCEL.en,
       ],
-      alt: {
-        hero: 'Close-up of a Japanese classic eyelash extension set applied by Abby at her Burwood studio',
-        detail: 'Abby isolating a single natural lash with tweezers while applying an extension',
-      },
     },
     zh: {
       title: '宝活 Burwood 嫁接睫毛 | Abby Eyelash 美睫',
@@ -236,10 +232,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: '以前对睫毛胶过敏，还能做吗？', a: '请在预约前告诉 Abby，她会给你建议。Abby 不提供皮试；如果以前反应比较严重，嫁接睫毛可能不适合你。' }, // OWNER-REVIEW
         CANCEL.zh,
       ],
-      alt: {
-        hero: 'Abby 在 Burwood 工作室完成的日式单根嫁接睫毛近照',
-        detail: 'Abby 用镊子分离单根真睫毛并进行嫁接',
-      },
     },
   },
 
@@ -307,10 +299,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: 'My lashes are short. Will a lift work?', a: 'Lashes need enough length to wrap onto the shield. Abby checks this at the start and will tell you honestly if a lift won’t show much.' },
         CANCEL.en,
       ],
-      alt: {
-        hero: 'Natural lashes curled upward after a keratin lash lift at Abby Eyelash, Burwood',
-        detail: 'Lashes combed onto a silicone shield during a lash lift',
-      },
     },
     zh: {
       title: '宝活 Burwood 角蛋白翘睫 | Abby Eyelash',
@@ -375,10 +363,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: '睫毛很短也能做吗？', a: '睫毛需要有一定长度才能贴到硅胶垫上。Abby 开始前会先看，如果效果不明显会直接告诉你。' },
         CANCEL.zh,
       ],
-      alt: {
-        hero: 'Abby Eyelash（Burwood）角蛋白翘睫后自然上翘的睫毛',
-        detail: '翘睫过程中睫毛被梳到硅胶垫上定型',
-      },
     },
   },
 
@@ -564,10 +548,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: 'Can I have nail art on extensions?', a: `Yes. Add extensions when you book (${ext()} per nail).` },
         CANCEL.en,
       ],
-      alt: {
-        hero: 'Hand-painted floral nail art by Abby on short natural nails, Burwood',
-        detail: 'Abby painting fine line art on a nail with a detail brush',
-      },
     },
     zh: {
       title: '宝活 Burwood 手绘造型美甲 | Abby Eyelash',
@@ -625,10 +605,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: '延长甲上可以画图案吗？', a: `可以，预约时加选延长即可（每只 ${ext()}）。` },
         CANCEL.zh,
       ],
-      alt: {
-        hero: 'Abby 在 Burwood 为自然短甲手绘的小花美甲',
-        detail: 'Abby 用细笔在指甲上手绘线条图案',
-      },
     },
   },
 
@@ -690,10 +666,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: 'Can I add length?', a: `Yes. Add extensions when you book: ${ext()} per nail, on any finish.` },
         CANCEL.en,
       ],
-      alt: {
-        hero: 'Glossy gel nails on short rounded nails, Abby Eyelash Burwood',
-        detail: 'Gel being cured under an LED nail lamp',
-      },
     },
     zh: {
       title: '宝活 Burwood 凝胶美甲 | 猫眼 · 极光 · 法式 | Abby Eyelash',
@@ -752,10 +724,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: '可以加长吗？', a: `可以，预约时加选延长，每只 ${ext()}，任何款式都可以加。` },
         CANCEL.zh,
       ],
-      alt: {
-        hero: 'Abby Eyelash（Burwood）完成的亮面凝胶美甲，短圆甲型',
-        detail: '凝胶在 LED 美甲灯下照灯固化',
-      },
     },
   },
 
@@ -816,10 +784,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: 'How do I book extensions?', a: 'On the booking page choose Gel Nails or Hand-painted Nail Art, pick your design, then set how many nails to extend.' },
         CANCEL.en,
       ],
-      alt: {
-        hero: 'Almond-shaped nail extensions in a soft pink gel finish, Abby Eyelash Burwood',
-        detail: 'A nail tip being shaped during an extension appointment',
-      },
     },
     zh: {
       title: '宝活 Burwood 延长甲 | 每只 $6 | Abby Eyelash',
@@ -877,10 +841,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: '怎么预约延长甲？', a: '在预约页选凝胶美甲或手绘造型，选好款式后再选要延长几只。' },
         CANCEL.zh,
       ],
-      alt: {
-        hero: 'Abby Eyelash（Burwood）完成的杏仁形淡粉色延长甲',
-        detail: '延长甲过程中为甲片塑形',
-      },
     },
   },
 };

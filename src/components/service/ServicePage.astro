@@ -4,7 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ServiceImage from './ServiceImage.astro';
 import BeforeAfter from './BeforeAfter.astro';
 import StyledLooks from './StyledLooks.astro';
-import { servicePhotos } from '../../data/photos';
+import { servicePhotos, type ServiceSlots } from '../../data/photos';
 import { bookableWith, groupAt, headline, priceText, services, type Lang, type Service } from '../../data/services';
 import { site } from '../../data/site';
 import { serviceContent } from '../../data/service-content';
@@ -28,7 +28,7 @@ const addressLine = `${a.street}, ${a.locality} ${a.region} ${a.postcode}`;
 const mapHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${site.name}, ${addressLine}`)}`;
 const updated = new Intl.DateTimeFormat(en ? 'en-AU' : 'zh-CN', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(service.updated));
 
-const sp = servicePhotos[service.id as keyof typeof servicePhotos] as { hero?: string; detail?: string; beforeAfter?: [string, string] } | undefined;
+const sp: ServiceSlots | undefined = servicePhotos[service.id];
 const related = services.filter((s) => s.id !== service.id);
 
 const eyebrow = ['text-xs font-medium uppercase text-accent-ink', en && 'tracking-[0.25em]'];
@@ -59,7 +59,7 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
           <a href={wa} data-track="message_click" target="_blank" rel="noopener" class:list={[btn, 'border border-primary/30 text-primary hover:bg-surface-2']}>{t.call}</a>
         </div>
       </div>
-      <ServiceImage photo={sp?.hero} lang={lang} alt={c.alt.hero} eager position={service.id === 'lash-extensions' ? '50% 30%' : undefined} class="aspect-[4/3] w-full lg:aspect-[4/5] shadow-[var(--shadow-sm)]" />
+      <ServiceImage photo={sp?.hero} lang={lang} alt={c.alt?.hero} eager position={sp?.heroPos} class:list={[sp?.heroAspect ?? 'aspect-[4/3] lg:aspect-[4/5]', 'w-full shadow-[var(--shadow-sm)]']} />
     </section>
 
     {/* Price table (same data as Service/Offer JSON-LD) */}
@@ -145,7 +145,7 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
         {sp?.beforeAfter ? (
           <BeforeAfter lang={lang} ids={sp.beforeAfter} />
         ) : (
-          <ServiceImage photo={sp?.detail} lang={lang} alt={c.alt.detail} class="aspect-[3/2] w-full lg:aspect-[4/5]" />
+          <ServiceImage photo={sp?.detail} lang={lang} alt={c.alt?.detail} position={sp?.detailPos} class:list={[sp?.detailAspect ?? 'aspect-[3/2] lg:aspect-[4/5]', 'w-full']} />
         )}
         <a href={bookHref} data-track="book_click" class:list={[btn, 'mt-6 w-full bg-primary text-on-primary hover:bg-primary/90']}>{t.bookShort}</a>
       </div>

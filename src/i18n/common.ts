@@ -83,6 +83,7 @@ const en = {
     showAll: 'Show all 22',
     showLess: 'Show fewer',
     bookNails: 'Book nails →',
+    pauseVideo: 'Pause video',
   },
   reviews: {
     eyebrow: 'Client love',
@@ -208,6 +209,7 @@ const zh: Strings = {
     showAll: '看全部 22 款',
     showLess: '收起',
     bookNails: '约美甲 →',
+    pauseVideo: '暂停视频',
   },
   reviews: {
     eyebrow: '顾客口碑',

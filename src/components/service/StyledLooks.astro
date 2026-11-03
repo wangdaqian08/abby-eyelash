@@ -5,7 +5,7 @@ import { photo, styledLooks } from '../../data/photos';
 import { serviceStrings } from '../../i18n/service';
 import { photoSrc } from '../../lib/photo-src';
 
-interface Props { lang: Lang; bookHref: string; btnClass: unknown[] }
+interface Props { lang: Lang; bookHref: string; btnClass: (string | false)[] }
 const { lang, bookHref, btnClass } = Astro.props;
 const t = serviceStrings[lang];
 ---

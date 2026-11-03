@@ -8,21 +8,23 @@ import { photoSrc } from '../../lib/photo-src';
 interface Props {
   photo?: string;
   lang: Lang;
-  alt: string;
+  alt?: string; // placeholder label only
   class?: string;
   eager?: boolean;
   position?: string;
 }
 const { photo, lang, alt, class: cls = '', eager = false, position } = Astro.props;
+const src = photo ? photoSrc(photo) : undefined;
+const widths = [480, 960, 1440].filter((w) => w <= (src?.width ?? 0)); // never above the master's width
 ---
 
 {
   photo ? (
     <Picture
-      src={photoSrc(photo)}
+      src={src!}
       alt={photoMeta(photo).alt[lang]}
       formats={['avif', 'webp']}
-      widths={[480, 960, 1440]}
+      widths={widths}
       sizes="(min-width: 1024px) 480px, 100vw"
       loading={eager ? 'eager' : 'lazy'}
       fetchpriority={eager ? 'high' : undefined}
