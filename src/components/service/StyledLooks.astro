@@ -1,0 +1,31 @@
+---
+import { Picture } from 'astro:assets';
+import type { Lang } from '../../data/services';
+import { photo, styledLooks } from '../../data/photos';
+import { serviceStrings } from '../../i18n/service';
+import { photoSrc } from '../../lib/photo-src';
+
+interface Props { lang: Lang; bookHref: string; btnClass: unknown[] }
+const { lang, bookHref, btnClass } = Astro.props;
+const t = serviceStrings[lang];
+---
+<section id="styled-looks" class="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-24">
+  <h2 class="text-4xl leading-tight lg:text-5xl [&_em]:block">{t.styledTitle}<em>{t.styledAccent}</em></h2>
+  <div class="mt-10 grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
+    {styledLooks.map((l) => (
+      <figure class="bg-surface">
+        <Picture
+          src={photoSrc(l.photo)}
+          alt={photo(l.photo).alt[lang]}
+          formats={['avif', 'webp']}
+          widths={[320, 640, 960]}
+          sizes="(min-width: 1024px) 368px, 47vw"
+          loading="lazy"
+          class="aspect-[4/3] w-full object-cover"
+        />
+        <figcaption class="p-3 text-sm font-medium sm:p-4">{l.name[lang]}</figcaption>
+      </figure>
+    ))}
+  </div>
+  <a href={bookHref} data-track="book_click" class:list={[btnClass, 'mt-10 bg-primary text-on-primary hover:bg-primary/90']}>{t.book}</a>
+</section>

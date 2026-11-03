@@ -2,6 +2,9 @@
 // One service page (EN or ZH). All facts come from services.ts / site.ts / service-content.ts and render as static HTML.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ServiceImage from './ServiceImage.astro';
+import BeforeAfter from './BeforeAfter.astro';
+import StyledLooks from './StyledLooks.astro';
+import { servicePhotos } from '../../data/photos';
 import { bookableWith, groupAt, headline, priceText, services, type Lang, type Service } from '../../data/services';
 import { site } from '../../data/site';
 import { serviceContent } from '../../data/service-content';
@@ -25,6 +28,7 @@ const addressLine = `${a.street}, ${a.locality} ${a.region} ${a.postcode}`;
 const mapHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${site.name}, ${addressLine}`)}`;
 const updated = new Intl.DateTimeFormat(en ? 'en-AU' : 'zh-CN', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(service.updated));
 
+const sp = servicePhotos[service.id as keyof typeof servicePhotos] as { hero?: string; detail?: string; beforeAfter?: [string, string] } | undefined;
 const related = services.filter((s) => s.id !== service.id);
 
 const eyebrow = ['text-xs font-medium uppercase text-accent-ink', en && 'tracking-[0.25em]'];
@@ -55,7 +59,7 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
           <a href={wa} data-track="message_click" target="_blank" rel="noopener" class:list={[btn, 'border border-primary/30 text-primary hover:bg-surface-2']}>{t.call}</a>
         </div>
       </div>
-      <ServiceImage name={`${service.id}-hero`} alt={c.alt.hero} eager class="aspect-[4/3] w-full lg:aspect-[4/5] shadow-[var(--shadow-sm)]" />
+      <ServiceImage photo={sp?.hero} lang={lang} alt={c.alt.hero} eager position={service.id === 'lash-extensions' ? '50% 30%' : undefined} class="aspect-[4/3] w-full lg:aspect-[4/5] shadow-[var(--shadow-sm)]" />
     </section>
 
     {/* Price table (same data as Service/Offer JSON-LD) */}
@@ -104,6 +108,8 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
       </div>
     </section>
 
+    {service.id === 'lash-extensions' && <StyledLooks lang={lang} bookHref={bookHref} btnClass={btn} />}
+
     {/* Client questions */}
     <section class:list={[container, 'grid gap-12 py-16 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-16 lg:py-24']}>
       <div class="max-w-2xl">
@@ -136,7 +142,11 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
         ))}
       </div>
       <div class="lg:sticky lg:top-[calc(var(--header-h)+32px)] lg:self-start">
-        <ServiceImage name={`${service.id}-detail`} alt={c.alt.detail} class="aspect-[3/2] w-full lg:aspect-[4/5]" />
+        {sp?.beforeAfter ? (
+          <BeforeAfter lang={lang} ids={sp.beforeAfter} />
+        ) : (
+          <ServiceImage photo={sp?.detail} lang={lang} alt={c.alt.detail} class="aspect-[3/2] w-full lg:aspect-[4/5]" />
+        )}
         <a href={bookHref} data-track="book_click" class:list={[btn, 'mt-6 w-full bg-primary text-on-primary hover:bg-primary/90']}>{t.bookShort}</a>
       </div>
     </section>
