@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { bookableWith, mainOptions, services } from './services.ts';
-import { homeHero, lashCards, nailGroups, nailVideo, NAIL_VISIBLE, photo, photos, servicePhotos, styledLooks } from './photos.ts';
+import { bookableWith, findOption, mainOptions, priceText, services } from './services.ts';
+import { homeHero, lashCards, lashLooks, nailGroups, nailVideo, NAIL_VISIBLE, photo, photos, servicePhotos, styledLooks } from './photos.ts';
 
 test('every lash card points at a bookable main option', () => {
   assert.equal(lashCards.length, 6);
@@ -37,4 +37,18 @@ test('ids are unique ASCII and every alt is filled in both languages', () => {
 test('the $180 photo is pre-cropped; only the lash-lift pair keeps its ratio', () => {
   assert.ok(photo('nail-2473').box);
   assert.deepEqual(photos.filter((p) => p.ratio === 'original').map((p) => p.id).sort(), ['lift-1', 'lift-3']);
+});
+
+test('lashLooks: deep links, live prices and minutes, both languages', () => {
+  const en = lashLooks('en'), zh = lashLooks('zh');
+  assert.equal(en[0].href, '/book?service=lash-extensions&option=classic-natural');
+  assert.equal(zh[0].href, '/zh/book?service=lash-extensions&option=classic-natural');
+  assert.equal(en.at(-1)!.href, '/book?service=lash-lift&option=keratin-lift');
+  lashCards.forEach((c, i) => {
+    const o = findOption(c.serviceId, c.optionId)!;
+    assert.equal(en[i].price, priceText(o, 'en'));
+    assert.equal(zh[i].price, priceText(o, 'zh'));
+    assert.equal(en[i].minutes, o.minutes);
+    assert.equal(zh[i].name, o.name.zh);
+  });
 });

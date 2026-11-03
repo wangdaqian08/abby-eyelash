@@ -1,4 +1,5 @@
-import type { Lang } from './services.ts';
+import { findOption, priceText, type Lang } from './services.ts';
+import { localePath } from '../lib/i18n.ts';
 
 type L10n = Record<Lang, string>;
 export type Ratio = '4:3' | '3:4' | 'original';
@@ -19,7 +20,7 @@ type Extra = Partial<Pick<Photo, 'ratio' | 'box' | 'position'>>;
 const lash = (id: string, source: string, en: string, zh: string, extra: Extra = {}): Photo =>
   ({ id, dir: 'lash', source, ratio: '4:3', ...extra, alt: { en, zh } });
 const nail = (n: string, source: string, en: string, zh: string, extra: Extra = {}): Photo =>
-  ({ id: `nail-${n}`, dir: 'nails', source: `nails/${source}`, ratio: '3:4', ...extra, alt: { en, zh } });
+  ({ id: `nail-${n}`, dir: 'nails', source: source.startsWith('/') ? source : `nails/${source}`, ratio: '3:4', ...extra, alt: { en, zh } });
 
 export const photos: Photo[] = [
   lash('classic-natural', '单根自然.jpg', 'Japanese classic natural lash extensions on a brown eye, Burwood', '棕色眼睛上的日式单根自然款嫁接睫毛，细密整齐，Burwood'),
@@ -57,7 +58,7 @@ export const photos: Photo[] = [
   nail('fc1a', 'FC1A5AA1-AD73-4855-AFF4-6F4DC0C0A719.JPG', 'Gold mirror and cat-eye nails on a textured wall', '金色镜面和猫眼美甲'),
   nail('4915', 'IMG_4915.JPG', 'Gold chrome nails with a red accent', '金色镜面美甲，点缀红色'),
   nail('2020', 'IMG_2020.JPG', 'Silver chrome nails with coloured gems', '银色镜面美甲，镶彩色小钻'),
-  nail('9011', 'IMG_9011.JPG', 'Lilac chrome 3D nails on white tulle', '淡紫色镜面立体美甲，白纱背景'),
+  nail('9011', 'IMG_9011.JPG', 'Lilac chrome 3D nails on white tulle', '淡紫色镜面立体美甲，白纱背景', { position: 'right' }),
   nail('b029', 'B0297EC5-3953-40D6-8344-D3761BAD7D3F.JPG', 'Nude nails with yellow flower art', '裸色美甲配黄色小花彩绘'),
   nail('6e6c', '6E6C1734-F327-4B6E-8D11-66682911A6F6.jpg', 'Warm gold and yellow floral nails with foil', '暖金色和黄色花朵美甲，配金箔'),
   nail('8353', 'IMG_8353.jpg', 'Burgundy red nails with dark art on a grey wall', '酒红色美甲配深色彩绘'),
@@ -89,6 +90,12 @@ export const lashCards: { serviceId: string; optionId: string; photo: string }[]
   { serviceId: 'lash-extensions', optionId: 'styled', photo: 'styled-fairy' },
   { serviceId: 'lash-lift', optionId: 'keratin-lift', photo: 'lift-2' },
 ];
+
+export const lashLooks = (lang: Lang) => lashCards.map((c) => {
+  const o = findOption(c.serviceId, c.optionId)!;
+  return { href: localePath(lang, `/book?service=${c.serviceId}&option=${c.optionId}`), name: o.name[lang],
+    price: priceText(o, lang), minutes: o.minutes, photo: c.photo };
+});
 
 export const nailVideo = {
   src: '/media/nails-yellow-french.mp4',
