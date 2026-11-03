@@ -8,7 +8,8 @@ import { localePath } from '../../lib/i18n';
 import Button from '../ui/Button.astro';
 import Eyebrow from '../ui/Eyebrow.astro';
 import Stars from '../ui/Stars.astro';
-import hero from '../../assets/home/placeholder-hero.jpg'; // PLACEHOLDER photo
+import { homeHero, photo } from '../../data/photos';
+import { photoSrc } from '../../lib/photo-src';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
@@ -34,14 +35,14 @@ const body = fill(t.body, { name: site.name, owner: site.owner, suburb: site.add
   </div>
   <div class="relative aspect-[4/5] sm:aspect-[16/10] lg:aspect-auto">
     <Picture
-      src={hero}
-      alt={t.imageAlt}
+      src={photoSrc(homeHero)}
+      alt={photo(homeHero).alt[lang]}
       formats={['avif', 'webp']}
       widths={[480, 768, 1080, 1600]}
       sizes="(min-width: 1024px) 50vw, 100vw"
       loading="eager"
       fetchpriority="high"
-      class="absolute inset-0 size-full object-cover"
+      class="absolute inset-0 size-full object-cover object-[50%_35%] sm:object-[50%_5%] lg:object-[50%_35%]"
     />
   </div>
 </section>

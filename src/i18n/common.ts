@@ -42,7 +42,6 @@ const en = {
     book: 'Book an appointment',
     services: 'Our services',
     rating: 'Google reviews',
-    imageAlt: 'Lash artist placing individual eyelash extensions with fine tweezers',
   },
   services: {
     eyebrow: 'What we offer',
@@ -168,7 +167,6 @@ const zh: Strings = {
     book: '在线预约',
     services: '查看服务',
     rating: 'Google 评价',
-    imageAlt: '美睫师用细镊子为顾客逐根嫁接睫毛',
   },
   services: {
     eyebrow: '服务项目',

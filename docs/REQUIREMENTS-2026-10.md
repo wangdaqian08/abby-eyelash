@@ -112,8 +112,8 @@
 ## 四、上线配置与测试（参考 `docs/DEPLOY-CHECKLIST.md` 和 `docs/SETUP-booking.md`）
 
 - 🔴 照片：
-  - 首页 10 张图库照片换成 Abby 自己的作品。
-  - 服务页还需要 12 张，其中 2 张是雾眉。清单在 `docs/PHOTOS-NEEDED.md`。
+  - 首页只剩关于我们的 3 张图库照片要换成 Abby 自己的作品，见 `docs/IMAGE-PLACEHOLDERS.md`。
+  - 服务页的照片在 `src/data/photos.ts`，只有雾眉页还缺照片。
 - 🔴 评价：6 条假评价换成真实的 Google 评价，或者删掉评价区。不处理的话，`LAUNCH=1` 时构建会故意失败。
 - 🔴 服务页里有约 79 处标记了 `OWNER-REVIEW` 的说法，需要 Abby 逐条确认，包括术后护理、皮试、取消政策（目前写的是 24 小时）、所用产品等。
 - 🔴 预约密钥：Google 日历服务账号、Web3Forms、Turnstile。没配之前，预约只能以演示模式运行。
