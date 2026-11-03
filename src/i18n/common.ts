@@ -54,6 +54,13 @@ const en = {
     ctaBody: 'Pick a service, a day and a time online in under a minute.',
     ctaLink: 'Book online',
   },
+  lashLooks: {
+    eyebrow: 'Lash looks',
+    title: 'Pick a look,',
+    accent: 'book it in one tap.',
+    intro: 'Prices and times here are live from our booking menu, so what you see is what you book.',
+    bookThis: 'Book this look',
+  },
   about: {
     eyebrow: 'Meet Abby',
     title: 'One artist,',
@@ -169,6 +176,13 @@ const zh: Strings = {
     ctaTitle: '已经想好做什么？',
     ctaBody: '在线选择项目、日期和时间，一分钟就能约好。',
     ctaLink: '在线预约',
+  },
+  lashLooks: {
+    eyebrow: '睫毛款式',
+    title: '选一款，',
+    accent: '直接约。',
+    intro: '价格与时长直接来自预约菜单，所见即所约。',
+    bookThis: '约这款',
   },
   about: {
     eyebrow: '认识 Abby',
