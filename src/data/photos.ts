@@ -65,7 +65,7 @@ export const photos: Photo[] = [
   nail('1848', 'IMG_1848.jpg', 'Deep red nails with black art beside a white statue', '深红色美甲配黑色彩绘，白色雕像背景'),
   nail('3029', 'IMG_3029.JPG', 'Deep navy blue nails with silver details', '深蓝色美甲配银色点缀', { box: { left: 0, top: 0, width: 1, height: 0.455 }, position: 'left' }),
   nail('9024', 'IMG_9024.jpg', 'Grey and white marble nails', '灰白色大理石纹美甲'),
-  nail('7334', 'IMG_7334.jpg', 'Black French tip nails with small art', '黑色法式美甲配小彩绘', { box: { left: 0.045, top: 0, width: 0.74, height: 1 } }),
+  nail('7334', 'IMG_7334.jpg', 'Black French tip nails with small art', '黑色法式美甲配小彩绘', { box: { left: 0.46, top: 0, width: 0.54, height: 1 }, position: 'top' }),
   nail('8351', 'IMG_8351.JPG', 'Black and white cartoon hand-painted nails', '黑白卡通手绘美甲'),
   nail('2473', 'IMG_2473.jpg', 'Black, grey and white marble nails outdoors', '黑灰白渐变大理石纹美甲，户外', { box: { left: 0, top: 0, width: 1, height: 0.93 } }),
   nail('4630', 'IMG_4630.JPG', 'Black nails with yellow letter art', '黑色美甲配黄色字母彩绘'),
@@ -114,7 +114,7 @@ export const nailGroups: { id: string; name: L10n; swatch: string; items: string
   { id: 'wine-navy', name: { en: 'Wine · Navy', zh: '酒红 · 深蓝' }, swatch: '#6b1e2e',
     items: ['nail-8353', 'nail-1848', 'nail-3029'] },
   { id: 'mono-art', name: { en: 'Black & white · Art', zh: '黑白 · 彩绘' }, swatch: '#2b2b2b',
-    items: ['nail-9024', 'nail-7334', 'nail-8351', 'nail-2473', 'nail-4630', 'nail-9264', 'nail-7242'] },
+    items: ['nail-9024', 'nail-2473', 'nail-8351', 'nail-7334', 'nail-4630', 'nail-9264', 'nail-7242'] },
 ];
 
 export const styledLooks: { photo: string; name: L10n }[] = [
