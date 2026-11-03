@@ -78,9 +78,12 @@ const en = {
   },
   gallery: {
     eyebrow: 'Gallery',
-    title: 'Fresh from',
-    accent: 'the studio.',
+    title: 'Nail art,',
+    accent: 'all hand-done.',
     more: 'See more on Instagram',
+    showAll: 'Show all 22',
+    showLess: 'Show fewer',
+    bookNails: 'Book nails →',
   },
   reviews: {
     eyebrow: 'Client love',
@@ -201,9 +204,12 @@ const zh: Strings = {
   },
   gallery: {
     eyebrow: '作品集',
-    title: '工作室',
-    accent: '近期作品。',
+    title: '每一套，',
+    accent: '都是手做。',
     more: '在 Instagram 查看更多',
+    showAll: '看全部 22 款',
+    showLess: '收起',
+    bookNails: '约美甲 →',
   },
   reviews: {
     eyebrow: '顾客口碑',

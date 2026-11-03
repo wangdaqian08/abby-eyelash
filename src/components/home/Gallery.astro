@@ -1,28 +1,18 @@
 ---
-import { Picture } from 'astro:assets';
+import { Picture, getImage } from 'astro:assets';
 import type { Lang } from '../../data/services';
 import { site } from '../../data/site';
+import { NAIL_VISIBLE, nailGroups, nailVideo, photo } from '../../data/photos';
 import { common } from '../../i18n/common';
+import { localePath } from '../../lib/i18n';
+import { photoSrc } from '../../lib/photo-src';
 import SectionHeading from '../ui/SectionHeading.astro';
-// PLACEHOLDER stock photos (see docs/IMAGE-PLACEHOLDERS.md) — replace with Abby's own work.
-import g1 from '../../assets/gallery/placeholder-1.jpg';
-import g2 from '../../assets/gallery/placeholder-2.jpg';
-import g3 from '../../assets/gallery/placeholder-3.jpg';
-import g4 from '../../assets/gallery/placeholder-4.jpg';
-import g5 from '../../assets/gallery/placeholder-5.jpg';
-import g6 from '../../assets/gallery/placeholder-6.jpg';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const t = common[lang].gallery;
-const photos = [
-  { src: g1, en: 'Close-up of a green eye with long, softly curled lashes', zh: '绿色眼眸特写，睫毛纤长、自然上翘' },
-  { src: g2, en: 'Hand with glossy black and tortoiseshell nail art and a gold ring', zh: '亮面黑色与玳瑁纹手绘美甲，搭配金色戒指' },
-  { src: g3, en: 'Side view of full, dark lash extensions', zh: '侧面看浓密款嫁接睫毛，饱满乌黑' },
-  { src: g4, en: 'Hand with short, light pink gel manicure on a white surface', zh: '短款浅粉色凝胶美甲，手放在白色台面上' },
-  { src: g5, en: 'Almond nails in navy, gold foil and white hand-painted designs', zh: '杏仁形甲面，藏蓝、金箔与白色手绘设计' },
-  { src: g6, en: 'Mauve and silver glitter nails holding a white knit sleeve', zh: '豆沙紫与银色闪粉美甲，手握白色针织衣袖' },
-];
+const posterUrl = (await getImage({ src: photoSrc(nailVideo.poster), width: 480, format: 'webp' })).src;
+const bookHref = `${localePath(lang, '/book')}?service=gel-nails`;
 ---
 <section id="gallery" class="bg-surface-2 py-16 md:py-24">
   <div class="mx-auto max-w-6xl px-4 sm:px-6">
@@ -30,20 +20,75 @@ const photos = [
       <SectionHeading lang={lang} eyebrow={t.eyebrow} title={t.title} accent={t.accent} />
       <a href={site.social.instagram} data-track="social_click" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-4 transition-colors duration-200 hover:text-fg">{t.more}</a>
     </div>
-    <ul data-reveal class="mt-12 grid grid-cols-2 gap-3 md:mt-16 lg:grid-cols-3">
-      {photos.map((p) => (
-        <li class="aspect-[4/5] overflow-hidden bg-surface lg:aspect-square">
-          <Picture
-            src={p.src}
-            alt={p[lang]}
-            formats={['avif', 'webp']}
-            widths={[300, 600, 800]}
-            sizes="(min-width: 1152px) 368px, (min-width: 1024px) 31vw, 47vw"
-            loading="lazy"
-            class="size-full object-cover transition-transform duration-500 ease-brand hover:scale-[1.03]"
-          />
-        </li>
-      ))}
-    </ul>
+    <div data-reveal class="mt-12 space-y-8 md:mt-16">
+      {nailGroups.map((g) => {
+        const tiles = (ids: string[]) => (
+          <ul class="grid grid-cols-3 gap-2">
+            {ids.map((id) => (
+              <li class="aspect-[3/4] overflow-hidden bg-surface">
+                {id === 'video' ? (
+                  <video muted loop playsinline preload="none" poster={posterUrl} width="480" height="640" class="aspect-[3/4] size-full object-cover" aria-label={nailVideo.alt[lang]} data-autoplay>
+                    <source src={nailVideo.src} type="video/mp4" />
+                  </video>
+                ) : (
+                  <Picture
+                    src={photoSrc(id)}
+                    alt={photo(id).alt[lang]}
+                    formats={['avif', 'webp']}
+                    widths={[240, 480, 720]}
+                    sizes="(min-width: 1152px) 360px, 31vw"
+                    loading="lazy"
+                    class="size-full object-cover"
+                  />
+                )}
+              </li>
+            ))}
+          </ul>
+        );
+        return (
+          <div>
+            <h3 class="mb-3 flex items-center gap-2 text-sm font-medium">
+              <span class="size-2.5 rounded-full" style={`background:${g.swatch}`} aria-hidden="true"></span>
+              {g.name[lang]}
+            </h3>
+            {tiles(g.items.slice(0, NAIL_VISIBLE))}
+            {g.items.length > NAIL_VISIBLE && (
+              <div data-more class="grid-collapse">
+                <div><div class="pt-2">{tiles(g.items.slice(NAIL_VISIBLE))}</div></div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+    <div class="mt-8 flex flex-wrap items-center gap-x-6">
+      <button type="button" data-show-all aria-expanded="false" hidden data-all={t.showAll} data-less={t.showLess} class="inline-flex min-h-11 items-center rounded-full bg-surface px-5 text-sm font-medium transition-colors hover:bg-surface-2">{t.showAll}</button>
+      <a href={bookHref} data-track="book_click" class="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-4 transition-colors duration-200 hover:text-fg">{t.bookNails}</a>
+    </div>
   </div>
 </section>
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-show-all]');
+  const rows = document.querySelectorAll<HTMLElement>('[data-more]');
+  if (btn) {
+    rows.forEach((r) => r.setAttribute('inert', ''));
+    btn.hidden = false;
+    btn.addEventListener('click', () => {
+      const open = btn.getAttribute('aria-expanded') !== 'true';
+      rows.forEach((r) => {
+        r.classList.toggle('is-open', open);
+        r.toggleAttribute('inert', !open);
+      });
+      btn.setAttribute('aria-expanded', String(open));
+      btn.textContent = open ? btn.dataset.less! : btn.dataset.all!;
+    });
+  }
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const io = new IntersectionObserver((es) => es.forEach((e) => {
+      const v = e.target as HTMLVideoElement;
+      if (e.isIntersecting) v.play().catch(() => {});
+      else v.pause();
+    }), { threshold: 0.25 });
+    document.querySelectorAll('[data-autoplay]').forEach((v) => io.observe(v));
+  }
+</script>

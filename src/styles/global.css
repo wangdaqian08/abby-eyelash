@@ -155,3 +155,12 @@
   }
   .js [data-reveal] { opacity: 1; transform: none; }
 }
+
+/* Expandable rows: grid-template-rows 0fr -> 1fr. Without .js the rows stay fully open. */
+.js .grid-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms var(--ease);
+}
+.js .grid-collapse.is-open { grid-template-rows: 1fr; }
+.js .grid-collapse > * { min-height: 0; overflow: hidden; }
