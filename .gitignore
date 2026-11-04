@@ -7,3 +7,4 @@ dist/
 .playwright-mcp/
 .idea/
 src/data/prices.generated.ts
+.superpowers/

@@ -1,0 +1,44 @@
+---
+import { Picture } from 'astro:assets';
+import type { Lang } from '../../data/services';
+import { lashLooks, photo } from '../../data/photos';
+import { common } from '../../i18n/common';
+import { serviceStrings } from '../../i18n/service';
+import { photoSrc } from '../../lib/photo-src';
+import SectionHeading from '../ui/SectionHeading.astro';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = common[lang].lashLooks;
+const looks = lashLooks(lang);
+---
+<section id="lash-looks" class="bg-bg py-16 md:py-24">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div data-reveal class="grid gap-8 md:grid-cols-2 md:items-end md:gap-16">
+      <SectionHeading lang={lang} eyebrow={t.eyebrow} title={t.title} accent={t.accent} />
+      <p class="max-w-md text-muted md:justify-self-end">{t.intro}</p>
+    </div>
+    <ul data-reveal class="mt-12 grid grid-cols-2 gap-3 md:mt-16 lg:grid-cols-3 lg:gap-4">
+      {looks.map((l) => (
+        <li class="flex">
+          <a href={l.href} data-track="book_click" class="group flex min-h-11 w-full flex-col bg-surface transition duration-300 ease-brand hover:-translate-y-1 hover:shadow-lift">
+            <Picture
+              src={photoSrc(l.photo)}
+              alt={photo(l.photo).alt[lang]}
+              formats={['avif', 'webp']}
+              widths={[320, 640, 960]}
+              sizes="(min-width: 1024px) 368px, 47vw"
+              loading="lazy"
+              class="aspect-[4/3] w-full object-cover"
+            />
+            <span class="flex flex-1 flex-col gap-1 p-3 sm:p-4">
+              <span class="font-medium">{l.name}</span>
+              <span class="text-sm text-muted"><span class="tabular-nums">{l.price}</span> · {serviceStrings[lang].minutes(l.minutes)}</span>
+              <span class="mt-2 text-sm text-accent-ink">{t.bookThis} →</span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

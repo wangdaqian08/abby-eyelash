@@ -1,32 +1,35 @@
 ---
-// Shows public/images/services/<name>.(avif|webp|jpg|png) when the owner adds it; otherwise a token-coloured placeholder.
-// shortcut: plain <img> (public/ files aren't optimised by astro:assets); move photos to src/assets + <Image> once real ones arrive.
-import { readdirSync } from 'node:fs';
+// A manifest photo (src/data/photos.ts) via <Picture>; without `photo`, a token-coloured placeholder (powder brows).
+import { Picture } from 'astro:assets';
+import type { Lang } from '../../data/services';
+import { photo as photoMeta } from '../../data/photos';
+import { photoSrc } from '../../lib/photo-src';
 
 interface Props {
-  name: string;
-  alt: string;
+  photo?: string;
+  lang: Lang;
+  alt?: string; // placeholder label only
   class?: string;
   eager?: boolean;
+  position?: string;
 }
-const { name, alt, class: cls = '', eager = false } = Astro.props;
-
-let file: string | undefined;
-try {
-  file = readdirSync('public/images/services').find((n) => new RegExp(`^${name}\\.(avif|webp|jpe?g|png)$`, 'i').test(n));
-} catch {}
+const { photo, lang, alt, class: cls = '', eager = false, position } = Astro.props;
+const src = photo ? photoSrc(photo) : undefined;
+const widths = [480, 960, 1440].filter((w) => w <= (src?.width ?? 0)); // never above the master's width
 ---
 
 {
-  file ? (
-    <img
-      src={`/images/services/${file}`}
-      alt={alt}
-      width="960"
-      height="1200"
+  photo ? (
+    <Picture
+      src={src!}
+      alt={photoMeta(photo).alt[lang]}
+      formats={['avif', 'webp']}
+      widths={widths}
+      sizes="(min-width: 1024px) 480px, 100vw"
       loading={eager ? 'eager' : 'lazy'}
-      decoding="async"
+      fetchpriority={eager ? 'high' : undefined}
       class:list={['h-full w-full object-cover', cls]}
+      style={position ? `object-position:${position}` : undefined}
     />
   ) : (
     <div role="img" aria-label={alt} class:list={['relative overflow-hidden bg-surface-2', cls]}>

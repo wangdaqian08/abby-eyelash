@@ -4,12 +4,14 @@
 @import '@fontsource/playfair-display/400-italic.css';
 @import '@fontsource-variable/dm-sans';
 
-/* Theme tokens — see design-system/MASTER.md §1. Only place raw hex is allowed. */
+/* Theme tokens — see design-system/MASTER.md §1. Only place raw hex is allowed.
+   Four surface layers, 1.5–3% apart in OKLCH lightness: surface-2 (sunken) < bg (page) < surface (card) < surface-3 (raised). */
 :root,
 [data-theme='mocha'] {
   --bg: #faf6f2;
-  --surface: #fffcf9;
-  --surface-2: #f1e7de;
+  --surface: #fefbf9;
+  --surface-2: #f5ede5;
+  --surface-3: #ffffff;
   --fg: #2e211c;
   --muted: #6e5a50;
   --primary: #7a5a4c;
@@ -19,8 +21,9 @@
 }
 [data-theme='rose'] {
   --bg: #fbf6f4;
-  --surface: #fffbfa;
-  --surface-2: #f5e6e3;
+  --surface: #fefbfa;
+  --surface-2: #f6ede9;
+  --surface-3: #ffffff;
   --fg: #2e1a1e;
   --muted: #75545b;
   --primary: #9e5562;
@@ -30,8 +33,9 @@
 }
 [data-theme='sage'] {
   --bg: #f6f5ef;
-  --surface: #fcfbf7;
-  --surface-2: #e7eae0;
+  --surface: #fafaf6;
+  --surface-2: #efede1;
+  --surface-3: #fffffd;
   --fg: #1f2a22;
   --muted: #56635a;
   --primary: #56705c;
@@ -41,8 +45,9 @@
 }
 [data-theme='plum'] {
   --bg: #faf7f4;
-  --surface: #fff9f6;
-  --surface-2: #f2e8e0;
+  --surface: #fefcfa;
+  --surface-2: #f4eee8;
+  --surface-3: #ffffff;
   --fg: #1e1215;
   --muted: #7a5566;
   --primary: #7d3f5e;
@@ -51,8 +56,9 @@
   --accent-ink: #8e5239;
 }
 :root {
-  --border: color-mix(in srgb, var(--primary) 16%, transparent);
+  --border: color-mix(in oklch, var(--fg) 8%, transparent);
   --ring: var(--primary);
+  --focus-ring: 0 0 0 1px color-mix(in oklch, var(--ring) 80%, transparent), 0 0 0 4px color-mix(in oklch, var(--ring) 25%, transparent);
   --danger: #b42318;
   --shadow-sm: 0 1px 2px rgb(46 33 28 / 0.06);
   --shadow-lift: 0 12px 32px -12px rgb(46 33 28 / 0.22);
@@ -64,6 +70,7 @@
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-fg: var(--fg);
   --color-muted: var(--muted);
   --color-primary: var(--primary);
@@ -111,6 +118,22 @@
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
+  /* Fields keep their border on focus and get a double-ring shadow instead (silk-ui #2). */
+  input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+  p, li, dd, blockquote {
+    text-wrap: pretty;
+  }
+  table {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@utility focus-ring {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 /* Scroll reveal: content stays visible without JS (crawlers, AI fetchers). */
@@ -132,3 +155,12 @@
   }
   .js [data-reveal] { opacity: 1; transform: none; }
 }
+
+/* Expandable rows: grid-template-rows 0fr -> 1fr. Without .js the rows stay fully open. */
+.js .grid-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms var(--ease);
+}
+.js .grid-collapse.is-open { grid-template-rows: 1fr; }
+.js .grid-collapse > * { min-height: 0; overflow: hidden; }

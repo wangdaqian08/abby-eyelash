@@ -10,16 +10,18 @@ Skill output rejected: its pink/lavender palette (owner chose 4 themes below) an
 | Token | Use | A `mocha` (default) | B `rose` | C `sage` | D `plum` |
 |---|---|---|---|---|---|
 | `--bg` | page background | `#FAF6F2` | `#FBF6F4` | `#F6F5EF` | `#FAF7F4` |
-| `--surface` | cards | `#FFFCF9` | `#FFFBFA` | `#FCFBF7` | `#FFF9F6` |
-| `--surface-2` | tinted section bg | `#F1E7DE` | `#F5E6E3` | `#E7EAE0` | `#F2E8E0` |
+| `--surface` | cards (bg +1.5% L) | `#FEFBF9` | `#FEFBFA` | `#FAFAF6` | `#FEFCFA` |
+| `--surface-2` | sunken: tinted section bg, inputs (bg −2.5% L) | `#F5EDE5` | `#F6EDE9` | `#EFEDE1` | `#F4EEE8` |
+| `--surface-3` | raised: popovers, floating bars (bg +3% L) | `#FFFFFF` | `#FFFFFF` | `#FFFFFD` | `#FFFFFF` |
 | `--fg` | body text, headings | `#2E211C` | `#2E1A1E` | `#1F2A22` | `#1E1215` |
 | `--muted` | secondary text | `#6E5A50` | `#75545B` | `#56635A` | `#7A5566` |
 | `--primary` | buttons, italic accent words, inverted sections | `#7A5A4C` | `#9E5562` | `#56705C` | `#7D3F5E` |
 | `--on-primary` | text on primary | `#FFFCF9` | `#FFFBFA` | `#FCFBF7` | `#FAF7F4` |
 | `--accent` | **decorative only** (✦ icons, hairlines, stars next to a numeric rating) | `#B8927A` | `#C9A27E` | `#A9B59A` | `#C4856A` |
 | `--accent-ink` | eyebrow labels, small accent text | `#7E5B47` | `#80603D` | `#55644A` | `#8E5239` |
-| `--border` | hairlines | `color-mix(in srgb, var(--primary) 16%, transparent)` | ← | ← | ← |
+| `--border` | hairlines (prefer surface layers to separate) | `color-mix(in oklch, var(--fg) 8%, transparent)` | ← | ← | ← |
 | `--ring` | focus ring | `var(--primary)` | ← | ← | ← |
+| `--focus-ring` | input focus: double-ring shadow, no outline | `0 0 0 1px` ring 80% + `0 0 0 4px` ring 25% | ← | ← | ← |
 | `--danger` | form errors | `#B42318` | ← | ← | ← |
 
 Verified contrast (WCAG 2.2): fg/bg ≥ 13.6, muted/bg ≥ 5.8, muted/surface-2 ≥ 5.2, on-primary/primary ≥ 5.2, accent-ink/bg ≥ 5.3, accent-ink/surface-2 ≥ 4.7. `--accent` is < 3:1 and must never carry meaning or text.
@@ -44,7 +46,7 @@ Rule: components use tokens only — no raw hex outside `src/styles/tokens.css`.
 - Scroll reveal: elements with `[data-reveal]` fade/translate 12px **only after JS adds `.js` to `<html>`** — without JS (and for crawlers) content is fully visible. IntersectionObserver, once.
 - `@media (prefers-reduced-motion: reduce)`: disable transforms, reveals and smooth scroll.
 - `scroll-margin-top` = header height on all anchored sections (demo bug fixed).
-- All interactive elements: `cursor:pointer`, ≥ 44×44px hit area, visible `:focus-visible` ring 2px `--ring` offset 2px.
+- All interactive elements: `cursor:pointer`, ≥ 44×44px hit area, visible `:focus-visible` ring 2px `--ring` offset 2px; inputs, selects and textareas use `--focus-ring` (`focus-ring` utility) instead. No dark borders: outline buttons use `border-primary/30`. Numbers that line up use `tabular-nums`; body copy uses `text-wrap: pretty`; inline icons are sized in `em` and sit `0.125em` lower.
 
 ## 5. Icons
 - Lucide (inline SVG, 1.5px stroke, 16–20px), `aria-hidden="true"` when decorative; icon-only buttons need `aria-label`. ✦ glyph for service cards (decorative). No emoji as icons.

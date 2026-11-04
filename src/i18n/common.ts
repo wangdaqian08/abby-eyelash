@@ -42,7 +42,6 @@ const en = {
     book: 'Book an appointment',
     services: 'Our services',
     rating: 'Google reviews',
-    imageAlt: 'Lash artist placing individual eyelash extensions with fine tweezers',
   },
   services: {
     eyebrow: 'What we offer',
@@ -53,6 +52,13 @@ const en = {
     ctaTitle: 'Know what you want?',
     ctaBody: 'Pick a service, a day and a time online in under a minute.',
     ctaLink: 'Book online',
+  },
+  lashLooks: {
+    eyebrow: 'Lash looks',
+    title: 'Pick a look,',
+    accent: 'book it in one tap.',
+    intro: 'Prices and times here are live from our booking menu, so what you see is what you book.',
+    bookThis: 'Book this look',
   },
   about: {
     eyebrow: 'Meet Abby',
@@ -71,9 +77,13 @@ const en = {
   },
   gallery: {
     eyebrow: 'Gallery',
-    title: 'Fresh from',
-    accent: 'the studio.',
+    title: 'Nail art,',
+    accent: 'all hand-done.',
     more: 'See more on Instagram',
+    showAll: 'Show all 22',
+    showLess: 'Show fewer',
+    bookNails: 'Book nails →',
+    pauseVideo: 'Pause video',
   },
   reviews: {
     eyebrow: 'Client love',
@@ -158,7 +168,6 @@ const zh: Strings = {
     book: '在线预约',
     services: '查看服务',
     rating: 'Google 评价',
-    imageAlt: '美睫师用细镊子为顾客逐根嫁接睫毛',
   },
   services: {
     eyebrow: '服务项目',
@@ -169,6 +178,13 @@ const zh: Strings = {
     ctaTitle: '已经想好做什么？',
     ctaBody: '在线选择项目、日期和时间，一分钟就能约好。',
     ctaLink: '在线预约',
+  },
+  lashLooks: {
+    eyebrow: '睫毛款式',
+    title: '选一款，',
+    accent: '直接约。',
+    intro: '价格与时长直接来自预约菜单，所见即所约。',
+    bookThis: '约这款',
   },
   about: {
     eyebrow: '认识 Abby',
@@ -187,9 +203,13 @@ const zh: Strings = {
   },
   gallery: {
     eyebrow: '作品集',
-    title: '工作室',
-    accent: '近期作品。',
+    title: '每一套，',
+    accent: '都是手做。',
     more: '在 Instagram 查看更多',
+    showAll: '看全部 22 款',
+    showLess: '收起',
+    bookNails: '约美甲 →',
+    pauseVideo: '暂停视频',
   },
   reviews: {
     eyebrow: '顾客口碑',

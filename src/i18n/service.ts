@@ -30,6 +30,11 @@ const en = {
   relatedEyebrow: 'More services',
   relatedTitle: ['Also at ', 'Abby Eyelash.'] as [string, string],
   ctaTitle: ['Ready when ', 'you are.'] as [string, string],
+  before: 'Before',
+  after: 'After',
+  beforeAfterCaption: 'Top: before. Bottom: after.',
+  styledTitle: 'Styled sets, ',
+  styledAccent: 'twelve ways.',
   ctaBody: 'Choose a time online and Abby will confirm by SMS or WhatsApp.',
 };
 
@@ -64,6 +69,11 @@ const zh: Strings = {
   relatedEyebrow: '更多项目',
   relatedTitle: ['Abby Eyelash 的', '其他项目'],
   ctaTitle: ['选一个', '适合你的时间'],
+  before: '前',
+  after: '后',
+  beforeAfterCaption: '上：前。下：后。',
+  styledTitle: '造型款，',
+  styledAccent: '12 种。',
   ctaBody: '在线选择时间，Abby 会通过短信或 WhatsApp 与你确认。',
 };
 
