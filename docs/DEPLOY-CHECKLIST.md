@@ -92,7 +92,8 @@ Replace `https://SITE` with your address.
 1. Go to <https://search.google.com/search-console> → **Add property** → **Domain** → enter your domain without `https://`.
 2. Verify by DNS. If Search Console lists Cloudflare as the provider, click **Start verification** and log in. Otherwise copy the `google-site-verification=…` TXT value, then in Cloudflare open your domain → **DNS** → **Records** → **Add record**: Type `TXT`, Name `@`, Content = the value. Click **Verify** in Search Console. **Never delete this record.** Docs: <https://support.google.com/webmasters/answer/9008080>.
 3. **Sitemaps** (left menu) → enter `sitemap-index.xml` → **Submit**. Status should become "Success". Docs: <https://support.google.com/webmasters/answer/7451001>.
-4. Where to look each month:
+4. **Settings → Search generative AI**: confirm it says the site is **included** (the default). Google lists this as a requirement for appearing in AI Overviews and AI Mode ([Google: optimizing for generative AI features](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide)). Excluding removes the site from those features within 1–2 days. Docs: <https://support.google.com/webmasters/answer/16908024>.
+5. Where to look each month:
    - **Performance → Search results**: clicks and impressions, including AI Overviews and AI Mode ([Google: AI features and your website](https://developers.google.com/search/docs/appearance/ai-features)).
    - **Performance → Generative AI** report (rolled out to all sites by 31 Aug 2026): impressions in Google's AI features by page, country and device. It shows no clicks and no queries. Announcement: <https://developers.google.com/search/blog/2026/06/gen-ai-performance-reports>. If the menu name differs, look under **Performance** for "Generative AI".
 
