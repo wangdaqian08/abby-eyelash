@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { bookableWith, findOption, mainOptions, priceText, services } from './services.ts';
-import { homeHero, lashCards, lashLooks, nailGroups, nailVideo, NAIL_VISIBLE, photo, photos, servicePhotos, styledLooks } from './photos.ts';
+import { homeHero, lashCards, lashLooks, nailGroups, nailVideo, NAIL_VISIBLE, photo, photos, servicePhotos, styleGuide, styledLooks } from './photos.ts';
 
 test('every lash card points at a bookable main option', () => {
   assert.equal(lashCards.length, 6);
@@ -36,7 +36,7 @@ test('ids are unique ASCII and every alt is filled in both languages', () => {
 });
 test('the $180 photo is pre-cropped; only the lash-lift pair keeps its ratio', () => {
   assert.ok(photo('nail-2473').box);
-  assert.deepEqual(photos.filter((p) => p.ratio === 'original').map((p) => p.id).sort(), ['lift-1', 'lift-3']);
+  assert.deepEqual(photos.filter((p) => p.ratio === 'original').map((p) => p.id).sort(), ['ai-classic-full', 'ai-classic-natural', 'lift-1', 'lift-3']);
 });
 
 test('lashLooks: deep links, live prices and minutes, both languages', () => {
@@ -51,4 +51,17 @@ test('lashLooks: deep links, live prices and minutes, both languages', () => {
     assert.equal(en[i].minutes, o.minutes);
     assert.equal(zh[i].name, o.name.zh);
   });
+});
+
+test('AI style-guide images are labelled as AI in both languages and never used as work photos', () => {
+  const ai = photos.filter((p) => p.id.startsWith('ai-')).map((p) => p.id);
+  assert.deepEqual(styleGuide.map((g) => g.photo).sort(), ai.sort());
+  for (const id of ai) {
+    assert.match(photo(id).alt.en, /^AI-generated illustration, not a real client/);
+    assert.match(photo(id).alt.zh, /^AI 生成示意图，非真实客人/);
+  }
+  const used = [...lashCards.map((c) => c.photo), ...styledLooks.map((l) => l.photo), homeHero,
+    ...nailGroups.flatMap((g) => g.items), ...Object.values(servicePhotos).flatMap((s) => [s.hero, s.detail, ...(s.beforeAfter ?? [])])];
+  for (const id of ai) assert.ok(!used.includes(id), id);
+  for (const g of styleGuide) assert.ok(findOption('lash-extensions', g.optionId), g.optionId);
 });

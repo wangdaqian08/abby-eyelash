@@ -1,0 +1,39 @@
+---
+// "Natural or full?" guide with AI-generated illustrations. Labelled on the image and in the copy so it never
+// reads as a result; real work (price table, styled looks) follows below.
+import { Picture } from 'astro:assets';
+import { findOption, type Lang } from '../../data/services';
+import { photo, styleGuide } from '../../data/photos';
+import { serviceStrings } from '../../i18n/service';
+import { photoSrc } from '../../lib/photo-src';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = serviceStrings[lang];
+---
+<section id="style-guide" class="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:py-24">
+  <h2 class="text-4xl leading-tight lg:text-5xl [&_em]:block">{t.guideTitle}<em>{t.guideAccent}</em></h2>
+  <p class="mt-4 max-w-xl text-muted">{t.guideNote}</p>
+  <div class="mt-10 grid gap-4 sm:grid-cols-2">
+    {styleGuide.map((g) => (
+      <figure class="bg-surface">
+        <div class="relative">
+          <Picture
+            src={photoSrc(g.photo)}
+            alt={photo(g.photo).alt[lang]}
+            formats={['avif', 'webp']}
+            widths={[400, 800, 1024]}
+            sizes="(min-width: 1152px) 544px, (min-width: 640px) 47vw, 100vw"
+            loading="lazy"
+            class="aspect-square w-full object-cover"
+          />
+          <span aria-hidden="true" class="absolute left-2 top-2 bg-surface-3/90 px-2 py-1 text-xs text-fg">{t.guideBadge}</span>
+        </div>
+        <figcaption class="p-4">
+          <span class="block font-medium">{findOption('lash-extensions', g.optionId)!.name[lang]}</span>
+          <span class="mt-1 block text-sm text-muted">{g.desc[lang]}</span>
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+</section>
