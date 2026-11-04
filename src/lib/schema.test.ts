@@ -53,7 +53,7 @@ test('service pages: Service offers equal services.ts prices, breadcrumb, dateMo
     assert.equal(svc.offers.length, s.options.length);
     s.options.forEach((o, i) => {
       const off = svc.offers[i];
-      if (o.onRequest) return assert.ok(!('price' in off) && !off.priceSpecification, `${o.id}: on-request offer has no price`);
+      if (o.onRequest || o.pct) return assert.ok(!('price' in off) && !off.priceSpecification, `${o.id}: on-request or percentage offer has no price`);
       assert.equal(off.priceCurrency, 'AUD');
       if (o.unit) assert.equal(off.priceSpecification.unitText, o.unit.en);
       else if (o.from) assert.equal(off.priceSpecification.minPrice, o.price);

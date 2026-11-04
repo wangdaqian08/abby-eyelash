@@ -12,7 +12,7 @@ export interface ServiceOption {
   price: number;
   from?: boolean; // "from $X"
   maxPrice?: number; // price range "$X–$Y"
-  pct?: number; // price is this % of the service's cheapest full option (lash infill)
+  pct?: number; // price is this % of what the client paid last time (lash infill); `price` is 0
   extra?: boolean; // add-on, infill or removal: left out of the service's headline price
   group?: L10n; // consecutive options with the same group are listed under one heading
   addon?: boolean; // only bookable on top of a main option; add-ons sharing a group are either/or
@@ -41,7 +41,7 @@ type Draft = Omit<Service, 'updated' | 'options'> & {
 
 const FULL_SET = { en: 'Full sets', zh: '全套' };
 const BOTTOM = { en: 'Bottom lashes', zh: '下睫毛' };
-const INFILL = { en: 'Infill', zh: '回补' };
+const INFILL = { en: 'Top-lash infill', zh: '上睫毛回补' };
 const REMOVAL = { en: 'Removal', zh: '卸睫毛' };
 // Nail extensions: one per-nail add-on offered with every nail design, priced once in prices.csv.
 const EXTENSION = {
@@ -118,18 +118,17 @@ const drafts: Draft[] = [
   },
 ];
 
-/** Merges prices.csv into the drafts; a "50%" row is a share of the service's cheapest full option. */
+/** Merges prices.csv into the drafts; a "50%" row is a share of the client's last price, so it has no dollar amount. */
 function withPrices(d: Draft): Service {
   const rows = d.options.map((o) => {
     const p = prices[o.priceKey ?? `${d.id}/${o.id}`];
     if (!p) throw new Error(`src/data/prices.csv has no row for ${o.priceKey ?? `${d.id}/${o.id}`}`);
     return { ...o, ...p };
   });
-  const base = Math.min(...rows.filter((o) => !o.extra && !o.addon && o.price !== undefined).map((o) => o.price!));
   return {
     ...d,
     updated: rows.map((o) => o.updated).sort().at(-1)!, // latest 更新日期 of this service's rows
-    options: rows.map(({ updated, ...o }) => (o.pct ? { ...o, price: Math.round((base * o.pct) / 100), from: true } : { ...o, price: o.price ?? 0 })),
+    options: rows.map(({ updated, ...o }) => ({ ...o, price: o.price ?? 0 })),
   };
 }
 
@@ -159,10 +158,11 @@ export function headline(s: Service) {
   };
 }
 
-type Priced = Pick<ServiceOption, 'price' | 'from' | 'unit' | 'onRequest'>;
-/** "$80" · "from $130" · "$6 / nail" · "Price on request" (zh: "$130 起" · "$6 / 只" · "定制价，需咨询"). */
+type Priced = Pick<ServiceOption, 'price' | 'from' | 'unit' | 'onRequest' | 'pct'>;
+/** "$80" · "from $130" · "$6 / nail" · "Price on request" · "50% of your last price" (zh: "$130 起" · "$6 / 只" · "定制价，需咨询" · "上次价格的 50%"). */
 export const priceText = (o: Priced, lang: Lang) => {
   if (o.onRequest) return lang === 'zh' ? '定制价，需咨询' : 'Price on request';
+  if (o.pct) return lang === 'zh' ? `上次价格的 ${o.pct}%` : `${o.pct}% of your last price`;
   const p = o.from ? (lang === 'zh' ? `$${o.price} 起` : `from $${o.price}`) : `$${o.price}`;
   return o.unit ? `${p} / ${o.unit[lang]}` : p;
 };
@@ -218,11 +218,16 @@ export function quote(serviceId: string, optionId: string, addons: Addons) {
     option,
     extras,
     minutes: option.minutes + extras.reduce((n, e) => n + e.option.minutes * e.units, 0),
-    price: option.price + extras.reduce((n, e) => n + e.option.price * e.units, 0), // on request: add-ons only
+    price: option.price + extras.reduce((n, e) => n + e.option.price * e.units, 0), // on request / percentage: add-ons only
     from: !!option.from || extras.some((e) => e.option.from),
     onRequest: !!option.onRequest,
+    pct: option.pct,
   };
 }
+
+/** A quote as text: "$120", or "Price on request + $24" / "50% of your last price + $25" when the main price isn't a dollar amount. */
+export const quoteText = (q: NonNullable<ReturnType<typeof quote>>, lang: Lang) =>
+  q.onRequest || q.pct ? priceText(q, lang) + (q.price ? ` + $${q.price}` : '') : priceText(q, lang);
 
 /** Every total duration a booking can have (cache keys are per duration, so a booking purges all of them). */
 export function allDurations() {

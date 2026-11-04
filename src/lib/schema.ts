@@ -140,7 +140,7 @@ export function serviceNode(base: string | URL, lang: Lang, s: Service): Node {
     },
     // On-request designs keep an Offer with no price, so the per-nail add-on isn't read as the service price.
     offers: s.options.map((o) =>
-      o.onRequest ? { '@type': 'Offer', name: o.name[lang] } : offer(o.name[lang], o.price, !!o.from, o.unit?.en, o.maxPrice),
+      o.onRequest || o.pct ? { '@type': 'Offer', name: o.name[lang] } : offer(o.name[lang], o.price, !!o.from, o.unit?.en, o.maxPrice),
     ),
   };
 }
