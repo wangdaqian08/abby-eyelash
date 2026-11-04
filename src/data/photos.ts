@@ -22,6 +22,9 @@ const lash = (id: string, source: string, en: string, zh: string, extra: Extra =
 const nail = (n: string, source: string, en: string, zh: string, extra: Extra = {}): Photo =>
   ({ id: `nail-${n}`, dir: 'nails', source: source.startsWith('/') ? source : `nails/${source}`, ratio: '3:4', ...extra, alt: { en, zh } });
 
+// AI-generated style illustrations (not client work). Shown only in the labelled style guide, never as results.
+const aiLash = (id: string, source: string, en: string, zh: string): Photo =>
+  ({ id, dir: 'lash', source, ratio: 'original', alt: { en: `AI-generated illustration, not a real client: ${en}`, zh: `AI 生成示意图，非真实客人：${zh}` } });
 export const photos: Photo[] = [
   lash('classic-natural', '单根自然.jpg', 'Japanese classic natural lash extensions on a brown eye, Burwood', '棕色眼睛上的日式单根自然款嫁接睫毛，细密整齐，Burwood'),
   lash('classic-full-bottom', '单根浓+下睫毛.JPG', 'Japanese classic full lash extensions with dense bottom lashes on a brown eye, Burwood', '棕色眼睛上的日式单根浓密款嫁接睫毛，搭配浓密下睫毛，Burwood'),
@@ -71,6 +74,8 @@ export const photos: Photo[] = [
   nail('9264', 'IMG_9264.heic', 'Pink nails with black squiggle art and dried flowers behind', '粉色美甲配黑色线条彩绘，干花背景'),
   nail('7242', 'IMG_7242.JPG', 'Nude nails with small colourful art over a phone case', '裸色美甲配彩色小彩绘'),
   nail('video-poster', '/tmp/abby-video-poster.jpg', 'Yellow little-flower French nails, video still', '黄色小花法式美甲，视频封面'),
+  aiLash('ai-classic-natural', 'geneation/download (1).png', 'face and both eyes with light, separated natural lash extensions', '整脸与双眼，轻盈根根分明的自然款嫁接睫毛'),
+  aiLash('ai-classic-full', 'geneation/download.png', 'face and both eyes with fuller, darker lash extensions', '整脸与双眼，更浓更黑的浓密款嫁接睫毛'),
 ];
 
 const byId = new Map(photos.map((p) => [p.id, p]));
@@ -114,6 +119,11 @@ export const nailGroups: { id: string; name: L10n; swatch: string; items: string
     items: ['nail-8353', 'nail-1848', 'nail-3029'] },
   { id: 'mono-art', name: { en: 'Black & white · Art', zh: '黑白 · 彩绘' }, swatch: '#2b2b2b',
     items: ['nail-9024', 'nail-2473', 'nail-8351', 'nail-7334', 'nail-4630', 'nail-9264', 'nail-7242'] },
+];
+
+export const styleGuide: { photo: string; optionId: string; desc: L10n }[] = [
+  { photo: 'ai-classic-natural', optionId: 'classic-natural', desc: { en: 'Light and separated; like your own lashes, only longer.', zh: '根根分明、轻盈清透，像自己的睫毛变长了。' } },
+  { photo: 'ai-classic-full', optionId: 'classic-full', desc: { en: 'Thicker and darker along the lash line, a little like eyeliner.', zh: '更浓更黑，睫毛根部像画了一道眼线。' } },
 ];
 
 export const styledLooks: { photo: string; name: L10n }[] = [
