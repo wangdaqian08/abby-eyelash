@@ -27,10 +27,14 @@ const bookHref = `${localePath(lang, '/book')}?service=gel-nails`;
             {ids.map((id) => (
               <li class="relative aspect-[3/4] overflow-hidden bg-surface">
                 {id === 'video' ? (
-                  <video muted loop playsinline preload="none" poster={posterUrl} width="480" height="640" class="aspect-[3/4] size-full object-cover" aria-label={nailVideo.alt[lang]} data-autoplay>
+                  <video muted loop playsinline preload="none" poster={posterUrl} width="480" height="640" class="aspect-[3/4] size-full object-cover" aria-label={nailVideo.alt[lang]} data-video>
                     <source src={nailVideo.src} type="video/mp4" />
                   </video>
-                  <button type="button" data-video-toggle aria-pressed="false" aria-label={t.pauseVideo} class="absolute bottom-1 right-1 inline-flex size-11 items-center justify-center rounded-full bg-surface/85 text-sm text-fg transition-colors hover:bg-surface"><span aria-hidden="true" data-video-icon>❚❚</span></button>
+                  <button type="button" data-video-toggle aria-pressed="false" aria-label={t.playVideo} class="group absolute inset-0">
+                    <span aria-hidden="true" class="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-surface/80 text-fg backdrop-blur-sm transition-opacity duration-200 group-aria-pressed:opacity-0">
+                      <svg viewBox="0 0 24 24" class="size-3 translate-x-px" fill="currentColor"><path d="M7 5v14l12-7z" /></svg>
+                    </span>
+                  </button>
                 ) : (
                   <Picture
                     src={photoSrc(id)}
@@ -84,24 +88,18 @@ const bookHref = `${localePath(lang, '/book')}?service=gel-nails`;
       btn.textContent = open ? btn.dataset.less! : btn.dataset.all!;
     });
   }
-  // WCAG 2.2.2: a visible pause/play button; a user pause stops the observer restarting the video. Reduced motion: no autoplay, button starts it.
-  const video = document.querySelector<HTMLVideoElement>('[data-autoplay]');
+  // No autoplay. Hover plays on mouse devices (unless reduced motion); tap or Enter toggles everywhere.
+  const video = document.querySelector<HTMLVideoElement>('[data-video]');
   const toggle = document.querySelector<HTMLButtonElement>('[data-video-toggle]');
   if (video && toggle) {
-    const icon = toggle.querySelector('[data-video-icon]')!;
-    let userPaused = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const sync = () => { toggle.setAttribute('aria-pressed', String(userPaused)); icon.textContent = userPaused ? '▶' : '❚❚'; };
-    sync();
-    toggle.addEventListener('click', () => {
-      userPaused = !userPaused;
-      if (userPaused) video.pause(); else video.play().catch(() => {});
-      sync();
-    });
-    if (!userPaused) {
-      new IntersectionObserver((es) => es.forEach((e) => {
-        if (e.isIntersecting && !userPaused) video.play().catch(() => {});
-        else video.pause();
-      }), { threshold: 0.25 }).observe(video);
+    const set = (play: boolean) => {
+      if (play) video.play().catch(() => {}); else video.pause();
+      toggle.setAttribute('aria-pressed', String(play));
+    };
+    toggle.addEventListener('click', () => set(video.paused));
+    if (matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)').matches) {
+      toggle.addEventListener('mouseenter', () => set(true));
+      toggle.addEventListener('mouseleave', () => set(false));
     }
   }
 </script>
