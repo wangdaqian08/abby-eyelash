@@ -26,8 +26,10 @@ export const photos: Photo[] = [
   lash('classic-natural', '单根自然.jpg', 'Japanese classic natural lash extensions on a brown eye, Burwood', '棕色眼睛上的日式单根自然款嫁接睫毛，细密整齐，Burwood'),
   lash('classic-full-bottom', '单根浓+下睫毛.JPG', 'Japanese classic full lash extensions with dense bottom lashes on a brown eye, Burwood', '棕色眼睛上的日式单根浓密款嫁接睫毛，搭配浓密下睫毛，Burwood'),
   lash('hybrid-natural', '轻盈-自然.jpg', 'Light hybrid natural lash extensions with soft fanned tips on a grey-green eye, Burwood', '灰绿色眼睛上的开花轻盈自然款嫁接睫毛，睫毛尖柔和散开，Burwood'),
-  lash('hybrid-full', '开花-浓密.JPG', 'Hybrid full volume lash extensions, long and dense with a fanned finish, Burwood', '开花浓密款嫁接睫毛，纤长浓密、根根散开，Burwood'),
-  lash('hybrid-full-bottom', '开花-浓密+下睫毛.JPG', 'Hybrid full volume lash extensions with fine bottom lashes on a dark brown eye', '深棕色眼睛上的开花浓密款嫁接睫毛，搭配纤细下睫毛', { ratio: '4:3' }),
+  // Face shots (preferred over eye-only close-ups). Box = top panel (face) of a face + both-eyes two-panel image.
+  lash('hybrid-full-face', '开花-浓密-整脸.jpg', 'Client smiling softly with dense, fluffy hybrid full lash extensions on both eyes, Burwood', '客人浅笑自拍，双眼开花浓密款嫁接睫毛蓬松自然，Burwood', { box: { left: 0, top: 0, width: 1, height: 0.685 } }),
+  // Half-face portrait: a 4:3 crop would shrink it to an eye close-up, so it stays portrait (lash-extensions hero).
+  lash('styled-half-face', '造型款-半脸.jpg', 'Half-face portrait showing spiky, wispy styled lash extensions with defined bottom lashes', '半脸近照，造型款嫁接睫毛尖翘分明，搭配清晰下睫毛', { ratio: '3:4', position: 'top' }),
   lash('styled-fairy', '造型款-仙子.JPG', 'Fairy styled lash set with a few long wispy spikes on top, Burwood', '仙子造型款嫁接睫毛，上睫毛间插几根纤长尖翘的长毛，Burwood'),
   lash('styled-layered', '造型款-单根层次.JPG', 'Layered classic styled lash set, fine single lashes in staggered lengths', '单根层次造型款嫁接睫毛，纤细单根长短错落'),
   lash('styled-mermaid', '造型款-人鱼.JPG', 'Mermaid styled lash set on a dark brown eye, sweeping lashes with a graceful curve', '深棕色眼睛上的人鱼造型款嫁接睫毛，睫毛弧度柔美、向眼尾延伸'),
@@ -82,7 +84,7 @@ export const lashCards: { serviceId: string; optionId: string; photo: string }[]
   { serviceId: 'lash-extensions', optionId: 'classic-natural', photo: 'classic-natural' },
   { serviceId: 'lash-extensions', optionId: 'classic-full', photo: 'classic-full-bottom' },
   { serviceId: 'lash-extensions', optionId: 'hybrid-natural', photo: 'hybrid-natural' },
-  { serviceId: 'lash-extensions', optionId: 'hybrid-full', photo: 'hybrid-full' },
+  { serviceId: 'lash-extensions', optionId: 'hybrid-full', photo: 'hybrid-full-face' },
   { serviceId: 'lash-extensions', optionId: 'styled', photo: 'styled-fairy' },
   { serviceId: 'lash-lift', optionId: 'keratin-lift', photo: 'lift-2' },
 ];
@@ -139,7 +141,7 @@ export interface ServiceSlots {
 const LASH = 'aspect-[4/3]';
 const NAIL = 'aspect-[4/5]';
 export const servicePhotos: Record<string, ServiceSlots> = {
-  'lash-extensions': { hero: 'styled-mermaid-selfie', heroAspect: NAIL, heroPos: '50% 0%', detail: 'hybrid-full-bottom', detailAspect: LASH },
+  'lash-extensions': { hero: 'styled-half-face', heroAspect: NAIL, heroPos: '50% 0%', detail: 'styled-mermaid-selfie', detailAspect: NAIL, detailPos: '50% 0%' },
   'lash-lift': { hero: 'lift-2', heroAspect: LASH, beforeAfter: ['lift-1', 'lift-3'] },
   'gel-nails': { hero: 'nail-3406', heroAspect: NAIL, detail: 'nail-2020', detailAspect: NAIL },
   'handcrafted-nails': { hero: 'nail-8351', heroAspect: NAIL, heroPos: '50% 100%', detail: 'nail-4630', detailAspect: NAIL },
