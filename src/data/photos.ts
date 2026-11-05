@@ -47,9 +47,7 @@ export const photos: Photo[] = [
   lash('styled-bottom-2', '造型款+下睫毛2.JPG', 'Styled lash set with spiky, dark top lashes and defined bottom lashes on a brown eye', '棕色眼睛上的造型款嫁接睫毛，上睫毛浓黑尖翘，下睫毛分明'),
   lash('styled-close', '造型款.JPG', 'Close-up of a styled lash set with long, dark, criss-crossed lashes on a green-brown eye', '绿棕色眼睛上的造型款嫁接睫毛特写，睫毛浓黑纤长、交错有致'),
   lash('selfie', '造型款.HEIC', "Client's face close-up showing dark, wispy styled lash extensions", '客人面部近景，展示深色纤长的造型款嫁接睫毛', { ratio: '3:4' }),
-  lash('lift-1', '角蛋白-翘睫1.JPG', 'Keratin lash lift before and after: natural straight lashes on top, curled and lifted lashes below', '角蛋白翘睫前后对比：上为做之前的自然下垂睫毛，下为做之后根根上翘的睫毛', { ratio: 'original' }),
   lash('lift-2', '角蛋白-翘睫2.JPG', 'Keratin lash lift result on a dark brown eye, natural lashes curled upward, Burwood', '深棕色眼睛上的角蛋白翘睫效果，自然睫毛根根上翘，Burwood', { ratio: '4:3' }),
-  lash('lift-3', '角蛋白-翘睫3.JPG', 'Keratin lash lift before and after: straight lashes on top, lifted and curled lashes below', '角蛋白翘睫前后对比：上为做之前的平直睫毛，下为做之后上翘卷翘的睫毛', { ratio: 'original' }),
 
   nail('6920', 'IMG_6920.JPG', 'Long almond nude pink nails under a rainbow light', '彩虹光影下的长杏仁形裸粉色美甲'),
   nail('3406', 'IMG_3406.JPG', 'Nude pink French tip nails with small flower art', '裸粉色法式美甲，带小花彩绘'),
@@ -145,14 +143,13 @@ export const styledLooks: { photo: string; name: L10n }[] = [
 export interface ServiceSlots {
   hero?: string; heroPos?: string; heroAspect?: string;
   detail?: string; detailPos?: string; detailAspect?: string;
-  beforeAfter?: [string, string];
 }
 // Slots follow the master's ratio (4:3 lash, 3:4 nails shown 4:5) so no eye, nail or watermark is cropped. Literal classes so Tailwind sees them.
 const LASH = 'aspect-[4/3]';
 const NAIL = 'aspect-[4/5]';
 export const servicePhotos: Record<string, ServiceSlots> = {
   'lash-extensions': { hero: 'styled-half-face', heroAspect: NAIL, heroPos: '50% 0%', detail: 'styled-mermaid-selfie', detailAspect: NAIL, detailPos: '50% 0%' },
-  'lash-lift': { hero: 'lift-2', heroAspect: LASH, beforeAfter: ['lift-1', 'lift-3'] },
+  'lash-lift': { hero: 'lift-2', heroAspect: LASH }, // no detail photo: the sidebar shows only the Book button
   'gel-nails': { hero: 'nail-3406', heroAspect: NAIL, detail: 'nail-2020', detailAspect: NAIL },
   'handcrafted-nails': { hero: 'nail-8351', heroAspect: NAIL, heroPos: '50% 100%', detail: 'nail-4630', detailAspect: NAIL },
   'nail-extensions': { hero: 'nail-2112', heroAspect: NAIL, heroPos: '50% 100%', detail: 'nail-6920', detailAspect: NAIL },

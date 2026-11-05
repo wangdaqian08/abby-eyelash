@@ -8,3 +8,4 @@ dist/
 .idea/
 src/data/prices.generated.ts
 .superpowers/
+.taste-skill/
