@@ -18,9 +18,9 @@ const t = common[lang].reviews;
     <div data-reveal><SectionHeading lang={lang} eyebrow={t.eyebrow} title={t.title} accent={t.accent} inverse class="text-center" /></div>
     {reviews.some((r) => r.dummy) && <p class="mx-auto mt-4 max-w-xl text-center text-sm text-on-primary/90">{t.sample}</p>}
 
-    <ul data-reveal class="mt-12 grid gap-px bg-on-primary/15 md:mt-16 md:grid-cols-2 lg:grid-cols-3">
+    <ul data-reveal data-stagger class="mt-12 grid gap-3 md:mt-16 md:grid-cols-2 lg:grid-cols-3 lg:gap-4">
       {reviews.map((r) => (
-        <li class="flex flex-col bg-primary p-8">
+        <li class="flex flex-col rounded-card bg-on-primary/10 p-6 sm:p-8">
           <div class="flex items-center justify-between gap-4">
             <Stars class="text-on-primary/90" rating={r.rating} label={lang === 'zh' ? `${r.rating} 星（满分 5 星）` : `${r.rating} out of 5 stars`} />
             <span class="inline-flex items-center gap-1.5 text-xs text-on-primary/90"><GoogleMark class="size-3.5" />{t.google}</span>

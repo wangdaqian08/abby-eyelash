@@ -20,12 +20,12 @@ const bookHref = `${localePath(lang, '/book')}?service=gel-nails`;
       <SectionHeading lang={lang} eyebrow={t.eyebrow} title={t.title} accent={t.accent} />
       <a href={site.social.instagram} data-track="social_click" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-4 transition-colors duration-200 hover:text-fg">{t.more}</a>
     </div>
-    <div data-reveal class="mt-12 space-y-8 md:mt-16">
+    <div data-reveal data-stagger class="mt-12 space-y-8 md:mt-16">
       {nailGroups.map((g) => {
         const tiles = (ids: string[]) => (
           <ul class="grid grid-cols-3 gap-2">
             {ids.map((id) => (
-              <li class="relative aspect-[3/4] overflow-hidden bg-surface">
+              <li class="relative aspect-[3/4] overflow-hidden rounded-field bg-surface">
                 {id === 'video' ? (
                   <video muted loop playsinline preload="none" poster={posterUrl} width="480" height="640" class="aspect-[3/4] size-full object-cover" aria-label={nailVideo.alt[lang]} data-video>
                     <source src={nailVideo.src} type="video/mp4" />
@@ -67,7 +67,7 @@ const bookHref = `${localePath(lang, '/book')}?service=gel-nails`;
       })}
     </div>
     <div class="mt-8 flex flex-wrap items-center gap-x-6">
-      <button type="button" data-show-all aria-expanded="false" hidden data-all={t.showAll} data-less={t.showLess} class="inline-flex min-h-11 items-center rounded-full bg-surface px-5 text-sm font-medium transition-colors hover:bg-surface-2">{t.showAll}</button>
+      <button type="button" data-show-all aria-expanded="false" hidden data-all={t.showAll} data-less={t.showLess} class="inline-flex min-h-11 items-center rounded-full bg-surface px-5 text-sm font-medium transition duration-200 hover:bg-surface-2 active:scale-[.97]">{t.showAll}</button>
       <a href={bookHref} data-track="book_click" class="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-4 transition-colors duration-200 hover:text-fg">{t.bookNails}</a>
     </div>
   </div>

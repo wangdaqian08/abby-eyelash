@@ -30,13 +30,13 @@ const img = { formats: ['avif', 'webp'] as const, loading: 'lazy' as const, clas
 <section id="about" class="py-16 md:py-24">
   <div class="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16">
     <div data-reveal class="grid grid-cols-2 gap-3">
-      <div class="col-span-2 aspect-[4/3] overflow-hidden bg-surface-2">
+      <div class="col-span-2 aspect-[4/3] overflow-hidden rounded-card bg-surface-2">
         <Picture src={p1} alt={t.photo1} widths={[480, 800, 1100]} sizes="(min-width: 1024px) 34rem, 100vw" {...img} />
       </div>
-      <div class="aspect-[4/3] overflow-hidden bg-surface-2">
+      <div class="aspect-[4/3] overflow-hidden rounded-card bg-surface-2">
         <Picture src={p2} alt={t.photo2} widths={[320, 640]} sizes="(min-width: 1024px) 17rem, 50vw" {...img} />
       </div>
-      <div class="aspect-[4/3] overflow-hidden bg-surface-2">
+      <div class="aspect-[4/3] overflow-hidden rounded-card bg-surface-2">
         <Picture src={p3} alt={t.photo3} widths={[320, 640]} sizes="(min-width: 1024px) 17rem, 50vw" {...img} />
       </div>
     </div>
@@ -49,7 +49,7 @@ const img = { formats: ['avif', 'webp'] as const, loading: 'lazy' as const, clas
           {facts.map((f) => <li class="flex gap-3"><span aria-hidden="true" class="text-accent">✦</span><span>{f}</span></li>)}
         </ul>
       )}
-      <dl class="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-8">
+      <dl class="mt-10 grid grid-cols-3 gap-6 rounded-card bg-surface p-6">
         {stats.map(([n, label]) => (
           <div class="flex flex-col-reverse">
             <dt class:list={['mt-1 text-muted', lang === 'en' ? 'text-xs uppercase tracking-[0.15em]' : 'text-sm']}>{label}</dt>

@@ -9,7 +9,7 @@ import { photoSrc } from '../../lib/photo-src';
 interface Props { lang: Lang; ids: [string, string] }
 const { lang, ids } = Astro.props;
 const t = serviceStrings[lang];
-const label = 'absolute left-2 px-2 py-1 text-xs font-medium bg-surface-3/90';
+const label = 'absolute left-2 rounded-full px-2.5 py-1 text-xs font-medium bg-surface-3/90';
 ---
 <div class="grid grid-cols-2 gap-3">
   {ids.map((id) => (
@@ -21,7 +21,7 @@ const label = 'absolute left-2 px-2 py-1 text-xs font-medium bg-surface-3/90';
         widths={[320, 480, 960]}
         sizes="(min-width: 1024px) 240px, 47vw"
         loading="lazy"
-        class="h-auto w-full"
+        class="h-auto w-full rounded-card"
       />
       <span aria-hidden="true" class:list={[label, 'top-2']}>{t.before}</span>
       <span aria-hidden="true" class:list={[label, 'top-[calc(50%+0.5rem)]']}>{t.after}</span>

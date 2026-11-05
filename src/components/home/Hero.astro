@@ -19,21 +19,25 @@ const body = fill(t.body, { name: site.name, owner: site.owner, suburb: site.add
 <section class="grid pt-[var(--header-h)] lg:min-h-svh lg:grid-cols-2">
   <div class="flex flex-col justify-center px-4 py-16 sm:px-6 lg:py-24 lg:pl-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))] lg:pr-16">
     <Eyebrow lang={lang}>{t.eyebrow}</Eyebrow>
-    <h1 class="mt-6 text-5xl leading-[1.08] md:text-6xl 2xl:text-7xl">{t.titleA}<br /><em>{t.accent}</em><br />{t.titleB}</h1>
-    <p class="mt-8 max-w-md text-lg text-muted">{body}</p>
-    <div class="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3">
+    <h1 class="mt-6 text-4xl leading-[1.08] sm:text-5xl md:text-6xl 2xl:text-7xl">
+      <span class="block" data-hero-line style="--i:0">{t.titleA}</span>
+      <em class="block" data-hero-line style="--i:1">{t.accent}</em>
+      <span class="block" data-hero-line style="--i:2">{t.titleB}</span>
+    </h1>
+    <p class="mt-8 max-w-md text-lg text-muted" data-hero-in style="--i:3">{body}</p>
+    <div class="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3" data-hero-in style="--i:4">
       <Button href={localePath(lang, '/book?service=lash-extensions')} lang={lang} track="book_click">{t.book}</Button>
       <a href="#services" class="group inline-flex min-h-12 items-center gap-2 text-sm text-muted transition-colors duration-200 hover:text-fg">
         {t.services}
         <svg viewBox="0 0 24 24" class="size-[1.15em] translate-y-[0.125em] transition-transform duration-200 group-hover:translate-y-[0.25em]" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
       </a>
     </div>
-    <p class="mt-10 flex items-center gap-3 text-sm text-muted">
+    <p class="mt-10 flex items-center gap-3 text-sm text-muted" data-hero-in style="--i:5">
       <Stars rating={reviewSummary.rating} label={`${reviewSummary.rating} / 5`} />
       <span><span class="font-medium text-fg">{reviewSummary.rating}</span> · {t.rating}</span>
     </p>
   </div>
-  <div class="relative aspect-[4/5] sm:aspect-[16/10] lg:aspect-auto">
+  <div class="relative aspect-[4/5] overflow-hidden sm:aspect-[16/10] lg:aspect-auto">
     <Picture
       src={photoSrc(homeHero)}
       alt={photo(homeHero).alt[lang]}
@@ -42,6 +46,7 @@ const body = fill(t.body, { name: site.name, owner: site.owner, suburb: site.add
       sizes="(min-width: 1024px) 50vw, 100vw"
       loading="eager"
       fetchpriority="high"
+      data-hero-img
       class="absolute inset-0 size-full object-cover object-[50%_35%] sm:object-[50%_5%] lg:object-[50%_35%]"
     />
   </div>

@@ -27,13 +27,13 @@ const config = {
 ---
 
 <section class="mx-auto max-w-6xl tabular-nums px-4 pb-16 pt-[calc(var(--header-h)+40px)] sm:px-6 lg:pb-24 lg:pt-[calc(var(--header-h)+64px)]">
-  <p class:list={["text-xs font-medium uppercase text-accent-ink", lang === "en" && "tracking-[0.25em]"]}>{t.eyebrow}</p>
+  <p class:list={["text-[0.8125rem] font-medium uppercase text-accent-ink", lang === "en" && "tracking-[0.25em]"]}>{t.eyebrow}</p>
   <h1 class="mt-3 text-4xl leading-tight sm:text-5xl">{t.titleA}<em>{t.titleB}</em></h1>
 
   <div
     data-booking
     data-config={JSON.stringify(config)}
-    class="mt-8 bg-surface shadow-[var(--shadow-sm)] lg:mt-12 lg:grid lg:min-h-[560px] lg:grid-cols-[280px_1fr]"
+    class="mt-8 overflow-hidden rounded-card bg-surface lg:mt-12 lg:grid lg:min-h-[560px] lg:grid-cols-[280px_1fr]"
   >
     <aside class="hidden border-r border-border p-8 lg:block">
       {

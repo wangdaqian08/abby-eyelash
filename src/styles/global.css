@@ -13,7 +13,7 @@
   --surface-2: #f5ede5;
   --surface-3: #ffffff;
   --fg: #2e211c;
-  --muted: #6e5a50;
+  --muted: #5f4b41;
   --primary: #7a5a4c;
   --on-primary: #fffcf9;
   --accent: #b8927a;
@@ -62,7 +62,19 @@
   --danger: #b42318;
   --shadow-sm: 0 1px 2px rgb(46 33 28 / 0.06);
   --shadow-lift: 0 12px 32px -12px rgb(46 33 28 / 0.22);
-  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* Motion (MASTER §4): strong ease-outs; entrances rise, nothing bounces. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease: var(--ease-out);
+  --t-press: 140ms;
+  --t-hover: 180ms;
+  --t-ui: 240ms;
+  --t-reveal: 700ms;
+  --stagger: 70ms;
+  /* Shape (MASTER §3): soft corners on cards, media and fields; buttons are pills. */
+  --radius: 1rem;
+  --radius-sm: 0.625rem;
   --header-h: 65px;
 }
 
@@ -84,6 +96,9 @@
   --font-serif: 'Playfair Display', 'Noto Serif SC', 'Songti SC', serif;
   --font-sans: 'DM Sans Variable', 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, sans-serif;
   --ease-brand: var(--ease);
+  --ease-soft: var(--ease-soft);
+  --radius-card: var(--radius);
+  --radius-field: var(--radius-sm);
 }
 
 @layer base {
@@ -137,16 +152,43 @@
   box-shadow: var(--focus-ring);
 }
 
-/* Scroll reveal: content stays visible without JS (crawlers, AI fetchers). */
+/* Scroll reveal: content stays visible without JS (crawlers, AI fetchers). Transform + opacity only (no CLS). */
 .js [data-reveal] {
   opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 400ms var(--ease), transform 400ms var(--ease);
+  transform: translateY(20px);
+  transition: opacity var(--t-reveal) var(--ease-expo), transform var(--t-reveal) var(--ease-expo);
 }
 .js [data-reveal].is-visible {
   opacity: 1;
   transform: none;
 }
+/* Staggered reveal: the parent stays put, its children arrive in order (--i set by the observer, capped at 8). */
+.js [data-reveal][data-stagger] { opacity: 1; transform: none; }
+.js [data-reveal][data-stagger] > * {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity var(--t-reveal) var(--ease-expo), transform var(--t-reveal) var(--ease-expo);
+  transition-delay: calc(min(var(--i, 0), 8) * var(--stagger));
+}
+.js [data-reveal][data-stagger].is-visible > * { opacity: 1; transform: none; }
+
+/* Hero load sequence (home): lines rise in reading order, the photo settles from a slight zoom. Over by ~1.2 s. */
+@keyframes rise-in { from { opacity: 0.5; transform: translateY(0.6em); } }
+@keyframes settle { from { transform: scale(1.06); } }
+.js [data-hero-line], .js [data-hero-in] { animation: rise-in 800ms var(--ease-expo) both; animation-delay: calc(var(--i, 0) * 90ms); }
+.js [data-hero-in] { animation-duration: 700ms; }
+.js [data-hero-img] { animation: settle 1400ms var(--ease-soft) both; }
+
+/* Header: flat at the top, a soft edge once the page scrolls under it. */
+[data-header] { transition: box-shadow var(--t-ui) var(--ease); }
+[data-header].is-scrolled { box-shadow: 0 1px 0 var(--border), 0 10px 30px -18px rgb(46 33 28 / 0.25); }
+
+/* Mobile menu items arrive one by one when the menu opens. */
+@keyframes fade-up { from { opacity: 0; transform: translateY(8px); } }
+.js .grid-collapse.is-open [data-i] { animation: fade-up var(--t-ui) var(--ease-out) both; animation-delay: calc(var(--i) * 40ms); }
+
+/* Page-to-page crossfade (cross-document view transition; CSS only, no router). */
+@view-transition { navigation: auto; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -154,7 +196,8 @@
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
-  .js [data-reveal] { opacity: 1; transform: none; }
+  .js [data-reveal], .js [data-reveal][data-stagger] > * { opacity: 1; transform: none; transition: none; }
+  @view-transition { navigation: none; }
 }
 
 /* Expandable rows: grid-template-rows 0fr -> 1fr. Without .js the rows stay fully open. */

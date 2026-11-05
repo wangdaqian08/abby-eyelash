@@ -41,7 +41,7 @@ Prices and durations live in `src/data/prices.csv` (owner-editable, see `docs/PR
 Service cards on Home show price + duration and link to their service page.
 
 ## 6. Visual design
-- Base language from demo: editorial, Playfair Display (headings) + DM Sans (body), sharp corners, heading pattern "Line one / *italic accent phrase*", eyebrow labels, hairline dividers, max-width 1152px, 96px section rhythm.
+- Base language from demo: editorial, Playfair Display (headings) + DM Sans (body), heading pattern "Line one / *italic accent phrase*", eyebrow labels, max-width 1152px, 96px section rhythm. Since 2026-11-06: soft corners (16px cards/media, pill buttons) and tone-step separation instead of hairline card borders — relaxed, lively, professional, clean (see design-system/MASTER.md §3–4).
 - Chinese fonts: the device's own (Noto Serif SC / Noto Sans SC if installed, then Songti SC / PingFang SC / Microsoft YaHei). No CJK web font download.
 - **4 colour themes as CSS tokens** (`[data-theme]`):
   - **A Mocha nude (default)** — text `#3B2A24`, primary `#8B6A5C`, accent/latte `#D9C4B2`, cream background
@@ -49,7 +49,7 @@ Service cards on Home show price + duration and link to their service page.
   - **C Sage & cream**
   - **D Plum (demo)** — `#7d3f5e`, `#c4856a`, `#faf7f4`
   - A **preview theme switcher** is shown during preview only; removed after the owner picks one.
-- Interactions: cards lift + soft shadow on hover (plus demo's colour-fill effect), button hover colour + press scale, subtle scroll fade-in. All motion disabled under `prefers-reduced-motion`. Visible keyboard focus states.
+- Interactions (mobile first): staggered section entrances, hero load sequence, press feedback on every control, animated mobile menu, header edge on scroll, page crossfade; on desktop also card lift + colour fill and photo zoom on hover. Transform/opacity only (no CLS), content always in the HTML without JS (SEO/GEO), all motion off under `prefers-reduced-motion`. Visible keyboard focus states.
 - Photos: owner provides later → `public/images/<service>/`; placeholders until then. Images optimised (WebP/AVIF, responsive sizes, lazy below the fold).
 
 ## 7. Reviews

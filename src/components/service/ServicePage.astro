@@ -32,9 +32,9 @@ const updated = new Intl.DateTimeFormat(en ? 'en-AU' : 'zh-CN', { dateStyle: 'lo
 const sp: ServiceSlots | undefined = servicePhotos[service.id];
 const related = services.filter((s) => s.id !== service.id);
 
-const eyebrow = ['text-xs font-medium uppercase text-accent-ink', en && 'tracking-[0.25em]'];
+const eyebrow = ['text-[0.8125rem] font-medium uppercase text-accent-ink', en && 'tracking-[0.25em]'];
 const btn = [
-  'inline-flex min-h-12 items-center justify-center gap-2 px-7 py-3 font-medium transition duration-200 ease-brand hover:-translate-y-0.5 hover:shadow-lift active:scale-[.97]',
+  'inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-7 py-3 font-medium transition duration-200 ease-brand hover:-translate-y-0.5 hover:shadow-lift active:scale-[.97]',
   en ? 'text-xs uppercase tracking-[0.2em]' : 'text-sm',
 ];
 const container = 'mx-auto max-w-6xl px-4 sm:px-6';
@@ -60,7 +60,7 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
           <a href={wa} data-track="message_click" target="_blank" rel="noopener" class:list={[btn, 'border border-primary/30 text-primary hover:bg-surface-2']}>{t.call}</a>
         </div>
       </div>
-      <ServiceImage photo={sp?.hero} lang={lang} alt={c.alt?.hero} eager position={sp?.heroPos} class:list={[sp?.heroAspect ?? 'aspect-[4/3] lg:aspect-[4/5]', 'w-full shadow-[var(--shadow-sm)]']} />
+      <ServiceImage photo={sp?.hero} lang={lang} alt={c.alt?.hero} eager position={sp?.heroPos} class:list={[sp?.heroAspect ?? 'aspect-[4/3] lg:aspect-[4/5]', 'w-full']} />
     </section>
 
     {service.id === 'lash-extensions' && <LashStyleGuide lang={lang} />}
@@ -73,7 +73,7 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
           <h2 class="mt-3 text-4xl leading-tight lg:text-5xl [&_em]:block">{t.priceTitle[0]}<em>{t.priceTitle[1]}</em></h2>
         </div>
         <div class="min-w-0">
-          <table class="w-full bg-surface text-left shadow-[var(--shadow-sm)]">
+          <table class="w-full overflow-hidden rounded-card bg-surface text-left">
             <caption class="sr-only">{service.name[lang]}</caption>
             <thead>
               <tr class="border-b border-border text-sm text-muted">
@@ -159,9 +159,9 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
       <div class={container}>
         <p class:list={eyebrow}>{t.faqEyebrow}</p>
         <h2 class="mt-3 text-4xl leading-tight lg:text-5xl [&_em]:block">{t.faqTitle[0]}<em>{t.faqTitle[1]}</em></h2>
-        <div class="mt-10 grid gap-4 md:grid-cols-2">
+        <div data-reveal data-stagger class="mt-10 grid gap-4 md:grid-cols-2">
           {c.faq.map((f) => (
-            <div class="bg-surface p-6 sm:p-8">
+            <div class="rounded-card bg-surface p-6 sm:p-8">
               <h3 class="text-lg leading-snug">{f.q}</h3>
               <p class="mt-3 text-muted">{f.a}</p>
             </div>

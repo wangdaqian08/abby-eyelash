@@ -21,7 +21,7 @@ const links = [
 ].map(([id, label]) => ({ href: `${home}#${id}`, label }));
 const book = localePath(lang, '/book');
 ---
-<header data-header class="fixed inset-x-0 top-0 z-50 border-b border-border bg-bg/90 backdrop-blur-md">
+<header data-header class="fixed inset-x-0 top-0 z-50 bg-bg/90 backdrop-blur-md">
   <div class="mx-auto flex h-[var(--header-h)] max-w-6xl items-center justify-between gap-3 px-4 sm:gap-6 sm:px-6">
     <a href={home} aria-label={t.home} class="flex min-h-11 items-center gap-3">
       <span class="whitespace-nowrap font-serif text-xl leading-none sm:text-2xl text-primary">{site.name}</span>
@@ -55,15 +55,18 @@ const book = localePath(lang, '/book');
     </div>
   </div>
 
-  <div id="mobile-menu" hidden class="border-t border-border bg-bg lg:hidden">
-    <nav aria-label={t.main} class="mx-auto max-w-6xl px-4 pb-6 pt-2 sm:px-6">
-      <ul>
-        {links.map((l) => (
-          <li><a href={l.href} class="flex min-h-12 items-center text-base text-muted transition-colors duration-200 hover:text-fg">{l.label}</a></li>
-        ))}
-      </ul>
-      <Button href={book} lang={lang} track="book_click" class="mt-3 w-full">{t.book}</Button>
-    </nav>
+  {/* `hidden` keeps it closed without JS; the script swaps it for the grid-collapse animation. */}
+  <div id="mobile-menu" hidden class="grid-collapse bg-bg lg:hidden">
+    <div>
+      <nav aria-label={t.main} class="mx-auto max-w-6xl px-4 pb-6 pt-2 sm:px-6">
+        <ul>
+          {links.map((l, i) => (
+            <li data-i style={`--i:${i}`}><a href={l.href} class="flex min-h-12 items-center text-base text-muted transition-colors duration-200 hover:text-fg">{l.label}</a></li>
+          ))}
+        </ul>
+        <div data-i style={`--i:${links.length}`}><Button href={book} lang={lang} track="book_click" class="mt-3 w-full">{t.book}</Button></div>
+      </nav>
+    </div>
   </div>
 </header>
 
@@ -71,8 +74,13 @@ const book = localePath(lang, '/book');
   const btn = document.querySelector<HTMLButtonElement>('[data-menu-button]');
   const menu = document.getElementById('mobile-menu');
   if (btn && menu) {
+    let isOpen = false;
+    menu.hidden = false;
+    menu.setAttribute('inert', '');
     const set = (open: boolean, returnFocus = false) => {
-      menu.hidden = !open;
+      isOpen = open;
+      menu.classList.toggle('is-open', open);
+      menu.toggleAttribute('inert', !open);
       btn.setAttribute('aria-expanded', String(open));
       btn.setAttribute('aria-label', (open ? btn.dataset.labelClose : btn.dataset.labelOpen) ?? '');
       btn.querySelector('[data-icon-open]')?.classList.toggle('hidden', open);
@@ -80,16 +88,22 @@ const book = localePath(lang, '/book');
       if (open) menu.querySelector<HTMLElement>('a')?.focus();
       else if (returnFocus) btn.focus();
     };
-    btn.addEventListener('click', () => set(menu.hidden));
+    btn.addEventListener('click', () => set(!isOpen));
     menu.addEventListener('click', (e) => (e.target as Element).closest('a') && set(false));
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !menu.hidden) set(false, true);
+      if (e.key === 'Escape' && isOpen) set(false, true);
     });
     // Close when focus leaves the header (e.g. Tab past the last menu item).
     document.querySelector('[data-header]')?.addEventListener('focusout', (e) => {
       const next = (e as FocusEvent).relatedTarget as Node | null;
-      if (!menu.hidden && next && !btn.closest('header')!.contains(next)) set(false);
+      if (isOpen && next && !btn.closest('header')!.contains(next)) set(false);
     });
     matchMedia('(min-width: 64rem)').addEventListener('change', (m) => m.matches && set(false));
+  }
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  if (header) {
+    const onScroll = () => header.classList.toggle('is-scrolled', scrollY > 8);
+    addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
   }
 </script>
