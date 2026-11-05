@@ -42,6 +42,6 @@ test('groupAt: one heading per lash group, none for ungrouped services', () => {
     const o = services.find((s) => s.id === id)!.options;
     return o.flatMap((_, i) => (groupAt(o, i) ? [groupAt(o, i)!.zh] : []));
   };
-  assert.deepEqual(heads('lash-extensions'), ['全套', '下睫毛', '回补', '卸睫毛']);
+  assert.deepEqual(heads('lash-extensions'), ['全套', '下睫毛', '上睫毛回补', '卸睫毛']);
   assert.deepEqual(heads('gel-nails'), []);
 });

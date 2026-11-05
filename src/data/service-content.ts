@@ -81,7 +81,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
   [L]: {
     en: {
       title: 'Eyelash Extensions in Burwood | Abby Eyelash',
-      description: `Japanese classic and hybrid eyelash extensions by Abby in Burwood NSW. Full sets from ${$(L, 'classic-natural')}, infills from ${$(L, 'infill-2w')}. Aftercare and allergy advice.`,
+      description: `Japanese classic and hybrid eyelash extensions by Abby in Burwood NSW. Full sets from ${$(L, 'classic-natural')}, infills from ${opt(L, 'infill-2w').pct}% of your last price. Aftercare and allergy advice.`,
       h1: ['Eyelash extensions ', 'in Burwood.'],
       intro: `Eyelash extensions are single synthetic lashes bonded one at a time to your natural lashes with a cosmetic adhesive. At Abby Eyelash in Burwood NSW 2134, a Japanese classic set is ${$(L, 'classic-natural')} natural or ${$(L, 'classic-full')} full (about ${span(L, 'classic-natural', 'classic-full')} minutes), and a hybrid set is ${$(L, 'hybrid-natural')} natural or ${$(L, 'hybrid-full')} full. Each extension lasts as long as the natural lash it sits on, so most clients book an infill every 2–3 weeks; the price depends on how soon you come back.`,
       sections: [
@@ -114,11 +114,11 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `You shed a few natural lashes every day, and each extension falls out with its lash. To keep the set looking full, most clients book an infill every 2–3 weeks. An infill removes grown-out extensions and fills the gaps.`,
           ],
           list: [
-            ...shares(L).map((o) => `${o.name.en}: ${o.pct}% of your set’s full price`),
+            ...shares(L).map((o) => `${o.name.en}: ${o.pct}% of the price you paid last time`),
             `After 4 weeks: full price`,
           ],
           after: [
-            `For example, an infill on a Japanese classic natural set (${$(L, 'classic-natural')}) within 2 weeks is ${$(L, 'infill-2w')}. Removal on its own is ${range(L, 'removal')}; it’s free if your last set was done here and you’re having a new set straight after.`,
+            `Removal on its own is ${range(L, 'removal')}; it’s free if your last set was done here and you’re having a new set straight after.`,
           ],
         },
         {
@@ -159,7 +159,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
     },
     zh: {
       title: '宝活 Burwood 嫁接睫毛 | Abby Eyelash 美睫',
-      description: `悉尼宝活 Burwood 嫁接睫毛：日式单根 ${$(L, 'classic-natural')} 起，回补 ${$(L, 'infill-2w')} 起。Abby 亲手逐根嫁接，附术后护理、回补价格和过敏说明。`,
+      description: `悉尼宝活 Burwood 嫁接睫毛：日式单根 ${$(L, 'classic-natural')} 起，回补为上次价格的 ${opt(L, 'infill-2w').pct}% 起。Abby 亲手逐根嫁接，附术后护理、回补价格和过敏说明。`,
       h1: ['宝活 Burwood ', '嫁接睫毛'],
       intro: `嫁接睫毛（也叫种睫毛、接睫毛）是用专用睫毛胶，把一根根合成睫毛逐根粘在你的真睫毛上。在 Burwood NSW 2134 的 Abby Eyelash，日式单根自然款 ${$(L, 'classic-natural')}、浓密款 ${$(L, 'classic-full')}（约 ${span(L, 'classic-natural', 'classic-full')} 分钟），开花 / 轻盈自然款 ${$(L, 'hybrid-natural')}、浓密款 ${$(L, 'hybrid-full')}。嫁接的睫毛会随真睫毛自然脱落，大多数客人每 2–3 周回补一次，越早回补越便宜。`,
       sections: [
@@ -190,11 +190,11 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `真睫毛每天都会自然掉几根，嫁接的睫毛也跟着一起掉。想保持浓密，大多数客人每 2–3 周回补一次，会取下长出来的旧睫毛并补满空位。`,
           ],
           list: [
-            ...shares(L).map((o) => `${o.name.zh}：全套价格的 ${o.pct}%`),
+            ...shares(L).map((o) => `${o.name.zh}：上次支付价格的 ${o.pct}%`),
             `超过 4 周：原价`,
           ],
           after: [
-            `例如日式单根自然款（${$(L, 'classic-natural')}）2 周内回补为 ${$(L, 'infill-2w')}。单独卸睫毛 ${range(L, 'removal')}；如果上一次是在这里做的，卸完接着做新睫毛，免收卸睫毛费。`,
+            `单独卸睫毛 ${range(L, 'removal')}；如果上一次是在这里做的，卸完接着做新睫毛，免收卸睫毛费。`,
           ],
         },
         {

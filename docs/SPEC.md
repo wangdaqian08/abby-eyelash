@@ -42,7 +42,7 @@ Service cards on Home show price + duration and link to their service page.
 
 ## 6. Visual design
 - Base language from demo: editorial, Playfair Display (headings) + DM Sans (body), sharp corners, heading pattern "Line one / *italic accent phrase*", eyebrow labels, hairline dividers, max-width 1152px, 96px section rhythm.
-- Chinese font fallback: Noto Serif SC / Noto Sans SC (subset, `font-display: swap`).
+- Chinese fonts: the device's own (Noto Serif SC / Noto Sans SC if installed, then Songti SC / PingFang SC / Microsoft YaHei). No CJK web font download.
 - **4 colour themes as CSS tokens** (`[data-theme]`):
   - **A Mocha nude (default)** — text `#3B2A24`, primary `#8B6A5C`, accent/latte `#D9C4B2`, cream background
   - **B Rose & champagne** — `#B76E79`, `#C9A27E`

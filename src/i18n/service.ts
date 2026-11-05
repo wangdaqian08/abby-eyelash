@@ -35,6 +35,10 @@ const en = {
   beforeAfterCaption: 'Top: before. Bottom: after.',
   styledTitle: 'Styled sets, ',
   styledAccent: 'twelve ways.',
+  guideTitle: 'Natural or full? ',
+  guideAccent: 'A rough guide.',
+  guideNote: 'These are AI-generated illustrations, not real clients. Photos of Abby’s real work are further down the page.',
+  guideBadge: 'AI illustration',
   ctaBody: 'Choose a time online and Abby will confirm by SMS or WhatsApp.',
 };
 
@@ -74,6 +78,10 @@ const zh: Strings = {
   beforeAfterCaption: '上：前。下：后。',
   styledTitle: '造型款，',
   styledAccent: '12 种。',
+  guideTitle: '自然还是浓密？',
+  guideAccent: '先看个大概。',
+  guideNote: '以下为 AI 生成的示意图，不是真实客人效果；Abby 的真实作品请看页面下方。',
+  guideBadge: 'AI 示意图',
   ctaBody: '在线选择时间，Abby 会通过短信或 WhatsApp 与你确认。',
 };
 

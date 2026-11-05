@@ -24,19 +24,6 @@ const { lang, title, description } = props;
     <!-- Headline fonts preloaded: a late swap re-wraps H1s and causes layout shift. -->
     <link rel="preload" href={playfair500} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={playfair500i} as="font" type="font/woff2" crossorigin />
-    {
-      lang === 'zh' && (
-        <>
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-          {/* Google Fonts slices CJK by unicode-range, so only glyphs used on the page download. */}
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500&family=Noto+Serif+SC:wght@500&display=swap"
-          />
-        </>
-      )
-    }
     <script is:inline>
       // Theme preview (pre-launch only): ?theme=rose persists in localStorage. Remove once a theme is chosen.
       try {

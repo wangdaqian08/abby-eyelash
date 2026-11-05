@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ServiceImage from './ServiceImage.astro';
 import BeforeAfter from './BeforeAfter.astro';
 import StyledLooks from './StyledLooks.astro';
+import LashStyleGuide from './LashStyleGuide.astro';
 import { servicePhotos, type ServiceSlots } from '../../data/photos';
 import { bookableWith, groupAt, headline, priceText, services, type Lang, type Service } from '../../data/services';
 import { site } from '../../data/site';
@@ -61,6 +62,8 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
       </div>
       <ServiceImage photo={sp?.hero} lang={lang} alt={c.alt?.hero} eager position={sp?.heroPos} class:list={[sp?.heroAspect ?? 'aspect-[4/3] lg:aspect-[4/5]', 'w-full shadow-[var(--shadow-sm)]']} />
     </section>
+
+    {service.id === 'lash-extensions' && <LashStyleGuide lang={lang} />}
 
     {/* Price table (same data as Service/Offer JSON-LD) */}
     <section id="prices" class="bg-surface-2 py-16 lg:py-24">

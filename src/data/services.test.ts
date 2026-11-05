@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { allDurations, bookable, bookableWith, findOption, parseAddons, quote, addonsParam, services } from './services.ts';
+import { allDurations, bookable, bookableWith, findOption, parseAddons, priceText, quote, quoteText, addonsParam, services } from './services.ts';
 
 const L = 'lash-extensions';
 
@@ -50,4 +50,15 @@ test('nail extensions: one shared per-nail add-on, booked on top of a gel or han
   const art = quote('handcrafted-nails', 'nail-art', { extension: 2 })!;
   assert.equal(art.onRequest, true);
   assert.equal(art.price, 12); // only the add-on is priced; the design is quoted by Abby
+});
+
+test('infill is a share of the last price: shown as a percentage, never a dollar amount', () => {
+  const o = findOption(L, 'infill-2w')!;
+  assert.equal(o.pct, 50);
+  assert.equal(o.price, 0);
+  assert.equal(priceText(o, 'en'), '50% of your last price');
+  assert.equal(priceText(o, 'zh'), '上次价格的 50%');
+  assert.equal(quoteText(quote(L, 'infill-2w', {})!, 'zh'), '上次价格的 50%');
+  assert.equal(quoteText(quote(L, 'infill-2w', { 'bottom-full': 1 })!, 'en'), '50% of your last price + $35');
+  assert.equal(quoteText(quote(L, 'classic-natural', {})!, 'en'), `$${findOption(L, 'classic-natural')!.price}`);
 });

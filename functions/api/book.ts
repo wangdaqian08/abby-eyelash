@@ -1,7 +1,7 @@
 // POST /api/book — trust boundary: validate everything, verify Turnstile, re-check the slot, insert a PENDING event.
 // Abby's email notification is sent by the browser after success (Web3Forms forbids server-side calls on the free plan).
 import { site } from '../../src/data/site.ts';
-import { allDurations, parseAddons, quote } from '../../src/data/services.ts';
+import { allDurations, parseAddons, quote, quoteText } from '../../src/data/services.ts';
 import { slotsForDate, validateDetails, zonedTimeToUtc, normalisePhone } from '../../src/lib/availability.ts';
 import { availabilityCacheKey, busyBetween, demoAllowed, insertEvent, isConfigured, type GoogleEnv } from '../../src/lib/google-calendar.ts';
 
@@ -86,7 +86,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       `Phone: ${normalisePhone(b.phone)}`,
       `Email: ${plain(b.email)}`,
       `Service: ${label} (${minutes} min)`,
-      `Price: ${booking.from ? 'from ' : ''}$${booking.price}`,
+      `Price: ${quoteText(booking, 'en')}`,
       `Deposit: $${site.booking.deposit} by WeChat — not yet received`,
       `Language: ${b.lang === 'zh' ? 'Chinese' : 'English'}`,
       `Notes: ${plain(b.notes) || '-'}`,

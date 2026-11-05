@@ -29,7 +29,7 @@ Rule: components use tokens only — no raw hex outside `src/styles/tokens.css`.
 
 ## 2. Typography
 - Headings: **Playfair Display** 500 (italic 400/500 for accent phrases and quotes). Body/UI: **DM Sans** 400/500. Self-hosted via Fontsource, `font-display: swap`, preload the hero heading weight.
-- Chinese (`:lang(zh)`): headings `"Noto Serif SC"`, body `"Noto Sans SC"`, system fallbacks `"PingFang SC","Hiragino Sans GB","Microsoft YaHei"`. Load subset via Google Fonts CSS2 with `text=`-free unicode-range (only on `/zh/` pages). No letter-spacing on CJK; no italics on CJK (use `--primary` colour only).
+- Chinese (`:lang(zh)`): headings `"Noto Serif SC"`, body `"Noto Sans SC"`, system fallbacks `"PingFang SC","Hiragino Sans GB","Microsoft YaHei"`. No CJK web font is loaded: these resolve to the device's own fonts (iPhone/Mac: Songti SC / PingFang SC; Android: Noto Sans CJK, so headings fall back to sans; Windows: Microsoft YaHei). A CJK web font cost ~1.5 MB and pushed /zh/ LCP to ~2.4 s. No letter-spacing on CJK; no italics on CJK (use `--primary` colour only).
 - Scale (desktop / mobile): H1 72/48 lh 1.08 · H2 48/36 lh 1.25 · H3 18 lh 1.55 · body 16 lh 1.65 · small 14 · eyebrow & button 12 uppercase, tracking 0.2–0.3em (Latin only). Min body text 16px; nothing below 12px.
 - Heading pattern: `Line one<br><em>italic accent phrase.</em>` — `em` = italic + `--primary`.
 

@@ -1,5 +1,5 @@
 // Booking flow (vanilla TS): 1 Service → 2 Date → 3 Time → 4 Details → success.
-import { addonOptions, addonsParam, bookable, bookableWith, groupAt, headline, mainOptions, priceText, quote, services, type Addons, type Lang, type Service, type ServiceOption } from '../../data/services';
+import { addonOptions, addonsParam, bookable, bookableWith, groupAt, headline, mainOptions, priceText, quote, quoteText, services, type Addons, type Lang, type Service, type ServiceOption } from '../../data/services';
 import { site } from '../../data/site';
 import { bookingStrings } from '../../i18n/booking';
 import { daysInMonth, localDate, maxDate, validateDetails, weekday, zonedTimeToUtc, type Details } from '../../lib/availability';
@@ -89,7 +89,7 @@ export function start(root: HTMLElement) {
   const price = (o: Parameters<typeof priceText>[0] & { wasPrice?: number }) =>
     priceText(o, lang) + (o.wasPrice ? (lang === 'zh' ? `（原价 $${o.wasPrice}）` : ` (was $${o.wasPrice})`) : '');
   // Booking total: an on-request design shows its add-ons on top, e.g. "Price on request + $24".
-  const totalPrice = (q: ReturnType<typeof total>) => (q.onRequest ? priceText(q, lang) + (q.price ? ` + $${q.price}` : '') : price(q));
+  const totalPrice = (q: ReturnType<typeof total>) => (q.onRequest || q.pct ? quoteText(q, lang) : price(q));
   const label = () => {
     const q = total();
     return [`${st.service!.name[lang]} · ${q.option.name[lang]}`, ...q.extras.map((e) => `${e.option.name[lang]}${e.units > 1 ? ` × ${e.units}` : ''}`)].join(' + ');
