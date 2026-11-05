@@ -80,6 +80,7 @@
   --color-border: var(--border);
   --color-danger: var(--danger);
   --shadow-lift: var(--shadow-lift);
+  /* Chinese uses the device's own CJK fonts (no web font: ~1.5 MB and render-blocking). Noto is used only if installed. */
   --font-serif: 'Playfair Display', 'Noto Serif SC', 'Songti SC', serif;
   --font-sans: 'DM Sans Variable', 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, sans-serif;
   --ease-brand: var(--ease);
