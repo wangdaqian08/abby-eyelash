@@ -16,7 +16,7 @@ check('BLOCK', 'about-photos', /placeholder-about-\d\.jpg/.test(about),
 const reviews = read('src/data/reviews.ts');
 check('BLOCK', 'dummy-reviews', /dummy:\s*true/.test(reviews),
   'Home page reviews are dummy text (illegal to publish as real reviews under Australian Consumer Law).',
-  'Paste real Google reviews into src/data/reviews.ts with dummy: false, or remove the Reviews section. `LAUNCH=1 npm run build` fails until then.');
+  'Paste real Google reviews into src/data/reviews.ts with dummy: false, or remove the Reviews section (the hero rating line in src/components/home/Hero.astro reads reviewSummary too). `LAUNCH=1 npm run build` fails until then.');
 
 const layout = read('src/layouts/BaseLayout.astro');
 check('BLOCK', 'theme-preview', /<ThemePreview\b/.test(layout),
@@ -28,6 +28,18 @@ const empty = site.split('\n').filter((l) => /PLACEHOLDER/.test(l) && /:\s*''/.t
 check('WARN', 'site-placeholders', empty.length > 0,
   `Empty PLACEHOLDER values in src/data/site.ts: ${empty.join(', ')}.`,
   'Fill them in (mapsEmbed from Google Maps "Share > Embed"; ga4Id once GA4 exists) or confirm with the owner they stay off.');
+check('WARN', 'google-business-profile', /reviewsUrl:\s*''/.test(site),
+  'No Google Business Profile: the studio cannot appear in the Google Maps pack for "eyelash extensions Burwood", and the review links stay hidden.',
+  'Create the profile (service-area business, address hidden, booking link to /book), then set site.google.reviewsUrl and mapsEmbed in src/data/site.ts.');
+
+check('WARN', 'abby-facts', /yearsExperience:\s*0/.test(site) && /certifications:\s*\[\]/.test(site),
+  'About section shows no years of experience or training (first-time lash clients look for both).',
+  'Ask Abby again for at least the years figure and one photo of herself; fill site.abby in src/data/site.ts.');
+
+check('WARN', 'xiaohongshu', /xiaohongshu:\s*''/.test(site),
+  'No Xiaohongshu (RED) link; Chinese clients in Burwood find studios there more than on Google.',
+  'Set site.social.xiaohongshu in src/data/site.ts once Abby has an account, or confirm she stays off it.');
+
 
 const config = read('astro.config.mjs');
 check('WARN', 'domain', !process.env.SITE_URL && /pages\.dev/.test(config),

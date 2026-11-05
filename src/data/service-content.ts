@@ -150,6 +150,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       ],
       faq: [
         { q: 'How long does a full set take?', a: `About ${span(L, 'classic-natural', 'classic-full', 'hybrid-natural', 'hybrid-full', 'styled')} minutes for a full set. An infill takes about ${span(L, 'infill-2w', 'infill-3w', 'infill-4w')} minutes.` },
+        { q: 'Does it hurt?', a: 'No. You lie with your eyes closed and nothing touches the eye itself; most clients find it relaxing and many nap. Tell Abby at once if you feel any stinging.' }, // OWNER-REVIEW
         { q: 'Can I wear mascara with extensions?', a: 'You usually won’t need it. If you do, use a water-based mascara on the tips only, never waterproof, and remove it with an oil-free cleanser.' }, // OWNER-REVIEW
         { q: 'Do eyelash extensions damage natural lashes?', a: 'Lash loss is a known risk, mostly from extensions that are too heavy, rubbing, or pulling them off. Sizing the set to your own lashes and having them removed professionally keeps that risk low.' },
         { q: 'How do I get them removed?', a: `Book a removal with Abby: ${range(L, 'removal')} on its own, or free if your last set was done here and you’re having a new set straight after. She dissolves the adhesive with a professional remover so your natural lashes aren’t pulled out. Never pick them off.` }, // OWNER-REVIEW: removal time
@@ -226,6 +227,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       ],
       faq: [
         { q: '做一套要多久？', a: `全套约 ${span(L, 'classic-natural', 'classic-full', 'hybrid-natural', 'hybrid-full', 'styled')} 分钟，回补约 ${span(L, 'infill-2w', 'infill-3w', 'infill-4w')} 分钟。` },
+        { q: '做嫁接睫毛会痛吗？', a: '不会。全程闭眼躺着，胶水和睫毛都不碰到眼睛，很多客人会直接睡着。如果有刺痛感请马上告诉 Abby。' }, // OWNER-REVIEW
         { q: '嫁接后还能涂睫毛膏吗？', a: '一般不需要。如果要涂，只在睫毛尾端用水性睫毛膏，不要用防水款，并用无油清洁产品卸掉。' }, // OWNER-REVIEW
         { q: '嫁接睫毛会伤真睫毛吗？', a: '睫毛脱落确实是已知风险，多数来自睫毛过重、经常揉或自己拔。按你的真睫毛选合适的款式，并由专业人员卸除，风险就能降到很低。' },
         { q: '想卸掉怎么办？', a: `预约 Abby 帮你卸：单独卸睫毛 ${range(L, 'removal')}；上一次在这里做、卸完接着做新睫毛的免费。她会用专业卸睫膏溶解胶水，不会扯掉真睫毛。请不要自己拔。` }, // OWNER-REVIEW: removal time
