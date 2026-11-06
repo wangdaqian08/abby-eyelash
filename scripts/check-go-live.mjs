@@ -42,7 +42,7 @@ check('WARN', 'xiaohongshu', /xiaohongshu:\s*''/.test(site),
 
 
 const config = read('astro.config.mjs');
-check('WARN', 'domain', !process.env.SITE_URL && /pages\.dev/.test(config),
+check('WARN', 'domain', /pages\.dev/.test(process.env.SITE_URL ?? config),
   'Site URL is still the default https://abby-eyelash.pages.dev (canonicals, sitemap, hreflang use it).',
   'Build production with SITE_URL=https://<real domain> once the domain exists (docs/DEPLOY-CHECKLIST.md part D).');
 

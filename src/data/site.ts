@@ -43,7 +43,7 @@ export const site = {
   google: {
     reviewsUrl: '' as string, // no Google Business Profile link yet; empty hides the review links
     mapsEmbed: '', // PLACEHOLDER — embed URL from Google Maps "Share > Embed a map"
-    ga4Id: '', // PLACEHOLDER e.g. G-XXXXXXX — empty disables analytics
+    ga4Id: 'G-ND8T7ZBSLR', // GA4 web stream for www.abbyeyelashes.com (public ID, not a secret); reports only from that host
   },
   booking: {
     slotMinutes: 30,
