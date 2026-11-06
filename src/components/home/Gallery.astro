@@ -1,9 +1,11 @@
 ---
+// Home portfolio: a lash part (grouped by look) and a nail part (grouped by colour). Every photo is in the HTML;
+// photos past the first row of a group sit in a grid-collapse opened by that part's "Show all" button.
 import { Picture, getImage } from 'astro:assets';
 import type { Lang } from '../../data/services';
 import { site } from '../../data/site';
-import { NAIL_VISIBLE, nailGroups, nailVideo, photo } from '../../data/photos';
-import { common } from '../../i18n/common';
+import { LASH_VISIBLE, NAIL_VISIBLE, lashGroups, nailGroups, nailVideo, photo } from '../../data/photos';
+import { common, fill } from '../../i18n/common';
 import { localePath } from '../../lib/i18n';
 import { photoSrc } from '../../lib/photo-src';
 import SectionHeading from '../ui/SectionHeading.astro';
@@ -12,7 +14,16 @@ interface Props { lang: Lang }
 const { lang } = Astro.props;
 const t = common[lang].gallery;
 const posterUrl = (await getImage({ src: photoSrc(nailVideo.poster), width: 480, format: 'webp' })).src;
-const bookHref = `${localePath(lang, '/book')}?service=gel-nails`;
+
+type Group = { id: string; name: { en: string; zh: string }; swatch?: string; ratio: '3:4' | '4:3'; items: string[] };
+const parts: { id: string; title: string; groups: Group[]; visible: number; book: string; bookLabel: string }[] = [
+  { id: 'lashes', title: t.lashes, groups: lashGroups, visible: LASH_VISIBLE, book: `${localePath(lang, '/book')}?service=lash-extensions`, bookLabel: t.bookLashes },
+  { id: 'nails', title: t.nails, groups: nailGroups.map((g) => ({ ...g, ratio: '3:4' as const })), visible: NAIL_VISIBLE, book: `${localePath(lang, '/book')}?service=gel-nails`, bookLabel: t.bookNails },
+];
+// Nails: three portrait tiles per row (as before). Lashes: two per row on phones, four on desktop.
+const grid = (p: string) => (p === 'nails' ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-2 gap-2 lg:grid-cols-4');
+const sizes = (p: string) => (p === 'nails' ? '(min-width: 1152px) 360px, 31vw' : '(min-width: 1024px) 270px, 47vw');
+const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };
 ---
 <section id="gallery" class="bg-surface-2 py-16 md:py-24">
   <div class="mx-auto max-w-6xl px-4 sm:px-6">
@@ -20,13 +31,15 @@ const bookHref = `${localePath(lang, '/book')}?service=gel-nails`;
       <SectionHeading lang={lang} eyebrow={t.eyebrow} title={t.title} accent={t.accent} />
       <a href={site.social.instagram} data-track="social_click" target="_blank" rel="noopener" class="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-4 transition-colors duration-200 hover:text-fg">{t.more}</a>
     </div>
-    <div data-reveal class="mt-12 space-y-8 md:mt-16">
-      {nailGroups.map((g) => {
-        const tiles = (ids: string[]) => (
-          <ul class="grid grid-cols-3 gap-2">
-            {ids.map((id) => (
-              <li class="relative aspect-[3/4] overflow-hidden bg-surface">
-                {id === 'video' ? (
+
+    {parts.map((part) => {
+      const count = part.groups.reduce((n, g) => n + g.items.length, 0);
+      const tiles = (g: Group, ids: string[]) => (
+        <ul class={grid(part.id)}>
+          {ids.map((id) => (
+            <li class:list={['relative overflow-hidden rounded-field bg-surface', aspect[g.ratio]]}>
+              {id === 'video' ? (
+                <>
                   <video muted loop playsinline preload="none" poster={posterUrl} width="480" height="640" class="aspect-[3/4] size-full object-cover" aria-label={nailVideo.alt[lang]} data-video>
                     <source src={nailVideo.src} type="video/mp4" />
                   </video>
@@ -35,47 +48,48 @@ const bookHref = `${localePath(lang, '/book')}?service=gel-nails`;
                       <svg viewBox="0 0 24 24" class="size-3 translate-x-px" fill="currentColor"><path d="M7 5v14l12-7z" /></svg>
                     </span>
                   </button>
-                ) : (
-                  <Picture
-                    src={photoSrc(id)}
-                    alt={photo(id).alt[lang]}
-                    formats={['avif', 'webp']}
-                    widths={[240, 480, 720]}
-                    sizes="(min-width: 1152px) 360px, 31vw"
-                    loading="lazy"
-                    class="size-full object-cover"
-                  />
+                </>
+              ) : (
+                <Picture src={photoSrc(id)} alt={photo(id).alt[lang]} formats={['avif', 'webp']} widths={[240, 480, 720]} sizes={sizes(part.id)} loading="lazy" class="size-full object-cover" />
+              )}
+            </li>
+          ))}
+        </ul>
+      );
+      return (
+        <div data-part class="mt-12 md:mt-16">
+          <h3 class="text-2xl md:text-3xl">{part.title}</h3>
+          <div data-reveal data-stagger class="mt-6 space-y-8">
+            {part.groups.map((g) => (
+              <div>
+                <h4 class="mb-3 flex items-center gap-2 text-sm font-medium">
+                  {g.swatch && <span class="size-2.5 rounded-full" style={`background:${g.swatch}`} aria-hidden="true"></span>}
+                  {g.name[lang]}
+                </h4>
+                {tiles(g, g.items.slice(0, part.visible))}
+                {g.items.length > part.visible && (
+                  <div data-more class="grid-collapse">
+                    <div><div class="pt-2">{tiles(g, g.items.slice(part.visible))}</div></div>
+                  </div>
                 )}
-              </li>
-            ))}
-          </ul>
-        );
-        return (
-          <div>
-            <h3 class="mb-3 flex items-center gap-2 text-sm font-medium">
-              <span class="size-2.5 rounded-full" style={`background:${g.swatch}`} aria-hidden="true"></span>
-              {g.name[lang]}
-            </h3>
-            {tiles(g.items.slice(0, NAIL_VISIBLE))}
-            {g.items.length > NAIL_VISIBLE && (
-              <div data-more class="grid-collapse">
-                <div><div class="pt-2">{tiles(g.items.slice(NAIL_VISIBLE))}</div></div>
               </div>
-            )}
+            ))}
           </div>
-        );
-      })}
-    </div>
-    <div class="mt-8 flex flex-wrap items-center gap-x-6">
-      <button type="button" data-show-all aria-expanded="false" hidden data-all={t.showAll} data-less={t.showLess} class="inline-flex min-h-11 items-center rounded-full bg-surface px-5 text-sm font-medium transition-colors hover:bg-surface-2">{t.showAll}</button>
-      <a href={bookHref} data-track="book_click" class="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-4 transition-colors duration-200 hover:text-fg">{t.bookNails}</a>
-    </div>
+          <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <button type="button" data-show-all aria-expanded="false" hidden data-all={fill(t.showAll, { n: count })} data-less={t.showLess} class="inline-flex min-h-11 items-center rounded-full bg-surface px-5 text-sm font-medium transition duration-200 hover:bg-surface-3 active:scale-[.97]">{fill(t.showAll, { n: count })}</button>
+            <a href={part.book} data-track="book_click" class="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-4 transition-colors duration-200 hover:text-fg">{part.bookLabel}</a>
+          </div>
+        </div>
+      );
+    })}
   </div>
 </section>
 <script>
-  const btn = document.querySelector<HTMLButtonElement>('[data-show-all]');
-  const rows = document.querySelectorAll<HTMLElement>('[data-more]');
-  if (btn) {
+  // Each part has its own "Show all": hidden rows are inert until opened, so keyboard and screen-reader users skip them.
+  document.querySelectorAll<HTMLElement>('#gallery [data-part]').forEach((part) => {
+    const btn = part.querySelector<HTMLButtonElement>('[data-show-all]');
+    const rows = part.querySelectorAll<HTMLElement>('[data-more]');
+    if (!btn || !rows.length) return;
     rows.forEach((r) => r.setAttribute('inert', ''));
     btn.hidden = false;
     btn.addEventListener('click', () => {
@@ -87,7 +101,7 @@ const bookHref = `${localePath(lang, '/book')}?service=gel-nails`;
       btn.setAttribute('aria-expanded', String(open));
       btn.textContent = open ? btn.dataset.less! : btn.dataset.all!;
     });
-  }
+  });
   // No autoplay. Hover plays on mouse devices (unless reduced motion); tap or Enter toggles everywhere.
   const video = document.querySelector<HTMLVideoElement>('[data-video]');
   const toggle = document.querySelector<HTMLButtonElement>('[data-video-toggle]');

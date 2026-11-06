@@ -34,6 +34,12 @@ test('last start does not depend on duration: a 150 min service can still start 
   assert.equal(slotsForDate('2026-11-21', 150, [], EARLY, R).at(-1), '20:00');
 });
 
+test('several services: the last one must still start by the last start time', () => {
+  // 120 min of other services first (lead), then the longest one: the visit can start at 18:00 at the latest
+  assert.equal(slotsForDate('2026-11-21', 270, [], EARLY, R, 120).at(-1), '18:00');
+  assert.deepEqual(monthAvailability('2026-11', 270, [], EARLY, R, 120)['2026-11-21'], slotsForDate('2026-11-21', 270, [], EARLY, R, 120));
+});
+
 test('Sundays: only the 3rd Sunday of the month is open, from 09:00', () => {
   assert.equal(slotsForDate('2026-11-15', 60, [], EARLY, R)[0], '09:00'); // 3rd Sunday of Nov 2026
   for (const d of ['2026-11-01', '2026-11-08', '2026-11-22', '2026-11-29']) assert.deepEqual(slotsForDate(d, 60, [], EARLY, R), [], d);

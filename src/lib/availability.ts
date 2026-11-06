@@ -86,8 +86,11 @@ export function daysInMonth(month: string): string[] {
 /** Last bookable calendar date (today + maxAdvanceDays, in the business timezone). */
 export const maxDate = (now: number, r: Rules) => addDays(localDate(now, r.timezone), r.booking.maxAdvanceDays);
 
-/** Bookable start times ("HH:MM") on `date` for a service of `minutes`. */
-export function slotsForDate(date: string, minutes: number, busy: Interval[], now: number, r: Rules): string[] {
+/**
+ * Bookable start times ("HH:MM") on `date` for a visit of `minutes`. `lead` = minutes of the services done before the
+ * last one, so in a combined visit the last service still starts by the day's last start time.
+ */
+export function slotsForDate(date: string, minutes: number, busy: Interval[], now: number, r: Rules, lead = 0): string[] {
   const { slotMinutes, bufferMinutes, minNoticeHours } = r.booking;
   if (date < localDate(now, r.timezone) || date > maxDate(now, r)) return [];
   const h = hoursOn(date, r);
@@ -96,7 +99,7 @@ export function slotsForDate(date: string, minutes: number, busy: Interval[], no
   const buf = bufferMinutes * MIN;
   const close = toMin(h.close);
   const out: string[] = [];
-  for (let m = toMin(h.open); m <= close; m += slotMinutes) {
+  for (let m = toMin(h.open); m + lead <= close; m += slotMinutes) {
     const time = toHHMM(m);
     const start = zonedTimeToUtc(date, time, r.timezone);
     const end = start + minutes * MIN;
@@ -127,10 +130,10 @@ export function recommendedSlots(date: string, slots: string[], minutes: number,
 }
 
 /** Days of `month` ("YYYY-MM") with at least one slot → their slots. */
-export function monthAvailability(month: string, minutes: number, busy: Interval[], now: number, r: Rules) {
+export function monthAvailability(month: string, minutes: number, busy: Interval[], now: number, r: Rules, lead = 0) {
   const days: Record<string, string[]> = {};
   for (const date of daysInMonth(month)) {
-    const s = slotsForDate(date, minutes, busy, now, r);
+    const s = slotsForDate(date, minutes, busy, now, r, lead);
     if (s.length) days[date] = s;
   }
   return days;

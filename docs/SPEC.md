@@ -41,7 +41,7 @@ Prices and durations live in `src/data/prices.csv` (owner-editable, see `docs/PR
 Service cards on Home show price + duration and link to their service page.
 
 ## 6. Visual design
-- Base language from demo: editorial, Playfair Display (headings) + DM Sans (body), sharp corners, heading pattern "Line one / *italic accent phrase*", eyebrow labels, hairline dividers, max-width 1152px, 96px section rhythm.
+- Base language from demo: editorial, Playfair Display (headings) + DM Sans (body), heading pattern "Line one / *italic accent phrase*", eyebrow labels, max-width 1152px, 96px section rhythm. Since 2026-11-06: soft corners (16px cards/media, pill buttons) and tone-step separation instead of hairline card borders — relaxed, lively, professional, clean (see design-system/MASTER.md §3–4).
 - Chinese fonts: the device's own (Noto Serif SC / Noto Sans SC if installed, then Songti SC / PingFang SC / Microsoft YaHei). No CJK web font download.
 - **4 colour themes as CSS tokens** (`[data-theme]`):
   - **A Mocha nude (default)** — text `#3B2A24`, primary `#8B6A5C`, accent/latte `#D9C4B2`, cream background
@@ -49,7 +49,7 @@ Service cards on Home show price + duration and link to their service page.
   - **C Sage & cream**
   - **D Plum (demo)** — `#7d3f5e`, `#c4856a`, `#faf7f4`
   - A **preview theme switcher** is shown during preview only; removed after the owner picks one.
-- Interactions: cards lift + soft shadow on hover (plus demo's colour-fill effect), button hover colour + press scale, subtle scroll fade-in. All motion disabled under `prefers-reduced-motion`. Visible keyboard focus states.
+- Interactions (mobile first): staggered section entrances, hero load sequence, press feedback on every control, animated mobile menu, header edge on scroll, page crossfade; on desktop also card lift + colour fill and photo zoom on hover. Transform/opacity only (no CLS), content always in the HTML without JS (SEO/GEO), all motion off under `prefers-reduced-motion`. Visible keyboard focus states.
 - Photos: owner provides later → `public/images/<service>/`; placeholders until then. Images optimised (WebP/AVIF, responsive sizes, lazy below the fold).
 
 ## 7. Reviews
@@ -58,8 +58,9 @@ Service cards on Home show price + duration and link to their service page.
 
 ## 8. Booking
 **UI** (reference: `reference/customer-booking-UI.png`, `reference/customer-booking-UI-3.png`; `reference/calendar.png` is a staff view and is NOT built):
-- Desktop 3 panes: left rail (Abby photo, title, vertical stepper: 1 Service → 2 Date → 3 Time → 4 Details), middle month calendar (available days as filled circles, unavailable/past greyed, prev/next month), right time-slot list (selected slot shows inline "Next" button).
-- Step 4 details form: Full name, Phone (AU), Email, Service, Service option, Notes (optional), "Book Appointment". Copy: "Fill in your information and we'll get back to you to confirm your appointment."
+- Desktop 3 panes: left rail (Abby photo, title, vertical stepper: 1 Services → 2 Date → 3 Time → 4 Details), middle month calendar (available days as filled circles, unavailable/past greyed, prev/next month), right time-slot list (selected slot shows inline "Next" button).
+- Step 1: one or more services (check-boxes; since 2026-11-06 lashes, brows and nails can be combined in one visit, done back to back). Each ticked service gets its own option and add-ons; the total time and price show underneath.
+- Step 4 details form: Full name, Phone (AU), Email, Notes (optional), "Book Appointment", plus a summary (services, date, time, duration, price, deposit). To change services the client goes back to step 1.
 - Mobile: one step at a time, stacked.
 - Success screen + "Add to my calendar" (.ics / Google Calendar link).
 
@@ -70,11 +71,11 @@ Service cards on Home show price + duration and link to their service page.
 - Any event in Abby's calendar = busy; customers only ever see "unavailable", never event details.
 
 **Backend** (Cloudflare Pages Functions):
-- `GET /api/availability?date|month&service` → free/busy from Abby's Google Calendar (service account; calendar shared with it, "make changes to events").
+- `GET /api/availability?items=<service>/<option>/<addon:n,…>;…&month=YYYY-MM` → free start times for the combined length, from Abby's Google Calendar (service account; calendar shared with it, "make changes to events").
 - `POST /api/book` → validate input server-side, verify **Cloudflare Turnstile**, re-check slot is still free, insert event `⏳ PENDING – <name> – <service>` (details in description), email Abby via **Web3Forms**.
 - Abby confirms manually (call/SMS) and renames the event.
 - **Demo mode** when Google credentials are absent: mocked availability, booking only emails (or logs).
-- No customer confirmation email until a domain exists (then add Resend). No payments/deposits.
+- No customer confirmation email until a domain exists (then add Resend). No online payments: the deposit ($20 per service, $30 for powder brows, added up; no WeChat Pay) is paid by bank transfer after booking; Abby sends the bank details when she confirms. Returning-client "no deposit" by phone lookup is a post-launch idea (docs/REQUIREMENTS-2026-10.md §三).
 - Secrets only in Cloudflare env vars. `SETUP.md` gives Abby step-by-step Google Cloud + calendar sharing + Web3Forms + Turnstile setup.
 
 ## 9. SEO / GEO / analytics

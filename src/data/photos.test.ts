@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { bookableWith, findOption, mainOptions, priceText, services } from './services.ts';
-import { homeHero, lashCards, lashLooks, nailGroups, nailVideo, NAIL_VISIBLE, photo, photos, servicePhotos, styleGuide, styledLooks } from './photos.ts';
+import { homeHero, lashCards, lashGroups, lashLooks, nailGroups, nailVideo, NAIL_VISIBLE, photo, photos, servicePhotos, styleGuide, styledLooks } from './photos.ts';
 
 test('every lash card points at a bookable main option', () => {
   assert.equal(lashCards.length, 6);
@@ -22,8 +22,6 @@ test('every referenced id exists, with the right ratio', () => {
   for (const c of lashCards) assert.equal(photo(c.photo).ratio, '4:3');
   for (const l of styledLooks) assert.equal(photo(l.photo).ratio, '4:3');
   for (const i of nailGroups.flatMap((g) => g.items)) if (i !== 'video') assert.equal(photo(i).ratio, '3:4');
-  for (const [a, b] of Object.values(servicePhotos).flatMap((s) => (s.beforeAfter ? [s.beforeAfter] : [])))
-    assert.deepEqual([photo(a).ratio, photo(b).ratio], ['original', 'original']);
   photo(nailVideo.poster); photo(homeHero);
   assert.equal(styledLooks.length, 12);
 });
@@ -36,7 +34,7 @@ test('ids are unique ASCII and every alt is filled in both languages', () => {
 });
 test('the $180 photo is pre-cropped; only the lash-lift pair keeps its ratio', () => {
   assert.ok(photo('nail-2473').box);
-  assert.deepEqual(photos.filter((p) => p.ratio === 'original').map((p) => p.id).sort(), ['ai-classic-full', 'ai-classic-natural', 'lift-1', 'lift-3']);
+  assert.deepEqual(photos.filter((p) => p.ratio === 'original').map((p) => p.id).sort(), ['ai-classic-full', 'ai-classic-natural']);
 });
 
 test('lashLooks: deep links, live prices and minutes, both languages', () => {
@@ -61,7 +59,22 @@ test('AI style-guide images are labelled as AI in both languages and never used 
     assert.match(photo(id).alt.zh, /^AI 生成示意图，非真实客人/);
   }
   const used = [...lashCards.map((c) => c.photo), ...styledLooks.map((l) => l.photo), homeHero,
-    ...nailGroups.flatMap((g) => g.items), ...Object.values(servicePhotos).flatMap((s) => [s.hero, s.detail, ...(s.beforeAfter ?? [])])];
+    ...nailGroups.flatMap((g) => g.items), ...lashGroups.flatMap((g) => g.items), ...Object.values(servicePhotos).flatMap((s) => [s.hero, s.detail])];
   for (const id of ai) assert.ok(!used.includes(id), id);
   for (const g of styleGuide) assert.ok(findOption('lash-extensions', g.optionId), g.optionId);
+});
+
+test('lash portfolio: uniform ratio per group, real work only, no repeats of the cards above it', () => {
+  const ids = lashGroups.flatMap((g) => g.items);
+  assert.equal(new Set(ids).size, ids.length);
+  for (const g of lashGroups) for (const id of g.items) assert.equal(photo(id).ratio, g.ratio, id);
+  for (const id of ids) {
+    assert.equal(photo(id).dir, 'lash', id);
+    assert.ok(!/^AI-generated/.test(photo(id).alt.en), id);
+    assert.ok(!lashCards.some((c) => c.photo === id) && id !== homeHero, id);
+  }
+  // every real lash photo is shown somewhere on the home page or a service page
+  const shown = new Set([...ids, ...lashCards.map((c) => c.photo), homeHero, ...styledLooks.map((l) => l.photo), ...Object.values(servicePhotos).flatMap((s) => [s.hero, s.detail])]);
+  const unused = photos.filter((p) => p.dir === 'lash' && p.ratio !== 'original' && !shown.has(p.id)).map((p) => p.id);
+  assert.deepEqual(unused, []);
 });

@@ -61,7 +61,10 @@ const { lang, title, description } = props;
           }),
         { rootMargin: '0px 0px -10% 0px' },
       );
-      document.querySelectorAll('[data-reveal]').forEach((el) => io.observe(el));
+      document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {
+        if (el.hasAttribute('data-stagger')) Array.from(el.children).forEach((c, i) => (c as HTMLElement).style.setProperty('--i', String(i)));
+        io.observe(el);
+      });
     </script>
   </body>
 </html>

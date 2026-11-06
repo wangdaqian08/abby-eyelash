@@ -1,7 +1,7 @@
 // POST /api/book — trust boundary: validate everything, verify Turnstile, re-check the slot, insert a PENDING event.
 // Abby's email notification is sent by the browser after success (Web3Forms forbids server-side calls on the free plan).
 import { site } from '../../src/data/site.ts';
-import { allDurations, parseAddons, quote, quoteText } from '../../src/data/services.ts';
+import { parseItems, quoteAll, quoteAllText } from '../../src/data/services.ts';
 import { slotsForDate, validateDetails, zonedTimeToUtc, normalisePhone } from '../../src/lib/availability.ts';
 import { availabilityCacheKey, busyBetween, demoAllowed, insertEvent, isConfigured, type GoogleEnv } from '../../src/lib/google-calendar.ts';
 
@@ -40,21 +40,19 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     phone: str('phone'),
     email: str('email'),
     notes: str('notes'),
-    service: str('service'),
-    option: str('option'),
-    addons: str('addons'),
+    items: str('items'),
     date: str('date'),
     time: str('time'),
     lang: str('lang') === 'zh' ? 'zh' : 'en',
   };
 
   const errors: Record<string, string> = validateDetails(b);
-  const addons = parseAddons(b.addons);
-  const booking = addons && quote(b.service, b.option, addons);
+  const items = parseItems(b.items);
+  const booking = items && quoteAll(items);
   if (!booking) errors.option = 'invalid';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(b.date) || !/^\d{2}:\d{2}$/.test(b.time)) errors.time = 'invalid';
   if (Object.keys(errors).length || !booking) return json({ error: 'validation', errors }, 400);
-  const { service, option, extras, minutes } = booking;
+  const { minutes, deposit } = booking;
 
   const demo = !isConfigured(env);
   const mayDemo = demoAllowed(env, request.url);
@@ -75,19 +73,21 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   const end = start + minutes * 60_000;
   try {
     const busy = await busyBetween(env, { start: start - buffer, end: end + buffer }, site.timezone);
-    if (!slotsForDate(b.date, minutes, busy, Date.now(), site).includes(b.time)) {
+    if (!slotsForDate(b.date, minutes, busy, Date.now(), site, booking.lead).includes(b.time)) {
       await purgeAvailability(request.url, b.date.slice(0, 7));
       return json({ error: 'slot_taken' }, 409);
     }
-    const label = [`${service.name.en} – ${option.name.en}`, ...extras.map((e) => `${e.option.name.en}${e.units > 1 ? ` × ${e.units}` : ''}`)].join(' + ');
+    const label = booking.items
+      .flatMap((q) => [`${q.service.name.en} – ${q.option.name.en}`, ...q.extras.map((e) => `${e.option.name.en}${e.units > 1 ? ` × ${e.units}` : ''}`)])
+      .join(' + ');
     const summary = `⏳ PENDING – ${plain(b.name)} – ${label}`;
     const description = [
       `Name: ${plain(b.name)}`,
       `Phone: ${normalisePhone(b.phone)}`,
       `Email: ${plain(b.email)}`,
       `Service: ${label} (${minutes} min)`,
-      `Price: ${quoteText(booking, 'en')}`,
-      `Deposit: $${site.booking.deposit} by WeChat — not yet received`,
+      `Price: ${quoteAllText(booking, 'en')}`,
+      `Deposit: $${deposit} by bank transfer — not yet received (send the bank details when confirming)`,
       `Language: ${b.lang === 'zh' ? 'Chinese' : 'English'}`,
       `Notes: ${plain(b.notes) || '-'}`,
       '',
@@ -103,10 +103,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   return json({ ok: true, demo });
 };
 
-// Drop cached availability for every possible booking length this month (the cache is keyed by duration).
+// Drop this month's cached busy times so the new booking shows as taken straight away.
 async function purgeAvailability(url: string, month: string) {
   const cache = (globalThis as { caches?: { default?: Cache } }).caches?.default;
-  if (!cache) return;
-  const origin = new URL(url).origin;
-  await Promise.all(allDurations().map((m) => cache.delete(availabilityCacheKey(origin, m, month)).catch(() => false)));
+  await cache?.delete(availabilityCacheKey(new URL(url).origin, month)).catch(() => false);
 }

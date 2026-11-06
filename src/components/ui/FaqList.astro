@@ -3,9 +3,9 @@
 interface Props { items: { q: string; a: string }[]; class?: string }
 const { items, class: cls } = Astro.props;
 ---
-<dl class:list={['grid gap-2', cls]}>
+<dl data-reveal data-stagger class:list={['grid gap-3', cls]}>
   {items.map(({ q, a }) => (
-    <div class="bg-surface px-4 py-6 sm:px-6">
+    <div class="rounded-card bg-surface px-5 py-6 sm:px-6">
       <dt class="font-serif text-xl leading-snug">{q}</dt>
       <dd class="mt-2 text-muted">{a}</dd>
     </div>

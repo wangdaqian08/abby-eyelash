@@ -2,7 +2,7 @@
 // Prices/durations are interpolated from services.ts so the visible copy always matches the price table and JSON-LD.
 // Body strings are trusted HTML (rendered with set:html) so they can carry citation links.
 // Every `// OWNER-REVIEW` marks a claim Abby must confirm before launch (products, aftercare, policies).
-import { services, type Lang } from './services';
+import { depositFor, services, type Lang } from './services';
 import { site } from './site';
 
 export interface Section {
@@ -39,12 +39,17 @@ const span = (s: string, ...os: string[]) => {
 const shares = (s: string) => services.find((v) => v.id === s)!.options.filter((o) => o.pct);
 const range = (s: string, o: string) => (opt(s, o).maxPrice ? `$${opt(s, o).price}–$${opt(s, o).maxPrice}` : $(s, o));
 
-const { deposit, cancelHours: h } = site.booking;
-// One cancellation answer for every service page, built from site.ts so the rule can't drift between pages.
-const CANCEL = {
-  en: { q: 'What is your cancellation policy?', a: `A $${deposit} deposit by WeChat (${site.social.wechatId}) secures your booking. Please give at least ${h} hours’ notice to cancel or reschedule; within ${h} hours the deposit is not refunded and the time can’t be changed.` },
-  zh: { q: '取消预约有什么规定？', a: `预约需通过微信（${site.social.wechatId}）支付 $${deposit} 订金。如需取消或改期，请至少提前 ${h} 小时告知；${h} 小时以内取消或改期，订金不退，也不能更改时间。` },
+const { cancelHours: h } = site.booking;
+// One cancellation answer per service page, built from site.ts/services.ts so the rule can't drift between pages.
+const cancel = (serviceId: string) => {
+  const deposit = depositFor([services.find((s) => s.id === serviceId)!]);
+  return {
+    en: { q: 'What is your cancellation policy?', a: `A $${deposit} deposit by bank transfer secures your booking (Abby sends the bank details when she confirms). Please give at least ${h} hours’ notice to cancel or reschedule; within ${h} hours the deposit is not refunded and the time can’t be changed.` },
+    zh: { q: '取消预约有什么规定？', a: `预约需通过银行转账支付 $${deposit} 订金（确认预约时 Abby 会发给你账户信息）。如需取消或改期，请至少提前 ${h} 小时告知；${h} 小时以内取消或改期，订金不退，也不能更改时间。` },
+  };
 };
+const CANCEL = cancel('lash-extensions');
+const CANCEL_BROWS = cancel('powder-brows');
 
 const cite = (href: string, text: string) =>
   `<a href="${href}" target="_blank" rel="noopener" class="underline underline-offset-4 hover:text-fg">${text}</a>`;
@@ -240,15 +245,25 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
   [LL]: {
     en: {
       title: 'Keratin Lash Lift in Burwood | Abby Eyelash',
-      description: `Keratin lash lift in Burwood NSW: ${$(LL, 'keratin-lift')}, about ${m(LL, 'keratin-lift')} minutes, results last 6–8 weeks. What happens, aftercare, sensitive eyes and who it suits.`,
+      description: `Keratin lash lift in Burwood NSW: ${$(LL, 'keratin-lift')}, about ${m(LL, 'keratin-lift')} minutes, results last 1–2 months. What happens, aftercare, sensitive eyes and who it suits.`,
       h1: ['Keratin lash lift ', 'in Burwood.'],
-      intro: `A keratin lash lift curls your own lashes upward from the root with a lifting solution and a keratin treatment, so they look longer and more open without mascara or extensions. Tinting is not included. At Abby Eyelash in Burwood NSW 2134, a keratin lash lift is ${$(LL, 'keratin-lift')} and takes about ${m(LL, 'keratin-lift')} minutes. Results usually last 6–8 weeks, until those lashes naturally grow out.`,
+      intro: `A keratin lash lift curls your own lashes upward from the root with a lifting solution and a keratin treatment, so they look longer and more open without mascara or extensions. Tinting is not included. At Abby Eyelash in Burwood NSW 2134, a keratin lash lift is ${$(LL, 'keratin-lift')} and takes about ${m(LL, 'keratin-lift')} minutes. Results usually last 1–2 months, depending on how fast your lashes grow.`,
       sections: [
         {
           h2: ['Who a lash lift ', 'suits'],
           body: [
             `A lift is ideal if your lashes are straight or point downward, you want a low-maintenance look, or you’d rather not have refills. It works with the length and number of lashes you already have. It won’t add length or density. For a fuller look, see ${link('en', L, 'eyelash extensions')}.`,
           ],
+        },
+        {
+          h2: ['Why clients ', 'love a lift'],
+          list: [
+            `<strong>Your own lashes</strong>, so it never feels heavy.`,
+            `<strong>No foreign-body feeling</strong>: nothing is glued to the lash line.`,
+            `<strong>Easy to look after</strong>: no refills and no lash curler.`,
+            `<strong>Make-up as normal</strong>: wear and remove it as usual after the first 24 hours.`,
+          ],
+          after: [`Results last 1–2 months, depending on how fast your lashes grow.`],
         },
         {
           h2: ['What happens ', 'during your appointment'],
@@ -264,7 +279,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         {
           h2: ['How long it lasts ', 'and when to rebook'],
           body: [
-            `The curl stays in the lashes that were lifted. As they shed and new straight lashes grow in, the effect softens, usually after 6–8 weeks. Abby spaces lifts at least 6 weeks apart so lashes aren’t over-processed.`, // OWNER-REVIEW: minimum interval
+            `The curl stays in the lashes that were lifted. As they shed and new straight lashes grow in, the effect softens, usually after 1–2 months depending on how fast your lashes grow. Abby spaces lifts at least 6 weeks apart so lashes aren’t over-processed.`, // OWNER-REVIEW: minimum interval
           ],
         },
         {
@@ -296,7 +311,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       ],
       faq: [
         { q: 'Does a lash lift hurt?', a: 'No. Your eyes stay closed and nothing touches the eye itself. Tell Abby at once if you feel any stinging.' },
-        { q: 'Lash lift or eyelash extensions?', a: `A lift uses your own lashes, needs no refills and lasts 6–8 weeks. Extensions add length and fullness but need a refill every 2–3 weeks.` },
+        { q: 'Lash lift or eyelash extensions?', a: `A lift uses your own lashes, needs no refills and lasts 1–2 months. Extensions add length and fullness but need a refill every 2–3 weeks.` },
         { q: 'Can I wear mascara after a lift?', a: 'Yes, after 24 hours. Water-based mascara is easiest to remove without disturbing the curl.' }, // OWNER-REVIEW
         { q: 'My lashes are short. Will a lift work?', a: 'Lashes need enough length to wrap onto the shield. Abby checks this at the start and will tell you honestly if a lift won’t show much.' },
         CANCEL.en,
@@ -304,15 +319,25 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
     },
     zh: {
       title: '宝活 Burwood 角蛋白翘睫 | Abby Eyelash',
-      description: `悉尼宝活 Burwood 角蛋白翘睫：${$(LL, 'keratin-lift')}，约 ${m(LL, 'keratin-lift')} 分钟，效果约 6–8 周。流程、术后护理、敏感眼睛和适合人群说明。`,
+      description: `悉尼宝活 Burwood 角蛋白翘睫：${$(LL, 'keratin-lift')}，约 ${m(LL, 'keratin-lift')} 分钟，效果可维持 1–2 个月。流程、术后护理、敏感眼睛和适合人群说明。`,
       h1: ['宝活 Burwood ', '角蛋白翘睫'],
-      intro: `翘睫（也叫睫毛翘、角蛋白翘睫）是用专用药水把你自己的睫毛从根部往上定型，再做角蛋白护理，不用睫毛膏、不用嫁接也显得更长更有神。不含染色。在 Burwood NSW 2134 的 Abby Eyelash，角蛋白翘睫 ${$(LL, 'keratin-lift')}，约 ${m(LL, 'keratin-lift')} 分钟。效果一般维持 6–8 周，直到这批睫毛自然换掉。`,
+      intro: `翘睫（也叫睫毛翘、角蛋白翘睫）是用专用药水把你自己的睫毛从根部往上定型，再做角蛋白护理，不用睫毛膏、不用嫁接也显得更长更有神。不含染色。在 Burwood NSW 2134 的 Abby Eyelash，角蛋白翘睫 ${$(LL, 'keratin-lift')}，约 ${m(LL, 'keratin-lift')} 分钟。效果可维持 1–2 个月，视个人睫毛生长速度而定。`,
       sections: [
         {
           h2: ['哪些人', '适合翘睫'],
           body: [
             `睫毛天生直、往下垂，想要省心、不想定期补的人最适合。翘睫只改变你现有睫毛的弧度，不会增加长度或数量；想要更浓密的效果，可以看看${link('zh', L, '嫁接睫毛')}。`,
           ],
+        },
+        {
+          h2: ['为什么大家', '喜欢翘睫'],
+          list: [
+            `<strong>用自己的睫毛</strong>，不会厚重。`,
+            `<strong>不会有异物感</strong>，睫毛根部没有粘任何东西。`,
+            `<strong>容易打理，方便</strong>：不用回补，也不用睫毛夹。`,
+            `<strong>可正常化妆、卸妆</strong>：24 小时后照常即可。`,
+          ],
+          after: [`效果可维持 1–2 个月（视个人睫毛生长速度而定）。`],
         },
         {
           h2: ['做翘睫时的', '流程'],
@@ -328,7 +353,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         {
           h2: ['能维持多久，', '多久再做'],
           body: [
-            `卷翘会保留在做过的睫毛上。随着它们自然脱落、新的直睫毛长出来，效果会慢慢变淡，一般 6–8 周。Abby 建议两次翘睫至少间隔 6 周，避免睫毛过度受损。`, // OWNER-REVIEW
+            `卷翘会保留在做过的睫毛上。随着它们自然脱落、新的直睫毛长出来，效果会慢慢变淡，一般 1–2 个月，视个人睫毛生长速度而定。Abby 建议两次翘睫至少间隔 6 周，避免睫毛过度受损。`, // OWNER-REVIEW
           ],
         },
         {
@@ -360,7 +385,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       ],
       faq: [
         { q: '翘睫会痛吗？', a: '不会。全程闭眼，药水不接触眼球。如果有刺痛感请马上告诉 Abby。' },
-        { q: '翘睫和嫁接睫毛怎么选？', a: '翘睫用的是你自己的睫毛，不用补，维持 6–8 周；嫁接能增加长度和浓密度，但每 2–3 周要补一次。' },
+        { q: '翘睫和嫁接睫毛怎么选？', a: '翘睫用的是你自己的睫毛，不用补，可维持 1–2 个月；嫁接能增加长度和浓密度，但每 2–3 周要补一次。' },
         { q: '翘睫后能涂睫毛膏吗？', a: '24 小时后可以。水性睫毛膏最好卸，不容易破坏卷度。' }, // OWNER-REVIEW
         { q: '睫毛很短也能做吗？', a: '睫毛需要有一定长度才能贴到硅胶垫上。Abby 开始前会先看，如果效果不明显会直接告诉你。' },
         CANCEL.zh,
@@ -411,7 +436,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         {
           h2: ['Aftercare: ', 'Abby’s steps'],
           list: [
-            `Keep the brows clean and dry, and follow the aftercare balm instructions Abby gives you.`, // OWNER-REVIEW
+            `Keep the brows clean and dry.`, // OWNER-REVIEW
             `For about 10 days avoid swimming, saunas, heavy sweating, makeup on the brows and direct sun.`, // OWNER-REVIEW
             `Don’t pick or scratch the flakes; let them fall off on their own.`,
             `Once healed, sunscreen on your brows helps the colour last.`,
@@ -423,7 +448,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: 'How much is a colour refresh later?', a: `Free within 3 months, ${pct(B, 'powder', 30)} (30%) within 3–6 months, ${pct(B, 'powder', 50)} (50%) within 6–12 months, and the full price after a year.` },
         { q: 'Is the touch-up included?', a: `Yes. One touch-up within 3 months of your appointment is free. Message Abby to book it; it isn’t available online.` },
         { q: 'Powder brows or microblading?', a: 'Microblading draws hair-like strokes; powder brows build a soft shaded finish with tiny dots. Abby offers powder brows.' },
-        CANCEL.en,
+        CANCEL_BROWS.en,
       ],
       alt: {
         hero: 'Soft, shaded powder brows after a semi-permanent brow appointment at Abby Eyelash, Burwood',
@@ -472,7 +497,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         {
           h2: ['术后护理：', 'Abby 的建议'],
           list: [
-            `保持眉毛清洁干燥，按 Abby 给你的修复膏说明使用。`, // OWNER-REVIEW
+            `保持眉毛清洁干燥。`, // OWNER-REVIEW
             `大约 10 天内避免游泳、桑拿、大量出汗、眉部化妆和直接日晒。`, // OWNER-REVIEW
             `不要抠或抓掉皮屑，让它自然脱落。`,
             `恢复后在眉部涂防晒，颜色能维持更久。`,
@@ -484,7 +509,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: '之后补色怎么收费？', a: `3 个月内免费，3–6 个月内 ${pct(B, 'powder', 30)}（现价的 30%，手工费），6–12 个月内 ${pct(B, 'powder', 50)}（50%），超过一年按原价。` },
         { q: '补色包含在价格里吗？', a: '包含。做完后 3 个月内免费补色一次，请直接联系 Abby 预约，不开放在线预约。' },
         { q: '雾眉和线条眉有什么区别？', a: '线条眉是画出一根根仿真眉毛；雾眉是用细小的点做出柔和的粉雾效果。Abby 做的是雾眉。' },
-        CANCEL.zh,
+        CANCEL_BROWS.zh,
       ],
       alt: {
         hero: 'Abby Eyelash（Burwood）完成的柔和半永久雾眉',
@@ -498,7 +523,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       title: 'Hand-Painted Nail Art in Burwood | Abby Eyelash',
       description: `Custom hand-painted nail art designed with you and painted by Abby in Burwood NSW. Priced per design, from about ${m(H, 'nail-art')} minutes. Extensions ${ext()} per nail.`,
       h1: ['Hand-painted nail art ', 'in Burwood.'],
-      intro: `Hand-painted nail art is a custom design that Abby plans with you and paints by hand with fine brushes, not stickers or printed wraps. At Abby Eyelash in Burwood NSW 2134, each design is priced individually because it depends on the detail and the number of nails; Abby confirms the price with you before she starts. Allow at least ${m(H, 'nail-art')} minutes. Painted over gel and sealed with a gel top coat, it typically lasts 2–3 weeks.`, // OWNER-REVIEW: wear time
+      intro: `Hand-painted nail art is a custom design that Abby plans with you and paints by hand with fine brushes, not stickers or printed wraps. At Abby Eyelash in Burwood NSW 2134, each design is priced individually because it depends on the detail and the number of nails; Abby confirms the price with you before she starts. Allow at least ${m(H, 'nail-art')} minutes. Painted over gel and sealed with a gel top coat, it typically lasts about 4 weeks.`, // OWNER-REVIEW: wear time
       sections: [
         {
           h2: ['Designs ', 'made with you'],
@@ -514,13 +539,13 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `Prep: shaping, cuticles pushed back and tidied, a light buff of the surface.`,
             `Gel base, builder gel and background colour, each layer cured under the lamp.`,
             `Hand-painting layer by layer with fine brushes, curing between details.`,
-            `Gel top coat to seal the design, then cuticle oil.`,
+            `Gel top coat to seal the design.`,
           ],
         },
         {
           h2: ['How long it lasts ', 'and adding length'],
           body: [
-            `Expect 2–3 weeks of wear before regrowth shows at the cuticle. Most clients rebook at around 3 weeks.`, // OWNER-REVIEW
+            `Expect about 4 weeks of wear before regrowth shows at the cuticle. Most clients rebook at around 4 weeks.`, // OWNER-REVIEW
             `Want longer nails under your art? Add ${link('en', X, 'nail extensions')} when you book: ${ext()} per nail.`,
           ],
         },
@@ -536,7 +561,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           h2: ['Aftercare: ', 'Abby’s steps'],
           list: [
             `Wear gloves for cleaning and washing up.`,
-            `Massage in cuticle oil daily to keep the nail and skin flexible.`,
             `Don’t pick or peel the gel: it takes layers of your nail with it.`,
             `Book a professional soak-off rather than removing it yourself.`,
           ],
@@ -546,7 +570,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       faq: [
         { q: 'How much does hand-painted nail art cost?', a: 'It is priced per design, because the time depends on the detail and how many nails are painted. Abby confirms the price before she starts.' },
         { q: 'Can you copy a design I found online?', a: 'Abby uses it as a reference and paints her own version by hand, adjusting the scale and colours so it suits your nails.' },
-        { q: 'How long will hand-painted nails last?', a: 'Usually 2–3 weeks on gel. Wearing gloves for chores and using cuticle oil helps.' }, // OWNER-REVIEW
+        { q: 'How long will hand-painted nails last?', a: 'About 4 weeks on gel. Wearing gloves for chores helps it last.' }, // OWNER-REVIEW
         { q: 'Can I have nail art on extensions?', a: `Yes. Add extensions when you book (${ext()} per nail).` },
         CANCEL.en,
       ],
@@ -555,7 +579,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       title: '宝活 Burwood 手绘造型美甲 | Abby Eyelash',
       description: `悉尼宝活 Burwood 手绘造型美甲：和你一起设计，由 Abby 亲手绘制。按款式报价，约 ${m(H, 'nail-art')} 分钟起。延长每只 ${ext()}。`,
       h1: ['宝活 Burwood ', '手绘造型'],
-      intro: `手绘造型是 Abby 和你一起设计、再用细笔一笔一笔手绘的定制款，不用贴纸，也不是印花甲片。在 Burwood NSW 2134 的 Abby Eyelash，每款都单独报价，价格取决于图案的复杂程度和画几根，Abby 会在开始前跟你确认价格。时间请预留 ${m(H, 'nail-art')} 分钟以上。图案画在凝胶上，再用封层封住，一般能维持 2–3 周。`, // OWNER-REVIEW
+      intro: `手绘造型是 Abby 和你一起设计、再用细笔一笔一笔手绘的定制款，不用贴纸，也不是印花甲片。在 Burwood NSW 2134 的 Abby Eyelash，每款都单独报价，价格取决于图案的复杂程度和画几根，Abby 会在开始前跟你确认价格。时间请预留 ${m(H, 'nail-art')} 分钟以上。图案画在凝胶上，再用封层封住，一般能维持 4 周左右。`, // OWNER-REVIEW
       sections: [
         {
           h2: ['和你一起', '设计'],
@@ -571,13 +595,13 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `修型、推死皮、修整甲缘，轻轻打磨甲面。`,
             `上底胶、建构胶和底色，每层都照灯固化。`,
             `用细笔一层层手绘，细节之间照灯。`,
-            `上封层锁住图案，最后涂指缘油。`,
+            `上封层锁住图案。`,
           ],
         },
         {
           h2: ['能维持多久，', '想要加长怎么办'],
           body: [
-            `一般能戴 2–3 周，之后甲根会露出新长的指甲，大多数客人约 3 周后再来。`, // OWNER-REVIEW
+            `一般能戴 4 周左右，之后甲根会露出新长的指甲，大多数客人约 4 周后再来。`, // OWNER-REVIEW
             `想要更长的指甲？预约时加选${link('zh', X, '延长甲')}，每只 ${ext()}。`,
           ],
         },
@@ -593,7 +617,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           h2: ['日常护理：', 'Abby 的建议'],
           list: [
             `做家务、洗碗时戴手套。`,
-            `每天涂指缘油，让指甲和甲周保持柔软。`,
             `不要抠或撕凝胶，会把自己的甲面一起撕掉。`,
             `想卸甲请找专业卸甲，不要自己硬撕。`,
           ],
@@ -603,7 +626,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       faq: [
         { q: '手绘造型多少钱？', a: '按款式报价，因为时间取决于图案的细节和画几根。Abby 会在开始前确认价格。' },
         { q: '网上看到的款式能照着做吗？', a: '可以作为参考。Abby 会亲手画出自己的版本，并调整比例和颜色，让它更适合你的指甲。' },
-        { q: '手绘美甲能维持多久？', a: '做在凝胶上一般 2–3 周。做家务戴手套、常涂指缘油会更持久。' }, // OWNER-REVIEW
+        { q: '手绘美甲能维持多久？', a: '做在凝胶上一般能维持 4 周左右。做家务戴手套会更持久。' }, // OWNER-REVIEW
         { q: '延长甲上可以画图案吗？', a: `可以，预约时加选延长即可（每只 ${ext()}）。` },
         CANCEL.zh,
       ],
@@ -615,7 +638,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       title: 'Gel Nails Burwood | Cat-Eye · Aurora · French | Abby Eyelash',
       description: `Gel nails in Burwood NSW by Abby: solid colour ${$(G, 'solid')}, cat-eye or aurora ${$(G, 'cat-eye')}, French ${$(G, 'french')}, builder gel included. Extensions ${ext()} per nail.`,
       h1: ['Gel nails ', 'in Burwood.'],
-      intro: `Gel nails (a gel manicure, sometimes called gel polish) are coloured gel cured under a lamp, so they leave the studio dry and glossy and typically last 2–3 weeks. At Abby Eyelash in Burwood NSW 2134, every gel set includes a builder gel layer for strength: solid colour is ${$(G, 'solid')} (about ${m(G, 'solid')} minutes), cat-eye and aurora are ${$(G, 'cat-eye')} (about ${m(G, 'cat-eye')} minutes), and French is ${$(G, 'french')} (about ${m(G, 'french')} minutes). Extensions can be added for ${ext()} per nail.`,
+      intro: `Gel nails (a gel manicure, sometimes called gel polish) are coloured gel cured under a lamp, so they leave the studio dry and glossy and typically last about 4 weeks. At Abby Eyelash in Burwood NSW 2134, every gel set includes a builder gel layer for strength: solid colour is ${$(G, 'solid')} (about ${m(G, 'solid')} minutes), cat-eye and aurora are ${$(G, 'cat-eye')} (about ${m(G, 'cat-eye')} minutes), and French is ${$(G, 'french')} (about ${m(G, 'french')} minutes). Extensions can be added for ${ext()} per nail.`,
       sections: [
         {
           h2: ['Four finishes: ', 'which one?'],
@@ -634,13 +657,12 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `Cuticles gently pushed back and tidied; the surface is lightly buffed and cleansed so the gel bonds.`,
             `Base and builder gel for strength, cured under the lamp.`,
             `Colour or finish in thin layers, each cured, then a gel top coat.`,
-            `Cuticle oil to finish.`,
           ],
         },
         {
           h2: ['How long it lasts ', 'and removal'],
           body: [
-            `Gel nails typically last 2–3 weeks, and most clients rebook at about 3 weeks as the nail grows out.`, // OWNER-REVIEW
+            `Gel nails typically last about 4 weeks, and most clients rebook at around 4 weeks as the nail grows out.`, // OWNER-REVIEW
             `If you’re arriving with gel on, mention it in your booking notes so Abby can allow time to soak it off properly.`, // OWNER-REVIEW: removal time/charge
           ],
         },
@@ -655,7 +677,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           h2: ['Aftercare: ', 'Abby’s steps'],
           list: [
             `Wear gloves for cleaning and washing up.`,
-            `Use cuticle oil daily.`,
             `Don’t pick or peel gel: it strips layers of the nail plate. Book a soak-off instead.`,
           ],
         },
@@ -664,7 +685,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       faq: [
         { q: 'How long does a gel set take?', a: `About ${span(G, 'solid', 'cat-eye', 'aurora', 'french')} minutes, plus time for any extensions.` },
         { q: 'Is builder gel included?', a: 'Yes. Every gel set has a builder gel layer for strength at no extra cost.' },
-        { q: 'Is gel bad for my nails?', a: 'Most damage comes from peeling gel off or rough removal, which strips layers of the nail. Having it soaked off properly and using cuticle oil keeps nails in good condition.' }, // OWNER-REVIEW
+        { q: 'Is gel bad for my nails?', a: 'Most damage comes from peeling gel off or rough removal, which strips layers of the nail. Having it soaked off properly keeps nails in good condition.' }, // OWNER-REVIEW
         { q: 'Can I add length?', a: `Yes. Add extensions when you book: ${ext()} per nail, on any finish.` },
         CANCEL.en,
       ],
@@ -673,7 +694,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       title: '宝活 Burwood 凝胶美甲 | 猫眼 · 极光 · 法式 | Abby Eyelash',
       description: `悉尼宝活 Burwood 凝胶美甲：单色 ${$(G, 'solid')}，猫眼或极光 ${$(G, 'cat-eye')}，法式 ${$(G, 'french')}，已含 Gel 建构。延长每只 ${ext()}。`,
       h1: ['宝活 Burwood ', '凝胶美甲'],
-      intro: `凝胶美甲（也叫光疗甲、甲油胶美甲）是照灯固化的彩色凝胶，做完就干、有光泽，一般能维持 2–3 周。在 Burwood NSW 2134 的 Abby Eyelash，每一套凝胶美甲都已包含 Gel 建构，让指甲更坚固：单色 ${$(G, 'solid')}（约 ${m(G, 'solid')} 分钟），猫眼和极光 ${$(G, 'cat-eye')}（约 ${m(G, 'cat-eye')} 分钟），法式 ${$(G, 'french')}（约 ${m(G, 'french')} 分钟）。需要加长可加选延长，每只 ${ext()}。`,
+      intro: `凝胶美甲（也叫光疗甲、甲油胶美甲）是照灯固化的彩色凝胶，做完就干、有光泽，一般能维持 4 周左右。在 Burwood NSW 2134 的 Abby Eyelash，每一套凝胶美甲都已包含 Gel 建构，让指甲更坚固：单色 ${$(G, 'solid')}（约 ${m(G, 'solid')} 分钟），猫眼和极光 ${$(G, 'cat-eye')}（约 ${m(G, 'cat-eye')} 分钟），法式 ${$(G, 'french')}（约 ${m(G, 'french')} 分钟）。需要加长可加选延长，每只 ${ext()}。`,
       sections: [
         {
           h2: ['四种款式，', '怎么选'],
@@ -692,13 +713,12 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `轻推死皮、修整甲缘，轻轻打磨并清洁甲面，帮助凝胶附着。`,
             `上底胶和建构胶增加硬度，照灯固化。`,
             `分薄层上颜色或做效果，每层照灯，最后上封层。`,
-            `最后涂指缘油。`,
           ],
         },
         {
           h2: ['能维持多久，', '怎么卸'],
           body: [
-            `凝胶美甲一般维持 2–3 周，大多数客人约 3 周后随着指甲长出来再做。`, // OWNER-REVIEW
+            `凝胶美甲一般能维持 4 周左右，大多数客人约 4 周后随着指甲长出来再做。`, // OWNER-REVIEW
             `如果到店时手上有旧的凝胶甲，请在预约备注里说明，Abby 会预留时间帮你正确泡卸。`, // OWNER-REVIEW
           ],
         },
@@ -713,7 +733,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           h2: ['日常护理：', 'Abby 的建议'],
           list: [
             `做家务、洗碗时戴手套。`,
-            `每天涂指缘油。`,
             `不要抠或撕凝胶，会把甲面一层层撕薄，请预约专业卸甲。`,
           ],
         },
@@ -722,7 +741,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       faq: [
         { q: '做一套凝胶美甲要多久？', a: `约 ${span(G, 'solid', 'cat-eye', 'aurora', 'french')} 分钟，加延长需要另外的时间。` },
         { q: 'Gel 建构要另外收费吗？', a: '不用。每一套凝胶美甲都已包含 Gel 建构。' },
-        { q: '凝胶美甲伤指甲吗？', a: '损伤大多来自硬撕或粗暴卸甲，会把甲面一层层带掉。专业泡卸、平时涂指缘油，指甲就能保持健康。' }, // OWNER-REVIEW
+        { q: '凝胶美甲伤指甲吗？', a: '损伤大多来自硬撕或粗暴卸甲，会把甲面一层层带掉。专业泡卸，指甲就能保持健康。' }, // OWNER-REVIEW
         { q: '可以加长吗？', a: `可以，预约时加选延长，每只 ${ext()}，任何款式都可以加。` },
         CANCEL.zh,
       ],
@@ -751,13 +770,12 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `Prep: shaping, cuticle care and a light buff.`,
             `A tip sized to each nail is bonded and shaped.`,
             `Builder gel, your colour or design, and a gel top coat, each cured under the lamp.`,
-            `Cuticle oil to finish.`,
           ],
         },
         {
           h2: ['How long they last ', 'and removal'],
           body: [
-            `Extensions usually wear well for about 3 weeks. As your nail grows the balance point moves forward, so leaving them much longer makes lifting and breaks more likely.`, // OWNER-REVIEW
+            `Extensions usually wear well for about 4 weeks. As your nail grows the balance point moves forward, so leaving them much longer makes lifting and breaks more likely.`, // OWNER-REVIEW
             `Have extensions soaked off professionally; pulling them off tears the natural nail.`,
           ],
         },
@@ -773,7 +791,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           h2: ['Aftercare: ', 'Abby’s steps'],
           list: [
             `Wear gloves for cleaning and washing up.`,
-            `Use cuticle oil daily.`,
             `Don’t use your nails as tools, and don’t pick or bite a lifted edge. Message Abby for a repair.`,
           ],
         },
@@ -808,13 +825,12 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `修型、甲缘护理、轻磨甲面。`,
             `每根手指选合适的甲片，粘贴并塑形。`,
             `上建构胶、颜色或图案，再上封层，每层照灯固化。`,
-            `最后涂指缘油。`,
           ],
         },
         {
           h2: ['能维持多久，', '怎么卸'],
           body: [
-            `延长甲一般能戴 3 周左右。指甲长长后受力点会往前移，拖太久更容易翘边或断裂。`, // OWNER-REVIEW
+            `延长甲一般能戴 4 周左右。指甲长长后受力点会往前移，拖太久更容易翘边或断裂。`, // OWNER-REVIEW
             `请专业泡卸，硬拔会撕伤真指甲。`,
           ],
         },
@@ -830,7 +846,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           h2: ['日常护理：', 'Abby 的建议'],
           list: [
             `做家务、洗碗时戴手套。`,
-            `每天涂指缘油。`,
             `不要把指甲当工具用，翘边了别抠也别咬，请联系 Abby 修补。`,
           ],
         },

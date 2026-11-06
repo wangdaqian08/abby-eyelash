@@ -1,6 +1,7 @@
 // Service menu, shared by home cards, service pages, JSON-LD and the booking flow/API.
 // Names and grouping live here; prices and durations live in prices.csv.
 import { prices } from './prices.generated.ts';
+import { site } from './site.ts';
 
 export type Lang = 'en' | 'zh';
 type L10n = Record<Lang, string>;
@@ -32,6 +33,8 @@ export interface Service {
   summary: L10n;
   /** ISO date of the last real change to this service's prices (drives "Prices updated", dateModified, lastmod). */
   updated: string;
+  /** Deposit for this service when it differs from the default (site.booking.deposit). */
+  deposit?: number;
   options: ServiceOption[];
 }
 
@@ -76,7 +79,7 @@ const drafts: Draft[] = [
   },
   {
     id: 'lash-lift',
-    summary: { en: 'A keratin lift that curls your natural lashes — no extensions, results last 6–8 weeks.', zh: '角蛋白翘睫，让自然睫毛卷翘上扬，无需嫁接，效果约 6–8 周。' },
+    summary: { en: 'A keratin lift that curls your own lashes: never heavy, easy to look after, results last 1–2 months.', zh: '角蛋白翘睫，用自己的睫毛，不厚重、无异物感，效果可维持 1–2 个月。' },
     slug: 'lash-lift-burwood',
     name: { en: 'Lash Lift', zh: '睫毛翘睫' },
     options: [{ id: 'keratin-lift', name: { en: 'Keratin lash lift', zh: '角蛋白翘睫' } }],
@@ -86,6 +89,7 @@ const drafts: Draft[] = [
     summary: { en: 'Semi-permanent powder brows: a soft, filled-in look that lasts, with one free touch-up within 3 months.', zh: '半永久雾眉，柔和自然的粉雾感，3 个月内免费补色一次。' },
     slug: 'powder-brows-burwood',
     name: { en: 'Powder Brows', zh: '半永久眉 · 雾眉' },
+    deposit: 30,
     options: [{ id: 'powder', name: { en: 'Powder brows', zh: '雾眉' } }],
   },
   {
@@ -229,19 +233,44 @@ export function quote(serviceId: string, optionId: string, addons: Addons) {
 export const quoteText = (q: NonNullable<ReturnType<typeof quote>>, lang: Lang) =>
   q.onRequest || q.pct ? priceText(q, lang) + (q.price ? ` + $${q.price}` : '') : priceText(q, lang);
 
-/** Every total duration a booking can have (cache keys are per duration, so a booking purges all of them). */
-export function allDurations() {
-  const out = new Set<number>();
-  for (const s of bookable()) {
-    // per either/or group: none or one option; per-unit add-on: 0..max units
-    let sums = [0];
-    const groups = new Map<unknown, ServiceOption[]>();
-    for (const o of addonOptions(s)) groups.set(o.group ?? o.id, [...(groups.get(o.group ?? o.id) ?? []), o]);
-    for (const opts of groups.values()) {
-      const adds = [0, ...opts.flatMap((o) => Array.from({ length: o.max ?? 1 }, (_, i) => o.minutes * (i + 1)))];
-      sums = [...new Set(sums.flatMap((a) => adds.map((b) => a + b)))];
-    }
-    for (const o of mainOptions(s)) for (const n of o.noAddons ? [0] : sums) out.add(o.minutes + n);
+/** Booking deposit: one per service, added up (powder brows $30, everything else site.booking.deposit). */
+export const depositFor = (chosen: Service[]) => chosen.reduce((n, s) => n + (s.deposit ?? site.booking.deposit), 0);
+
+/** One service in a booking. A booking holds one or more, each from a different service, done back to back. */
+export interface Item { service: string; option: string; addons: Addons }
+/** "lash-extensions/classic-natural/bottom-full:1;gel-nails/solid/" ↔ Item[] (order kept). */
+export const itemsParam = (items: Item[]) => items.map((i) => `${i.service}/${i.option}/${addonsParam(i.addons)}`).join(';');
+export const parseItems = (s: string): Item[] | null => {
+  const parts = s ? s.split(';') : [];
+  if (!parts.length || parts.length > bookable().length) return null;
+  const out: Item[] = [];
+  for (const p of parts) {
+    const m = p.match(/^([a-z0-9-]{1,40})\/([a-z0-9-]{1,40})\/(.*)$/);
+    const addons = m && parseAddons(m[3]);
+    if (!m || !addons) return null;
+    out.push({ service: m[1], option: m[2], addons });
   }
-  return [...out];
+  return out;
+};
+
+/** Validated total for several services in one visit: every item must quote, no service twice. Shared by the UI and both APIs. */
+export function quoteAll(items: Item[]) {
+  if (!items.length || new Set(items.map((i) => i.service)).size !== items.length) return null;
+  const list = items.map((i) => quote(i.service, i.option, i.addons));
+  if (list.some((q) => !q)) return null;
+  const qs = list as NonNullable<ReturnType<typeof quote>>[];
+  return {
+    items: qs,
+    minutes: qs.reduce((n, q) => n + q.minutes, 0),
+    price: qs.reduce((n, q) => n + q.price, 0), // dollar part only; percentage and on-request items are shown in words
+    deposit: depositFor(qs.map((q) => q.service)),
+    lead: qs.reduce((n, q) => n + q.minutes, 0) - Math.max(...qs.map((q) => q.minutes)), // longest service last, so it starts by the last start time
+  };
 }
+/** "$150", "from $210", or the dollar part followed by what isn't a dollar amount: "$80 + Price on request + $12". */
+export const quoteAllText = (t: NonNullable<ReturnType<typeof quoteAll>>, lang: Lang) => {
+  const plain = t.items.filter((q) => !q.onRequest && !q.pct);
+  const sum = plain.reduce((n, q) => n + q.price, 0);
+  const parts = plain.length ? [priceText({ price: sum, from: plain.some((q) => q.from) }, lang)] : [];
+  return [...parts, ...t.items.filter((q) => q.onRequest || q.pct).map((q) => quoteText(q, lang))].join(' + ');
+};
