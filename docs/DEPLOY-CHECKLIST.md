@@ -43,7 +43,6 @@ Docs: <https://developers.cloudflare.com/pages/configuration/build-configuration
 | `NODE_VERSION` | `24` | Text | Build needs Node ≥ 22.23.4 |
 | `SITE_URL` | your real address, e.g. `https://www.abbyeyelashes.com` (no trailing slash). Leave it unset while you only have `pages.dev`. | Text | Canonical URLs, hreflang, sitemap, robots.txt and JSON-LD are all built from it |
 | `PUBLIC_GA4_ID` | `G-XXXXXXXXXX` (part G) | Text | Turns on Google Analytics. Empty = no analytics at all |
-| `PUBLIC_THEME_PREVIEW` | `false` | Text | Hides the pre-launch theme switcher |
 | `LAUNCH` | `1` | Text | Launch guard: the build fails while dummy reviews remain |
 | `INDEXNOW_KEY` | 32 random letters and digits (part H) | Text | IndexNow key file |
 | `PUBLIC_TURNSTILE_SITE_KEY`, `PUBLIC_WEB3FORMS_ACCESS_KEY` | see `docs/SETUP-booking.md` part F | Text | Booking form |

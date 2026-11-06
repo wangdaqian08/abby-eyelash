@@ -54,6 +54,8 @@ export const photos: Photo[] = [
   lash('face-natural', 'IMG_7446.JPG', 'Client selfie with soft, natural-looking lash extensions, Burwood', '客人自拍，嫁接睫毛自然柔和，Burwood', { ratio: '3:4', position: 'top' }),
   lash('face-smile', 'IMG_7444.HEIC', 'Smiling client selfie showing light, natural lash extensions', '客人微笑自拍，嫁接睫毛轻盈自然', { ratio: '3:4', position: 'top' }),
   lash('selfie', '造型款.HEIC', "Client's face close-up showing dark, wispy styled lash extensions", '客人面部近景，展示深色纤长的造型款嫁接睫毛', { ratio: '3:4' }),
+  // Before/after two-panel: the card shows only the lower "after" panel.
+  lash('lift-1', '角蛋白-翘睫1.JPG', 'Keratin lash lift result on a brown eye, natural lashes lifted and curled from the root, Burwood', '棕色眼睛上的角蛋白翘睫效果，自然睫毛从根部上翘卷翘，Burwood', { box: { left: 0, top: 0.53, width: 1, height: 0.47 } }),
   lash('lift-2', '角蛋白-翘睫2.JPG', 'Keratin lash lift result on a dark brown eye, natural lashes curled upward, Burwood', '深棕色眼睛上的角蛋白翘睫效果，自然睫毛根根上翘，Burwood', { ratio: '4:3' }),
 
   nail('6920', 'IMG_6920.JPG', 'Long almond nude pink nails under a rainbow light', '彩虹光影下的长杏仁形裸粉色美甲'),
@@ -96,7 +98,7 @@ export const lashCards: { serviceId: string; optionId: string; photo: string }[]
   { serviceId: 'lash-extensions', optionId: 'hybrid-natural', photo: 'hybrid-natural' },
   { serviceId: 'lash-extensions', optionId: 'hybrid-full', photo: 'hybrid-full-eye' },
   { serviceId: 'lash-extensions', optionId: 'styled', photo: 'styled-fairy' },
-  { serviceId: 'lash-lift', optionId: 'keratin-lift', photo: 'lift-2' },
+  { serviceId: 'lash-lift', optionId: 'keratin-lift', photo: 'lift-1' },
 ];
 
 export const lashLooks = (lang: Lang) => lashCards.map((c) => {

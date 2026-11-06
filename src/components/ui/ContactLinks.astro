@@ -1,0 +1,49 @@
+---
+// Contact + social as app icons: each brand's own colour and official white mark, label underneath, the way a phone
+// home screen shows apps, so they read as "tap me" at a glance. Press sinks the icon (active: also matches touch, see BaseLayout).
+// WeChat has no web link: its icon copies the ID and turns into a tick for 2.5 s (script in Footer.astro).
+// The phone number and WeChat ID stay as plain text below (NAP text must stay identical everywhere).
+import type { Lang } from '../../data/services';
+import { site } from '../../data/site';
+import { brandIcons } from '../../data/brand-icons';
+import { common, smsHref, waHref } from '../../i18n/common';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = common[lang].footer;
+const zh = lang === 'zh';
+
+const sms = 'M4 4.5h16a1.5 1.5 0 0 1 1.5 1.5v10a1.5 1.5 0 0 1-1.5 1.5H9.2L4.6 21v-3.5H4A1.5 1.5 0 0 1 2.5 16V6A1.5 1.5 0 0 1 4 4.5zM8 10a1.2 1.2 0 1 0 0 2.4A1.2 1.2 0 0 0 8 10zm4 0a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zm4 0a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z';
+const ext = { target: '_blank', rel: 'noopener' };
+const apps = [
+  { href: waHref(site.phone), track: 'message_click', bg: 'bg-whatsapp', d: brandIcons.whatsapp, label: 'WhatsApp', aria: zh ? '用 WhatsApp 给 Abby 发消息' : 'Message Abby on WhatsApp', ...ext },
+  { href: smsHref(site.phone), track: 'message_click', bg: 'bg-primary', d: sms, label: zh ? '短信' : 'SMS', aria: zh ? `给 Abby 发短信 ${site.phoneDisplay}` : `Text Abby on ${site.phoneDisplay}` },
+  { href: site.social.instagram, track: 'social_click', bg: 'bg-instagram', d: brandIcons.instagram, label: 'Instagram', aria: zh ? 'Abby 的 Instagram' : "Abby's Instagram", ...ext },
+  // Shown once Abby publishes the account (site.social.xiaohongshu).
+  site.social.xiaohongshu && { href: site.social.xiaohongshu, track: 'social_click', bg: 'bg-xiaohongshu', d: brandIcons.xiaohongshu, label: zh ? '小红书' : 'RedNote', aria: zh ? 'Abby 的小红书' : "Abby's RedNote (Xiaohongshu)", ...ext },
+].filter(Boolean) as { href: string; track: string; bg: string; d: string; label: string; aria: string; target?: string; rel?: string }[];
+
+const cell = 'group flex flex-col items-center gap-1.5 rounded-field py-1 text-center';
+const icon = 'app-icon flex size-12 items-center justify-center text-white';
+const glyph = (d: string, extra = '') => `<svg ${extra} class="size-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${d}"/></svg>`;
+---
+<ul class:list={["grid gap-1", apps.length + 1 === 5 ? "grid-cols-5" : "grid-cols-4"]}>
+  {apps.map((a) => (
+    <li>
+      <a href={a.href} data-track={a.track} target={a.target} rel={a.rel} aria-label={a.aria} class={cell}>
+        <span class:list={[icon, a.bg]}><Fragment set:html={glyph(a.d)} /></span>
+        <span class="text-xs font-medium text-fg">{a.label}</span>
+      </a>
+    </li>
+  ))}
+  <li>
+    <button type="button" data-copy={site.social.wechatId} data-copied={t.copied} data-track="social_click" aria-label={`${t.copyWechat}: ${site.social.wechatId}`} class:list={[cell, 'w-full']}>
+      <span class:list={[icon, 'bg-wechat']}>
+        <Fragment set:html={glyph(brandIcons.wechat, 'data-copy-icon')} />
+        <svg data-copy-tick hidden class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+      </span>
+      <span data-copy-status data-idle={zh ? '微信' : 'WeChat'} aria-live="polite" class="text-xs font-medium text-fg">{zh ? '微信' : 'WeChat'}</span>
+    </button>
+  </li>
+</ul>
+<p class="mt-4 text-muted"><span class="tabular-nums text-fg">{site.phoneDisplay}</span> · {t.wechat} <span class="text-fg">{site.social.wechatId}</span></p>

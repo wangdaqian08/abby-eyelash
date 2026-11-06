@@ -5,26 +5,29 @@ Source of truth for every page. Built with ui-ux-pro-max (`--design-system "beau
 Skill output adopted: Soft-UI-Evolution depth (soft shadows, 200–300ms transitions), Playfair Display headings, light mode only (dark mode is an anti-pattern for this product), subtle scroll reveal that **never hides content without JS** (crawlers/AI must see all text).
 Skill output rejected: its pink/lavender palette (owner chose 4 themes below) and Inter (demo's DM Sans kept).
 
-## 1. Colour tokens (CSS variables, set per `[data-theme]` on `<html>`)
+## 1. Colour tokens (CSS variables on `:root`)
 
-| Token | Use | A `mocha` (default) | B `rose` | C `sage` | D `plum` |
-|---|---|---|---|---|---|
-| `--bg` | page background | `#FAF6F2` | `#FBF6F4` | `#F6F5EF` | `#FAF7F4` |
-| `--surface` | cards (bg +1.5% L) | `#FEFBF9` | `#FEFBFA` | `#FAFAF6` | `#FEFCFA` |
-| `--surface-2` | sunken: tinted section bg, inputs (bg −2.5% L) | `#F5EDE5` | `#F6EDE9` | `#EFEDE1` | `#F4EEE8` |
-| `--surface-3` | raised: popovers, floating bars (bg +3% L) | `#FFFFFF` | `#FFFFFF` | `#FFFFFD` | `#FFFFFF` |
-| `--fg` | body text, headings | `#2E211C` | `#2E1A1E` | `#1F2A22` | `#1E1215` |
-| `--muted` | secondary text | `#6E5A50` | `#75545B` | `#56635A` | `#7A5566` |
-| `--primary` | buttons, italic accent words, inverted sections | `#7A5A4C` | `#9E5562` | `#56705C` | `#7D3F5E` |
-| `--on-primary` | text on primary | `#FFFCF9` | `#FFFBFA` | `#FCFBF7` | `#FAF7F4` |
-| `--accent` | **decorative only** (✦ icons, hairlines, stars next to a numeric rating) | `#B8927A` | `#C9A27E` | `#A9B59A` | `#C4856A` |
-| `--accent-ink` | eyebrow labels, small accent text | `#7E5B47` | `#80603D` | `#55644A` | `#8E5239` |
-| `--border` | hairlines (prefer surface layers to separate) | `color-mix(in oklch, var(--fg) 8%, transparent)` | ← | ← | ← |
-| `--ring` | focus ring | `var(--primary)` | ← | ← | ← |
-| `--focus-ring` | input focus: double-ring shadow, no outline | `0 0 0 1px` ring 80% + `0 0 0 4px` ring 25% | ← | ← | ← |
-| `--danger` | form errors | `#B42318` | ← | ← | ← |
+Owner chose **plum** on 2026-11-06; the other three preview themes (mocha, rose, sage) and the theme switcher were removed.
+
+| Token | Use | Value |
+|---|---|---|
+| `--bg` | page background | `#FAF7F4` |
+| `--surface` | cards (bg +1.5% L) | `#FEFCFA` |
+| `--surface-2` | sunken: tinted section bg, inputs (bg −2.5% L) | `#F4EEE8` |
+| `--surface-3` | raised: popovers, floating bars (bg +3% L) | `#FFFFFF` |
+| `--fg` | body text, headings | `#1E1215` |
+| `--muted` | secondary text | `#7A5566` |
+| `--primary` | buttons, italic accent words, inverted sections | `#7D3F5E` |
+| `--on-primary` | text on primary | `#FAF7F4` |
+| `--accent` | **decorative only** (✦ icons, hairlines, stars next to a numeric rating) | `#C4856A` |
+| `--accent-ink` | eyebrow labels, small accent text | `#8E5239` |
+| `--border` | hairlines (prefer surface layers to separate) | `color-mix(in oklch, var(--fg) 8%, transparent)` |
+| `--ring` | focus ring | `var(--primary)` |
+| `--focus-ring` | input focus: double-ring shadow, no outline | `0 0 0 1px` ring 80% + `0 0 0 4px` ring 25% |
+| `--danger` | form errors | `#B42318` |
 
 Verified contrast (WCAG 2.2): fg/bg ≥ 13.6, muted/bg ≥ 5.8, muted/surface-2 ≥ 5.2, on-primary/primary ≥ 5.2, accent-ink/bg ≥ 5.3, accent-ink/surface-2 ≥ 4.7. `--accent` is < 3:1 and must never carry meaning or text.
+Button depth: filled buttons use `btn-raise` (plum-tinted `--shadow-btn`, lift 2px on hover for pointer devices, sink into `--shadow-btn-press` on press); outline/quiet buttons use `btn-soft`. Both animate translate and box-shadow only (no layout shift) and stop under reduced motion.
 Rule: components use tokens only — no raw hex outside `src/styles/tokens.css`.
 
 ## 2. Typography

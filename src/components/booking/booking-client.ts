@@ -43,8 +43,8 @@ const ICON = {
 const STEP_ICONS = [ICON.service, ICON.date, ICON.time, ICON.details];
 
 const BTN = 'inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 font-medium uppercase transition duration-200 active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50';
-const BTN_PRIMARY = `${BTN} bg-primary text-on-primary hover:bg-primary/90`;
-const BTN_OUTLINE = `${BTN} border border-primary/30 text-primary hover:bg-surface-2`;
+const BTN_PRIMARY = `${BTN} btn-raise bg-primary text-on-primary hover:bg-primary/90`;
+const BTN_OUTLINE = `${BTN} btn-soft border border-primary/30 text-primary hover:bg-surface-2`;
 const INPUT = 'block h-12 w-full appearance-none rounded-field bg-surface-2 px-4 text-base text-fg placeholder:text-muted aria-invalid:outline-2 aria-invalid:outline-danger';
 
 export function start(root: HTMLElement) {
@@ -56,6 +56,8 @@ export function start(root: HTMLElement) {
   const $ = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel);
   const view = $('[data-view]')!;
   const mobile = matchMedia('(max-width: 1023px)');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const PRESS_MS = 140; // how long a tap's press stays visible before a button swaps the view
 
   const st: {
     step: Step;
@@ -178,9 +180,9 @@ export function start(root: HTMLElement) {
       const h = headline(s);
       const range = h.minutes![0] === h.minutes![1] ? mins(h.minutes![0]) : `${h.minutes![0]}–${mins(h.minutes![1])}`;
       const on = !!itemOf(s.id);
-      return `<label class="flex min-h-16 items-center gap-3 rounded-card bg-surface-2/60 p-4 transition duration-200 hover:bg-surface-2 active:scale-[.98] has-checked:bg-surface-2 has-checked:ring-2 has-checked:ring-inset has-checked:ring-primary/50 has-focus-visible:focus-ring">
+      return `<label class="relative flex min-h-16 items-center gap-3 rounded-card bg-surface-2/60 p-4 transition duration-200 hover:bg-surface-2 pointer-fine:hover:-translate-y-0.5 active:scale-[.98] has-checked:bg-surface-2 has-checked:shadow-[var(--shadow-soft)] has-checked:ring-2 has-checked:ring-inset has-checked:ring-primary/50 has-focus-visible:focus-ring">
         <input type="checkbox" name="bk-service" value="${s.id}" class="sr-only" ${on ? 'checked' : ''}>
-        <span aria-hidden="true" class="flex size-6 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${on ? 'bg-primary text-on-primary' : 'ring-1 ring-inset ring-muted/50'}">${on ? ICON.tick : ''}</span>
+        <span aria-hidden="true" data-tick class="flex size-6 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${on ? 'bg-primary text-on-primary' : 'ring-1 ring-inset ring-muted/50'}">${on ? ICON.tick : ''}</span>
         <span><span class="block font-medium">${s.name[lang]}</span><span class="text-sm text-muted">${range} · ${price(h)}</span></span>
       </label>`;
     };
@@ -265,13 +267,13 @@ export function start(root: HTMLElement) {
           : 'cursor-default text-muted/60';
       const label = `${fmtDate(d, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}, ${avail ? t.available : t.unavailable}${d === today ? `, ${t.today}` : ''}`;
       cells.push(`<span role="gridcell" class="flex justify-center" ${sel ? 'aria-selected="true"' : ''}>
-        <button type="button" data-date="${d}" tabindex="${d === tabbable ? 0 : -1}" aria-label="${esc(label)}" ${avail ? '' : 'aria-disabled="true"'} class="relative flex size-11 items-center justify-center rounded-full text-sm transition-colors duration-200 ${cls}">
+        <button type="button" data-date="${d}" tabindex="${d === tabbable ? 0 : -1}" aria-label="${esc(label)}" ${avail ? '' : 'aria-disabled="true"'} class="relative flex aspect-square w-full max-w-11 items-center justify-center rounded-full text-sm transition-colors duration-200 ${cls}">
           ${+d.slice(8)}${d === today ? '<span aria-hidden="true" class="absolute bottom-1 size-1 rounded-full bg-current"></span>' : ''}
         </button></span>`);
     }
     while (cells.length % 7) cells.push('<span role="gridcell"></span>');
     const rows = [];
-    for (let i = 0; i < cells.length; i += 7) rows.push(`<div role="row" class="grid grid-cols-7 gap-y-2">${cells.slice(i, i + 7).join('')}</div>`);
+    for (let i = 0; i < cells.length; i += 7) rows.push(`<div role="row" class="grid grid-cols-7 gap-x-1.5">${cells.slice(i, i + 7).join('')}</div>`);
 
     const navBtn = (dir: 'prev' | 'next', disabled: boolean) =>
       `<button type="button" data-action="${dir}" aria-label="${dir === 'prev' ? t.prevMonth : t.nextMonth}" ${disabled ? 'disabled' : ''} class="flex size-11 items-center justify-center rounded-full transition-colors duration-200 ${disabled ? 'cursor-not-allowed bg-surface-2 text-muted/60' : 'bg-primary text-on-primary hover:bg-primary/90'}">${ICON[dir]}</button>`;
@@ -283,8 +285,8 @@ export function start(root: HTMLElement) {
             <button type="button" data-action="retry" class="${BTN_OUTLINE}${tracking} mt-4">${t.retry}</button>
             <p class="mt-4 text-muted">${t.callFallback} <a class="whitespace-nowrap text-fg underline underline-offset-4" href="${phoneHref}">${site.phoneDisplay}</a></p>
           </div>`
-        : `<div role="grid" data-grid aria-labelledby="bk-month" ${days ? '' : 'aria-busy="true"'} class="mt-6">
-            <div role="row" class="grid grid-cols-7 text-center text-xs text-muted">${wd.map((w) => `<span role="columnheader" class="py-2">${w}</span>`).join('')}</div>
+        : `<div role="grid" data-grid aria-labelledby="bk-month" ${days ? '' : 'aria-busy="true"'} class="mt-6 -mx-2 space-y-2.5 sm:mx-0">
+            <div role="row" class="grid grid-cols-7 gap-x-1.5 text-center text-xs text-muted">${wd.map((w) => `<span role="columnheader" class="py-2">${w}</span>`).join('')}</div>
             ${rows.join('')}
           </div>${days ? '' : `<p class="sr-only">${t.loading}</p>`}`;
 
@@ -302,15 +304,16 @@ export function start(root: HTMLElement) {
     if (!st.date) return `<p class="text-sm text-muted lg:pt-3">${t.pickDateHint}</p>`;
     const list = daysFor(st.date.slice(0, 7))?.[st.date] ?? [];
     const rec = recommendedFor(st.date);
-    const badge = `<span class="ml-2 rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-accent-ink">${t.recommended}</span>`;
+    // The badge sits at the right edge, out of the flow, so a recommended time stays centred in line with the others.
+    const badge = `<span class="absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-accent-ink">${t.recommended}</span>`;
     const items = list
       .map((time) => {
         const label = fmtTime(st.date!, time);
         const tag = rec.has(time) ? badge : '';
         return time === st.time
-          ? `<li class="grid grid-cols-2 gap-2"><span class="flex h-12 items-center justify-center rounded-field bg-muted text-on-primary">${label}${tag && `<span class="sr-only">, ${t.recommended}</span>`}</span>
-              <button type="button" data-action="to-details" aria-label="${t.next}: ${label}" class="h-12 rounded-field bg-primary font-medium text-on-primary transition duration-200 hover:bg-primary/90 active:scale-[.97]">${t.next}</button></li>`
-          : `<li><button type="button" data-time="${time}" class="h-12 w-full rounded-field bg-surface-2/70 text-muted transition duration-200 hover:bg-surface-2 hover:text-fg active:scale-[.97]">${label}${tag}</button></li>`;
+          ? `<li class="grid grid-cols-2 gap-2"><span class="flex h-12 items-center justify-center rounded-field bg-muted tabular-nums text-on-primary">${label}${tag && `<span class="sr-only">, ${t.recommended}</span>`}</span>
+              <button type="button" data-action="to-details" aria-label="${t.next}: ${label}" class="btn-raise h-12 rounded-field bg-primary font-medium text-on-primary transition duration-200 hover:bg-primary/90 active:scale-[.97]">${t.next}</button></li>`
+          : `<li><button type="button" data-time="${time}" class="relative h-12 w-full rounded-field bg-surface-2/70 tabular-nums text-muted transition duration-200 hover:bg-surface-2 hover:text-fg active:scale-[.97]">${label}${tag}</button></li>`;
       })
       .join('');
     return `<h3 data-slots-heading tabindex="-1" class="font-sans text-base font-normal outline-none">${fmtDate(st.date, { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
@@ -436,6 +439,7 @@ export function start(root: HTMLElement) {
     if (res?.ok && body.ok) {
       if (body.demo) showDemo();
       notifyOwner(d);
+      navigator.vibrate?.(12); // one short tick to confirm the booking went through (Android; iOS ignores it)
       emit('booking_submitted', { service: st.items.map((i) => i.service.id).join('+'), option: st.items.map((i) => i.option!.id).join('+'), value: total().price, currency: 'AUD' });
       st.name = d.name.trim();
       load(st.date!.slice(0, 7), true); // bypass the browser's 60 s cache so the taken slot disappears
@@ -565,6 +569,7 @@ export function start(root: HTMLElement) {
     st.step = step;
     if (step === 2 || step === 3) void load();
     render();
+    if (!reduced.matches) view.animate([{ opacity: 0, translate: '0 10px' }, { opacity: 1, translate: '0 0' }], { duration: 260, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
     if (!focus) return;
     const top = root.getBoundingClientRect().top;
     if (top < 0) window.scrollBy(0, top - 96);
@@ -601,6 +606,11 @@ export function start(root: HTMLElement) {
     emit('booking_start', { service: st.items.map((i) => i.service.id).join('+') });
   };
 
+  // Selection feedback: the item just picked pops once (CSS [data-pop]); set after render so nothing else replays.
+  function pop(el: Element | null, card = false) {
+    (card ? el?.closest('label') : el)?.setAttribute('data-pop', '');
+  }
+
   // --- events ---
   root.addEventListener('change', (e) => {
     const el = e.target as HTMLInputElement | HTMLSelectElement;
@@ -630,6 +640,7 @@ export function start(root: HTMLElement) {
     } else return;
     st.time = undefined;
     render();
+    if ((el as HTMLInputElement).checked) pop(view.querySelector(`input[name="${el.name}"][value="${el.value}"]`), el.type === 'checkbox');
     view.querySelector<HTMLElement>(el.name === 'bk-units' ? `select[data-service="${el.dataset.service}"]` : `input[name="${el.name}"][value="${el.value}"]`)?.focus();
   });
 
@@ -641,17 +652,30 @@ export function start(root: HTMLElement) {
       $(el.getAttribute('href')!)?.focus();
       return;
     }
+    // A touch press is drawn by the layout's pointerdown handler (data-pressed). These buttons re-render the view at once,
+    // so wait until the press has been on screen for PRESS_MS before acting; keyboard and mouse-free clicks act at once.
+    const shown = performance.now() - Number(el.dataset.pressedAt ?? -1e9);
+    if (shown < PRESS_MS && !reduced.matches) setTimeout(() => el.isConnected && act(el), PRESS_MS - shown);
+    else act(el);
+  });
+
+  function act(el: HTMLElement) {
     if (el.dataset.goto) return go(+el.dataset.goto as Step);
     if (el.dataset.date) {
       if (el.getAttribute('aria-disabled')) return;
       st.date = st.focus = el.dataset.date;
       st.time = undefined;
-      return mobile.matches ? go(3) : ((st.step = 3), render());
+      if (mobile.matches) return go(3);
+      st.step = 3;
+      render();
+      return pop(view.querySelector(`[data-date="${st.date}"]`));
     }
     if (el.dataset.time) {
       st.time = el.dataset.time;
       render();
-      view.querySelector<HTMLElement>('[data-action="to-details"]')?.focus();
+      const next = view.querySelector<HTMLElement>('[data-action="to-details"]');
+      pop(next?.previousElementSibling ?? null);
+      next?.focus();
       return;
     }
     const [y, m] = st.month.split('-').map(Number);
@@ -674,7 +698,7 @@ export function start(root: HTMLElement) {
       case 'retry':
         return void load(st.month, true).then(render);
     }
-  });
+  }
 
   root.addEventListener('keydown', (e) => {
     const el = e.target as HTMLElement;

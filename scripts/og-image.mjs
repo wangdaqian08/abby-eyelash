@@ -1,8 +1,8 @@
-// Generates public/og-default.jpg (1200×630) in the default "mocha" theme colours (src/styles/global.css).
-// Run: node scripts/og-image.mjs  — rerun after the owner picks a theme or a real photo replaces it.
+// Generates public/og-default.jpg (1200×630) in the plum theme colours (src/styles/global.css).
+// Run: node scripts/og-image.mjs  — rerun if the colours change or a real photo replaces it.
 import sharp from 'sharp';
 
-const c = { bg: '#faf6f2', fg: '#2e211c', primary: '#7a5a4c', accent: '#b8927a', muted: '#6e5a50' };
+const c = { bg: '#faf7f4', fg: '#1e1215', primary: '#7d3f5e', accent: '#c4856a', muted: '#7a5566' };
 const serif = "'Playfair Display', Georgia, 'Times New Roman', serif";
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
   <rect width="1200" height="630" fill="${c.bg}"/>
