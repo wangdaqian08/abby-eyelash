@@ -62,6 +62,15 @@
   --danger: #b42318;
   --shadow-sm: 0 1px 2px rgb(46 33 28 / 0.06);
   --shadow-lift: 0 12px 32px -12px rgb(46 33 28 / 0.22);
+  /* Liquid glass (variant B): a blurred, saturated pane with a bright top rim and a soft lensing shadow. */
+  --glass-blur: 16px;
+  --glass-fill: color-mix(in oklch, var(--surface-3) 42%, transparent);
+  --glass-fill-strong: color-mix(in oklch, var(--surface-3) 72%, transparent);
+  --glass-tint: color-mix(in oklch, var(--primary) 86%, transparent);
+  --glass-rim: inset 0 1.5px 0 rgb(255 255 255 / 0.7), inset 0 0 0 0.6px rgb(255 255 255 / 0.4), inset 0 -1px 1px rgb(255 255 255 / 0.2);
+  --glass-shadow: 0 10px 34px color-mix(in oklch, var(--fg) 16%, transparent), 0 1px 3px color-mix(in oklch, var(--fg) 10%, transparent);
+  --glass-shadow-press: 0 3px 10px color-mix(in oklch, var(--fg) 14%, transparent), 0 1px 2px color-mix(in oklch, var(--fg) 10%, transparent);
+  --tabbar-h: 66px;
   /* Motion (MASTER §4): strong ease-outs; entrances rise, nothing bounces. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -75,7 +84,25 @@
   /* Shape (MASTER §3): soft corners on cards, media and fields; buttons are pills. */
   --radius: 1rem;
   --radius-sm: 0.625rem;
-  --header-h: 65px;
+  --header-h: 72px; /* 12px gap + 56px pill */
+}
+
+/* Brand colours, only for the contact app icons (each platform's own mark colour; logos are brand assets). */
+@theme {
+  --color-whatsapp: #25d366;
+  --color-wechat: #07c160;
+  --color-xiaohongshu: #ff2442;
+}
+@utility bg-instagram {
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+}
+/* App icon: squircle with a faint top highlight and a soft drop; lifts on hover, sinks when its link is pressed. */
+@utility app-icon {
+  border-radius: 28%;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), 0 1px 2px color-mix(in oklch, var(--fg) 16%, transparent), 0 8px 16px -8px color-mix(in oklch, var(--fg) 45%, transparent);
+  transition: scale var(--t-ui) var(--ease), translate var(--t-ui) var(--ease), box-shadow var(--t-ui) var(--ease);
+  @media (hover: hover) { :where(.group):hover > & { translate: 0 -3px; } }
+  :where(.group):is(:active, [data-pressed]) > & { scale: 0.9; translate: 0 1px; box-shadow: inset 0 2px 5px color-mix(in oklch, var(--fg) 35%, transparent); transition-duration: var(--t-press); }
 }
 
 @theme inline {
@@ -152,6 +179,80 @@
   box-shadow: var(--focus-ring);
 }
 
+/* Pressed state also matches [data-pressed] (set on pointerdown in BaseLayout: phones delay :active on touch). */
+@custom-variant active (&:active, &[data-pressed]);
+
+/* Glass panes. `glass` = clear pane over content, `glass-strong` = readable content card, `glass-tint` = primary-coloured control.
+   Press: sinks 1px, scales .97 and loses most of its shadow; hover lifts on pointer devices only. */
+@utility glass {
+  position: relative;
+  isolation: isolate;
+  background: var(--glass-fill);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%) brightness(1.05);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%) brightness(1.05);
+  box-shadow: var(--glass-rim), var(--glass-shadow);
+  transition: transform var(--t-hover) var(--ease), box-shadow var(--t-hover) var(--ease), background-color var(--t-hover) var(--ease);
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: -1;
+    background: linear-gradient(155deg, rgb(255 255 255 / 0.5) 0%, rgb(255 255 255 / 0.08) 30%, transparent 55%, rgb(255 255 255 / 0.14) 100%);
+  }
+}
+@utility glass-strong { background: var(--glass-fill-strong); }
+@utility glass-tint {
+  background: var(--glass-tint);
+  color: var(--on-primary);
+  box-shadow: inset 0 1.5px 0 rgb(255 255 255 / 0.45), inset 0 0 0 0.6px rgb(255 255 255 / 0.25), 0 10px 28px color-mix(in oklch, var(--primary) 40%, transparent);
+}
+@utility glass-press {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(:active, [data-pressed], :disabled, [aria-disabled='true']) { transform: translateY(-2px); }
+  }
+  &:active, &[data-pressed] {
+    transform: translateY(1px) scale(0.97);
+    box-shadow: var(--glass-rim), var(--glass-shadow-press);
+    transition-duration: var(--t-press);
+  }
+  &:disabled, &[aria-disabled='true'] { box-shadow: var(--glass-rim); }
+}
+/* Opaque fallbacks: no backdrop-filter, or the user asked for less transparency. */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass { background: var(--surface); }
+  .glass-tint { background: var(--primary); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .glass-tint { background: var(--primary); }
+}
+/* Soft colour blobs behind glass sections so the blur has something to refract. */
+@utility blobs {
+  position: relative;
+  overflow: hidden;
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    border-radius: 50%;
+    filter: blur(48px);
+    pointer-events: none;
+  }
+  &::before { width: 22rem; height: 22rem; left: -8rem; top: -6rem; background: color-mix(in oklch, var(--primary) 32%, transparent); }
+  &::after { width: 20rem; height: 20rem; right: -8rem; bottom: -4rem; background: color-mix(in oklch, var(--accent) 38%, transparent); }
+  & > * { position: relative; z-index: 1; }
+}
+/* Text links dim while pressed so every tap answers (buttons and glass controls have their own press). */
+:is(a, button, summary):not(.glass, [class*='active:'], :has(.glass, .app-icon)):is(:active, [data-pressed]) { opacity: 0.6; transition-duration: var(--t-press); }
+
+/* Selected option: a quick pop and a halo that spreads a beat later. */
+@keyframes pick-pop { 0% { scale: 1; } 40% { scale: 1.04; } 100% { scale: 1; } }
+@keyframes pick-halo { 0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 45%, transparent); } 100% { box-shadow: 0 0 0 14px transparent; } }
+[data-pop] { animation: pick-pop 320ms var(--ease-out); }
+[data-pop]::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; animation: pick-halo 520ms 90ms var(--ease-out) both; }
+
 /* Scroll reveal: content stays visible without JS (crawlers, AI fetchers). Transform + opacity only (no CLS). */
 .js [data-reveal] {
   opacity: 0;
@@ -179,9 +280,8 @@
 .js [data-hero-in] { animation-duration: 700ms; }
 .js [data-hero-img] { animation: settle 1400ms var(--ease-soft) both; }
 
-/* Header: flat at the top, a soft edge once the page scrolls under it. */
-[data-header] { transition: box-shadow var(--t-ui) var(--ease); }
-[data-header].is-scrolled { box-shadow: 0 1px 0 var(--border), 0 10px 30px -18px rgb(46 33 28 / 0.25); }
+/* Floating header pill: a touch more fill once the page scrolls under it. */
+[data-header].is-scrolled .glass:not(.glass-tint) { background: var(--glass-fill-strong); }
 
 /* Mobile menu items arrive one by one when the menu opens. */
 @keyframes fade-up { from { opacity: 0; transform: translateY(8px); } }

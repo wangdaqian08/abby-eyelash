@@ -33,7 +33,7 @@ const related = services.filter((s) => s.id !== service.id);
 
 const eyebrow = ['text-[0.8125rem] font-medium uppercase text-accent-ink', en && 'tracking-[0.25em]'];
 const btn = [
-  'inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-7 py-3 font-medium transition duration-200 ease-brand hover:-translate-y-0.5 hover:shadow-lift active:scale-[.97]',
+  'glass glass-press inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-7 py-3 font-medium',
   en ? 'text-xs uppercase tracking-[0.2em]' : 'text-sm',
 ];
 const container = 'mx-auto max-w-6xl px-4 sm:px-6';
@@ -55,8 +55,8 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
         <h1 class="mt-4 text-5xl leading-[1.08] lg:text-7xl [&_em]:block">{c.h1[0]}<em>{c.h1[1]}</em></h1>
         <p class="mt-6 max-w-xl text-lg leading-relaxed" set:html={c.intro} />
         <div class="mt-8 flex flex-wrap gap-3">
-          <a href={bookHref} data-track="book_click" class:list={[btn, 'bg-primary text-on-primary hover:bg-primary/90']}>{t.book}</a>
-          <a href={wa} data-track="message_click" target="_blank" rel="noopener" class:list={[btn, 'border border-primary/30 text-primary hover:bg-surface-2']}>{t.call}</a>
+          <a href={bookHref} data-track="book_click" class:list={[btn, 'glass-tint']}>{t.book}</a>
+          <a href={wa} data-track="message_click" target="_blank" rel="noopener" class:list={[btn, 'glass-strong text-primary']}>{t.call}</a>
         </div>
       </div>
       <ServiceImage photo={sp?.hero} lang={lang} alt={c.alt?.hero} eager position={sp?.heroPos} class:list={[sp?.heroAspect ?? 'aspect-[4/3] lg:aspect-[4/5]', 'w-full']} />
@@ -147,7 +147,7 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
         {(sp?.detail || c.alt?.detail) && (
           <ServiceImage photo={sp?.detail} lang={lang} alt={c.alt?.detail} position={sp?.detailPos} class:list={[sp?.detailAspect ?? 'aspect-[3/2] lg:aspect-[4/5]', 'w-full']} />
         )}
-        <a href={bookHref} data-track="book_click" class:list={[btn, 'w-full bg-primary text-on-primary hover:bg-primary/90', (sp?.detail || c.alt?.detail) && 'mt-6']}>{t.bookShort}</a>
+        <a href={bookHref} data-track="book_click" class:list={[btn, 'w-full glass-tint', (sp?.detail || c.alt?.detail) && 'mt-6']}>{t.bookShort}</a>
       </div>
     </section>
 

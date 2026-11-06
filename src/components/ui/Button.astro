@@ -12,16 +12,16 @@ interface Props extends HTMLAttributes<'a'> {
 }
 const { href, lang, variant = 'primary', track, class: cls, ...rest } = Astro.props;
 const variants = {
-  primary: 'bg-primary text-on-primary hover:bg-primary/90',
-  outline: 'border border-primary/30 text-primary hover:bg-surface-2',
-  inverse: 'border border-on-primary/40 text-on-primary hover:bg-on-primary hover:text-primary',
+  primary: 'glass glass-tint glass-press',
+  outline: 'glass glass-strong glass-press text-primary',
+  inverse: 'glass glass-press text-on-primary',
 };
 ---
 <a
   href={href}
   data-track={track}
   class:list={[
-    'inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-7 text-center font-medium transition duration-200 ease-brand active:scale-[.97]',
+    'inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-7 text-center font-medium ',
     lang === 'en' ? 'text-xs uppercase tracking-[0.2em]' : 'text-sm',
     variants[variant],
     cls,
