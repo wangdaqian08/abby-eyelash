@@ -4,8 +4,8 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import { services } from './src/data/services.ts';
 
-// Placeholder until the domain is registered — change SITE_URL (env) or this default only.
-const site = process.env.SITE_URL ?? 'https://abby-eyelash.pages.dev';
+// Production address (www is canonical; the bare domain redirects to it). SITE_URL (env) overrides.
+const site = process.env.SITE_URL ?? 'https://www.abbyeyelashes.com';
 
 export default defineConfig({
   site,

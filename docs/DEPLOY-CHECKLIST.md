@@ -12,7 +12,7 @@ This list covers the website and its tracking. The business profiles (Google Bus
 - [ ] Every value marked `PLACEHOLDER` in `src/data/site.ts` and `src/data/services.ts` is real: address, phone, email, socials, Google review link, and prices. The address, phone and hours must be **exactly** the same as on Google Business Profile.
 - [ ] Prices and durations live in `src/data/prices.csv` (how-to: `docs/PRICES.md`). When you change a row, set its `更新日期` to today's date; a service's `updated` is the latest date among its rows. Change it **only** when the content really changes. That date is published as "Prices updated", in the page data and in the sitemap, and Google warns against fake date bumps ([Google: creating helpful content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)).
 - [ ] Dummy reviews are replaced by real ones. The build fails on purpose while `LAUNCH=1` is set and dummy reviews remain (decision D3).
-- [ ] You know the final domain, e.g. `https://www.abbyeyelash.com.au`. Until it exists, the site runs on `https://abby-eyelash.pages.dev`.
+- [ ] You know the final domain, e.g. `https://www.abbyeyelashes.com`. Until it exists, the site runs on `https://abby-eyelash.pages.dev`.
 - [ ] **Privacy.** Once GA4 is on, the site sets Google Analytics cookies and the booking form collects names, phone numbers and emails. Read the OAIC's guidance on whether the Australian Privacy Act applies to a small business, and add a short privacy notice to the site if needed: <https://www.oaic.gov.au/privacy/privacy-guidance-for-organisations-and-government-agencies/organisations/small-business>. The site has no cookie-banner framework. Decide with an adviser whether you need one, for example if you advertise to visitors in the EU.
 
 ## B. Create the Cloudflare Pages project
@@ -41,7 +41,7 @@ Docs: <https://developers.cloudflare.com/pages/configuration/build-configuration
 | Name | Value | Type | Why |
 |---|---|---|---|
 | `NODE_VERSION` | `24` | Text | Build needs Node ≥ 22.23.4 |
-| `SITE_URL` | your real address, e.g. `https://www.abbyeyelash.com.au` (no trailing slash). Leave it unset while you only have `pages.dev`. | Text | Canonical URLs, hreflang, sitemap, robots.txt and JSON-LD are all built from it |
+| `SITE_URL` | your real address, e.g. `https://www.abbyeyelashes.com` (no trailing slash). Leave it unset while you only have `pages.dev`. | Text | Canonical URLs, hreflang, sitemap, robots.txt and JSON-LD are all built from it |
 | `PUBLIC_GA4_ID` | `G-XXXXXXXXXX` (part G) | Text | Turns on Google Analytics. Empty = no analytics at all |
 | `PUBLIC_THEME_PREVIEW` | `false` | Text | Hides the pre-launch theme switcher |
 | `LAUNCH` | `1` | Text | Launch guard: the build fails while dummy reviews remain |
