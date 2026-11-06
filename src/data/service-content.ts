@@ -44,8 +44,8 @@ const { cancelHours: h } = site.booking;
 const cancel = (serviceId: string) => {
   const deposit = depositFor([services.find((s) => s.id === serviceId)!]);
   return {
-    en: { q: 'What is your cancellation policy?', a: `A $${deposit} deposit by WeChat (${site.social.wechatId}) secures your booking. Please give at least ${h} hours’ notice to cancel or reschedule; within ${h} hours the deposit is not refunded and the time can’t be changed.` },
-    zh: { q: '取消预约有什么规定？', a: `预约需通过微信（${site.social.wechatId}）支付 $${deposit} 订金。如需取消或改期，请至少提前 ${h} 小时告知；${h} 小时以内取消或改期，订金不退，也不能更改时间。` },
+    en: { q: 'What is your cancellation policy?', a: `A $${deposit} deposit by bank transfer secures your booking (Abby sends the bank details when she confirms). Please give at least ${h} hours’ notice to cancel or reschedule; within ${h} hours the deposit is not refunded and the time can’t be changed.` },
+    zh: { q: '取消预约有什么规定？', a: `预约需通过银行转账支付 $${deposit} 订金（确认预约时 Abby 会发给你账户信息）。如需取消或改期，请至少提前 ${h} 小时告知；${h} 小时以内取消或改期，订金不退，也不能更改时间。` },
   };
 };
 const CANCEL = cancel('lash-extensions');

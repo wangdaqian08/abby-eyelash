@@ -33,7 +33,7 @@ export interface Service {
   summary: L10n;
   /** ISO date of the last real change to this service's prices (drives "Prices updated", dateModified, lastmod). */
   updated: string;
-  /** Deposit for this service when it is above the default (site.booking.deposit). */
+  /** Deposit for this service when it differs from the default (site.booking.deposit). */
   deposit?: number;
   options: ServiceOption[];
 }
@@ -89,7 +89,7 @@ const drafts: Draft[] = [
     summary: { en: 'Semi-permanent powder brows: a soft, filled-in look that lasts, with one free touch-up within 3 months.', zh: '半永久雾眉，柔和自然的粉雾感，3 个月内免费补色一次。' },
     slug: 'powder-brows-burwood',
     name: { en: 'Powder Brows', zh: '半永久眉 · 雾眉' },
-    deposit: 50,
+    deposit: 30,
     options: [{ id: 'powder', name: { en: 'Powder brows', zh: '雾眉' } }],
   },
   {
@@ -233,8 +233,8 @@ export function quote(serviceId: string, optionId: string, addons: Addons) {
 export const quoteText = (q: NonNullable<ReturnType<typeof quote>>, lang: Lang) =>
   q.onRequest || q.pct ? priceText(q, lang) + (q.price ? ` + $${q.price}` : '') : priceText(q, lang);
 
-/** One booking deposit: the highest of the chosen services (powder brows $50, everything else site.booking.deposit). */
-export const depositFor = (chosen: Service[]) => Math.max(site.booking.deposit, ...chosen.map((s) => s.deposit ?? 0));
+/** Booking deposit: one per service, added up (powder brows $30, everything else site.booking.deposit). */
+export const depositFor = (chosen: Service[]) => chosen.reduce((n, s) => n + (s.deposit ?? site.booking.deposit), 0);
 
 /** One service in a booking. A booking holds one or more, each from a different service, done back to back. */
 export interface Item { service: string; option: string; addons: Addons }

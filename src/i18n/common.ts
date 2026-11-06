@@ -327,17 +327,17 @@ export const monthYear = (iso: string, lang: Lang) =>
 
 /**
  * Home FAQ — answers are always visible (GEO-STRATEGY #2) and each answer stands on its own.
- * `{phone}`, `{address}`, `{deposit}`, `{wechat}` and `{hours}` are filled from site.ts.
+ * `{phone}`, `{address}`, `{deposit}`, `{browDeposit}` and `{hours}` are filled from site.ts / services.ts.
  */
 export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
   en: [
     {
       q: 'How do I book, and what is the cancellation policy?',
-      a: 'Book online at any time, or text or WhatsApp {phone}; you can book several services for the same visit. After you book, a ${deposit} deposit (${browDeposit} for powder brows) by WeChat ({wechat}) secures your time. Please give at least {hours} hours’ notice to cancel or reschedule; within {hours} hours the deposit is not refunded and the time can’t be changed.',
+      a: 'Book online at any time, or text or WhatsApp {phone}; you can book several services for the same visit. After you book, a deposit of ${deposit} per service (${browDeposit} for powder brows) by bank transfer secures your time; Abby sends the bank details when she confirms. Please give at least {hours} hours’ notice to cancel or reschedule; within {hours} hours the deposit is not refunded and the time can’t be changed.',
     },
     {
       q: 'What payment methods do you accept?',
-      a: 'A ${deposit} deposit (${browDeposit} for powder brows) is paid by WeChat ({wechat}) after you book. The rest is paid in cash at the end of your appointment.',
+      a: 'The deposit (${deposit} per service, ${browDeposit} for powder brows) is paid by bank transfer after you book. The rest is paid in cash at the end of your appointment.',
     },
     {
       q: 'Do you have any offers?',
@@ -371,11 +371,11 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
   zh: [
     {
       q: '怎么预约？取消政策是什么？',
-      a: '可以随时在线预约，也可以发短信或 WhatsApp 至 {phone}，一次可以预约多个项目。预约后请通过微信（{wechat}）支付 ${deposit} 订金（雾眉为 ${browDeposit}）确认时间。如需取消或改期，请至少提前 {hours} 小时告知；{hours} 小时以内取消或改期，订金不退，也不能更改时间。',
+      a: '可以随时在线预约，也可以发短信或 WhatsApp 至 {phone}，一次可以预约多个项目。预约后请通过银行转账支付订金确认时间：每个项目 ${deposit}（雾眉 ${browDeposit}），确认预约时 Abby 会发给你账户信息。如需取消或改期，请至少提前 {hours} 小时告知；{hours} 小时以内取消或改期，订金不退，也不能更改时间。',
     },
     {
       q: '可以用哪些方式付款？',
-      a: '预约后通过微信（{wechat}）支付 ${deposit} 订金（雾眉为 ${browDeposit}），其余费用在服务结束后以现金支付。',
+      a: '预约后通过银行转账支付订金（每个项目 ${deposit}，雾眉 ${browDeposit}），其余费用在服务结束后以现金支付。',
     },
     {
       q: '有什么优惠吗？',

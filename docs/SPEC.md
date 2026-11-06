@@ -75,7 +75,7 @@ Service cards on Home show price + duration and link to their service page.
 - `POST /api/book` → validate input server-side, verify **Cloudflare Turnstile**, re-check slot is still free, insert event `⏳ PENDING – <name> – <service>` (details in description), email Abby via **Web3Forms**.
 - Abby confirms manually (call/SMS) and renames the event.
 - **Demo mode** when Google credentials are absent: mocked availability, booking only emails (or logs).
-- No customer confirmation email until a domain exists (then add Resend). No online payments: the deposit ($20; $50 when the booking includes powder brows; one per booking) is paid by WeChat after booking. Returning-client "no deposit" by phone lookup is a post-launch idea (docs/REQUIREMENTS-2026-10.md §三).
+- No customer confirmation email until a domain exists (then add Resend). No online payments: the deposit ($20 per service, $30 for powder brows, added up; no WeChat Pay) is paid by bank transfer after booking; Abby sends the bank details when she confirms. Returning-client "no deposit" by phone lookup is a post-launch idea (docs/REQUIREMENTS-2026-10.md §三).
 - Secrets only in Cloudflare env vars. `SETUP.md` gives Abby step-by-step Google Cloud + calendar sharing + Web3Forms + Turnstile setup.
 
 ## 9. SEO / GEO / analytics

@@ -55,17 +55,17 @@ test('infill is a share of the last price: shown as a percentage, never a dollar
   assert.equal(quoteText(quote(L, 'classic-natural', {})!, 'en'), `$${findOption(L, 'classic-natural')!.price}`);
 });
 
-test('several services in one booking: durations and prices add up, deposit is the highest one', () => {
+test('several services in one booking: durations, prices and deposits add up', () => {
   const lash = quote(L, 'classic-natural', { 'bottom-full': 1 })!;
   const gel = quote('gel-nails', 'solid', { extension: 4 })!;
   const brows = quote('powder-brows', 'powder', {})!;
   const two = quoteAll([{ service: L, option: 'classic-natural', addons: { 'bottom-full': 1 } }, { service: 'gel-nails', option: 'solid', addons: { extension: 4 } }])!;
   assert.equal(two.minutes, lash.minutes + gel.minutes);
   assert.equal(two.price, lash.price + gel.price);
-  assert.equal(two.deposit, 20);
+  assert.equal(two.deposit, 40); // $20 + $20
   assert.equal(quoteAllText(two, 'en'), `$${lash.price + gel.price}`);
   const three = quoteAll([{ service: L, option: 'classic-natural', addons: {} }, { service: 'powder-brows', option: 'powder', addons: {} }, { service: 'gel-nails', option: 'solid', addons: {} }])!;
-  assert.equal(three.deposit, 50);
+  assert.equal(three.deposit, 70); // $20 lashes + $30 brows + $20 nails
   assert.equal(three.minutes, findOption(L, 'classic-natural')!.minutes + brows.minutes + findOption('gel-nails', 'solid')!.minutes);
   assert.equal(three.lead, three.minutes - brows.minutes); // brows is the longest, so it goes last
   assert.equal(quoteAll([{ service: 'lash-lift', option: 'keratin-lift', addons: {} }])!.lead, 0);
@@ -77,7 +77,7 @@ test('several services: mixed prices stay honest, bad combinations are rejected'
   assert.equal(quoteAll([]), null);
   assert.equal(quoteAll([{ service: L, option: 'classic-natural', addons: {} }, { service: L, option: 'classic-full', addons: {} }]), null); // same service twice
   assert.equal(quoteAll([{ service: L, option: 'classic-natural', addons: {} }, { service: 'gel-nails', option: 'nope', addons: {} }]), null);
-  assert.equal(depositFor([services.find((s) => s.id === 'powder-brows')!]), 50);
+  assert.equal(depositFor([services.find((s) => s.id === 'powder-brows')!]), 30);
   assert.equal(depositFor([services.find((s) => s.id === L)!]), 20);
 });
 

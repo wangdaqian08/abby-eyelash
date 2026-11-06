@@ -50,7 +50,7 @@ export const site = {
     bufferMinutes: 15,
     minNoticeHours: 3,
     maxAdvanceDays: 60,
-    deposit: 20, // AUD, paid by WeChat after booking; not refunded inside cancelHours
+    deposit: 20, // AUD per service (powder brows: its own `deposit` in services.ts), paid by bank transfer; not refunded inside cancelHours
     cancelHours: 48,
   },
 } as const;

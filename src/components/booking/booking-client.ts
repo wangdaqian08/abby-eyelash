@@ -499,7 +499,7 @@ export function start(root: HTMLElement) {
     const title = fill(t.calendarTitle, { service: label() });
     const a = site.address;
     const location = `${site.name}, ${a.street}, ${a.locality} ${a.region} ${a.postcode}`;
-    const successBody = fill(t.successBody, { deposit: total().deposit, wechat: site.social.wechatId, hours: site.booking.cancelHours });
+    const successBody = fill(t.successBody, { deposit: total().deposit, hours: site.booking.cancelHours });
     const details = `${t.pending}\n${successBody}\n${site.phoneDisplay}`;
     const gcal = `https://calendar.google.com/calendar/render?${new URLSearchParams({ action: 'TEMPLATE', text: title, dates: `${stamp(start)}/${stamp(end)}`, details, location, ctz: TZ })}`;
     const icsText = (s: string) => s.replace(/([\\;,])/g, '\\$1').replace(/\n/g, '\\n');

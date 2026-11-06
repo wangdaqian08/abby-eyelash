@@ -87,7 +87,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       `Email: ${plain(b.email)}`,
       `Service: ${label} (${minutes} min)`,
       `Price: ${quoteAllText(booking, 'en')}`,
-      `Deposit: $${deposit} by WeChat — not yet received`,
+      `Deposit: $${deposit} by bank transfer — not yet received (send the bank details when confirming)`,
       `Language: ${b.lang === 'zh' ? 'Chinese' : 'English'}`,
       `Notes: ${plain(b.notes) || '-'}`,
       '',
