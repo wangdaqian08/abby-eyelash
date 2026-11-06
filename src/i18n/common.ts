@@ -77,12 +77,15 @@ const en = {
     photo3: 'Client’s hand on a towel during a manicure appointment',
   },
   gallery: {
-    eyebrow: 'Gallery',
-    title: 'Nail art,',
-    accent: 'all hand-done.',
+    eyebrow: 'Portfolio',
+    title: 'Lashes and nails,',
+    accent: 'all by Abby.',
     more: 'See more on Instagram',
-    showAll: 'Show all 22',
+    lashes: 'Lashes',
+    nails: 'Nails',
+    showAll: 'Show all {n}', // {n} = photos in that part
     showLess: 'Show fewer',
+    bookLashes: 'Book lashes →',
     bookNails: 'Book nails →',
     playVideo: 'Play video',
   },
@@ -119,7 +122,7 @@ const en = {
     phone: 'SMS / WhatsApp',
     email: 'Email',
     findUs: 'About a 5-minute walk from Burwood station. The exact address is sent when your booking is confirmed.',
-    byAppointment: 'By appointment only — Abby works alone, so please book ahead. Messages only (SMS or WhatsApp): she can’t take calls while working.',
+    byAppointment: 'By appointment only — Abby works on her own, so please book ahead. Please text rather than call (SMS or WhatsApp): if a call goes unanswered, she’s with a client and will text you back as soon as she can.',
     lastStart: 'Hours are booking times: the last appointment starts at {time}.',
     openMaps: 'Open in Google Maps',
     mapTitle: 'Map showing Abby Eyelash in Burwood',
@@ -205,11 +208,14 @@ const zh: Strings = {
   },
   gallery: {
     eyebrow: '作品集',
-    title: '每一套，',
-    accent: '都是手做。',
+    title: '睫毛与美甲，',
+    accent: '都出自 Abby 之手。',
     more: '在 Instagram 查看更多',
-    showAll: '看全部 22 款',
+    lashes: '睫毛作品',
+    nails: '指甲作品',
+    showAll: '看全部 {n} 款',
     showLess: '收起',
+    bookLashes: '约睫毛 →',
     bookNails: '约美甲 →',
     playVideo: '播放视频',
   },
@@ -246,7 +252,7 @@ const zh: Strings = {
     phone: '短信 / WhatsApp',
     email: '邮箱',
     findUs: '从宝活火车站（Burwood station）步行约 5 分钟。确认预约时会把详细地址发给你。',
-    byAppointment: '仅限预约 —— Abby 一人工作，请提前预约。只接受短信或 WhatsApp 联系，工作时无法接听电话。',
+    byAppointment: '仅限预约 —— Abby 一人工作，请提前预约。联系请尽量发短信或 WhatsApp，不要直接打电话；如果来电没有接听，多半是正在为客人服务，她会稍后用短信回复你。',
     lastStart: '以上为可预约时间，最晚 {time} 开始。',
     openMaps: '在 Google 地图中打开',
     mapTitle: 'Abby Eyelash 在宝活的位置地图',
@@ -327,11 +333,11 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
   en: [
     {
       q: 'How do I book, and what is the cancellation policy?',
-      a: 'Book online at any time, or text or WhatsApp {phone}. After you book, a ${deposit} deposit by WeChat ({wechat}) secures your time. Please give at least {hours} hours’ notice to cancel or reschedule; within {hours} hours the deposit is not refunded and the time can’t be changed.',
+      a: 'Book online at any time, or text or WhatsApp {phone}; you can book several services for the same visit. After you book, a ${deposit} deposit (${browDeposit} for powder brows) by WeChat ({wechat}) secures your time. Please give at least {hours} hours’ notice to cancel or reschedule; within {hours} hours the deposit is not refunded and the time can’t be changed.',
     },
     {
       q: 'What payment methods do you accept?',
-      a: 'A ${deposit} deposit is paid by WeChat ({wechat}) after you book. The rest is paid in cash at the end of your appointment.',
+      a: 'A ${deposit} deposit (${browDeposit} for powder brows) is paid by WeChat ({wechat}) after you book. The rest is paid in cash at the end of your appointment.',
     },
     {
       q: 'Do you have any offers?',
@@ -355,21 +361,21 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
     },
     {
       q: 'How long do lash extensions and lash lifts last?',
-      a: 'Lash extensions shed naturally with your own lashes, so most clients book an infill every 2–3 weeks. A keratin lash lift usually lasts 6–8 weeks.',
+      a: 'Lash extensions shed naturally with your own lashes, so most clients book an infill every 2–3 weeks. A keratin lash lift usually lasts 1–2 months, depending on how fast your lashes grow.',
     },
     {
       q: 'How long do gel nails and nail extensions last?',
-      a: 'Gel nails usually last 2–3 weeks before regrowth shows. Tip extensions ($6 per nail, added to any gel or hand-painted design) are usually redone after about 3 weeks.',
+      a: 'Gel nails and hand-painted designs usually last about 4 weeks before regrowth shows. Tip extensions ($6 per nail, added to any gel or hand-painted design) are usually redone after about 4 weeks.',
     },
   ],
   zh: [
     {
       q: '怎么预约？取消政策是什么？',
-      a: '可以随时在线预约，也可以发短信或 WhatsApp 至 {phone}。预约后请通过微信（{wechat}）支付 ${deposit} 订金确认时间。如需取消或改期，请至少提前 {hours} 小时告知；{hours} 小时以内取消或改期，订金不退，也不能更改时间。',
+      a: '可以随时在线预约，也可以发短信或 WhatsApp 至 {phone}，一次可以预约多个项目。预约后请通过微信（{wechat}）支付 ${deposit} 订金（雾眉为 ${browDeposit}）确认时间。如需取消或改期，请至少提前 {hours} 小时告知；{hours} 小时以内取消或改期，订金不退，也不能更改时间。',
     },
     {
       q: '可以用哪些方式付款？',
-      a: '预约后通过微信（{wechat}）支付 ${deposit} 订金，其余费用在服务结束后以现金支付。',
+      a: '预约后通过微信（{wechat}）支付 ${deposit} 订金（雾眉为 ${browDeposit}），其余费用在服务结束后以现金支付。',
     },
     {
       q: '有什么优惠吗？',
@@ -393,11 +399,11 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
     },
     {
       q: '嫁接睫毛和翘睫能维持多久？',
-      a: '嫁接睫毛会随自身睫毛自然脱落，大多数顾客每 2–3 周补一次。角蛋白翘睫一般可维持 6–8 周。',
+      a: '嫁接睫毛会随自身睫毛自然脱落，大多数顾客每 2–3 周补一次。角蛋白翘睫可维持 1–2 个月（视个人睫毛生长速度而定）。',
     },
     {
       q: '凝胶美甲和延长甲能维持多久？',
-      a: '凝胶美甲一般能维持 2–3 周，之后甲根会露出新长的指甲。甲片延长（每只 $6，可加在任何凝胶或手绘款上）一般约 3 周后重做。',
+      a: '凝胶美甲和手绘造型一般能维持 4 周左右，之后甲根会露出新长的指甲。甲片延长（每只 $6，可加在任何凝胶或手绘款上）一般约 4 周后重做。',
     },
   ],
 };

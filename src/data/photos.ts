@@ -46,6 +46,13 @@ export const photos: Photo[] = [
   lash('styled-bottom', '造型款+下睫毛.jpg', 'Styled lash set with long, flared top lashes and bottom lashes', '造型款嫁接睫毛，上睫毛纤长向外散开，搭配下睫毛', { box: { left: 0.02, top: 0.55, width: 0.86, height: 0.45 } }),
   lash('styled-bottom-2', '造型款+下睫毛2.JPG', 'Styled lash set with spiky, dark top lashes and defined bottom lashes on a brown eye', '棕色眼睛上的造型款嫁接睫毛，上睫毛浓黑尖翘，下睫毛分明'),
   lash('styled-close', '造型款.JPG', 'Close-up of a styled lash set with long, dark, criss-crossed lashes on a green-brown eye', '绿棕色眼睛上的造型款嫁接睫毛特写，睫毛浓黑纤长、交错有致'),
+  lash('classic-natural-2', '单根自然2.JPG', 'Japanese classic natural lash extensions, fine and separated, on an amber eye, Burwood', '琥珀色眼睛上的日式单根自然款嫁接睫毛，根根分明，Burwood'),
+  lash('classic-natural-colour', '单根自然+彩色+下睫毛.JPG', 'Japanese classic natural lash extensions with blue colour accents at the outer corner and bottom lashes', '日式单根自然款嫁接睫毛，眼尾点缀蓝色彩色睫毛，搭配下睫毛'),
+  lash('hybrid-full-eye', '开花-浓密.JPG', 'Dense, fluffy hybrid full lash extensions on a brown eye, Burwood', '棕色眼睛上的开花浓密款嫁接睫毛，蓬松浓密，Burwood'),
+  lash('hybrid-full-2', '开花-浓密2.JPG', 'Hybrid full lash extensions with soft fanned volume on a hazel eye', '榛色眼睛上的开花浓密款嫁接睫毛，开花柔和饱满'),
+  lash('hybrid-full-bottom', '开花-浓密+下睫毛.JPG', 'Hybrid full lash extensions with bottom lashes on a dark brown eye', '深棕色眼睛上的开花浓密款嫁接睫毛，搭配下睫毛'),
+  lash('face-natural', 'IMG_7446.JPG', 'Client selfie with soft, natural-looking lash extensions, Burwood', '客人自拍，嫁接睫毛自然柔和，Burwood', { ratio: '3:4', position: 'top' }),
+  lash('face-smile', 'IMG_7444.HEIC', 'Smiling client selfie showing light, natural lash extensions', '客人微笑自拍，嫁接睫毛轻盈自然', { ratio: '3:4', position: 'top' }),
   lash('selfie', '造型款.HEIC', "Client's face close-up showing dark, wispy styled lash extensions", '客人面部近景，展示深色纤长的造型款嫁接睫毛', { ratio: '3:4' }),
   lash('lift-2', '角蛋白-翘睫2.JPG', 'Keratin lash lift result on a dark brown eye, natural lashes curled upward, Burwood', '深棕色眼睛上的角蛋白翘睫效果，自然睫毛根根上翘，Burwood', { ratio: '4:3' }),
 
@@ -137,6 +144,15 @@ export const styledLooks: { photo: string; name: L10n }[] = [
   { photo: 'styled-bottom', name: { en: 'Styled + bottom lashes', zh: '造型款 + 下睫毛' } },
   { photo: 'styled-bottom-2', name: { en: 'Styled + bottom lashes II', zh: '造型款 + 下睫毛 2' } },
   { photo: 'styled-close', name: { en: 'Styled close-up', zh: '造型款特写' } },
+];
+
+export const LASH_VISIBLE = 4; // lash photos shown per group before "show all"
+/** Home portfolio, lash part: grouped by look; one ratio per group so each grid is uniform. The six "lash looks" cards and the hero aren't repeated. */
+export const lashGroups: { id: string; name: L10n; ratio: '3:4' | '4:3'; items: string[] }[] = [
+  { id: 'face', name: { en: 'Full-face looks', zh: '整脸效果' }, ratio: '3:4', items: ['face-natural', 'face-smile', 'styled-half-face', 'styled-mermaid-selfie'] },
+  { id: 'natural-full', name: { en: 'Natural and full sets', zh: '自然款 · 浓密款' }, ratio: '4:3',
+    items: ['classic-natural-2', 'hybrid-full-eye', 'classic-natural-colour', 'hybrid-full-2', 'hybrid-full-bottom'] },
+  { id: 'styled', name: { en: 'Styled sets', zh: '造型款' }, ratio: '4:3', items: styledLooks.map((l) => l.photo).filter((p) => p !== 'styled-fairy') },
 ];
 
 /** Per service slot: manifest photo, optional object-position, optional literal aspect classes (default in ServicePage). */

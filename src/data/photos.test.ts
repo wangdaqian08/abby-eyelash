@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { bookableWith, findOption, mainOptions, priceText, services } from './services.ts';
-import { homeHero, lashCards, lashLooks, nailGroups, nailVideo, NAIL_VISIBLE, photo, photos, servicePhotos, styleGuide, styledLooks } from './photos.ts';
+import { homeHero, lashCards, lashGroups, lashLooks, nailGroups, nailVideo, NAIL_VISIBLE, photo, photos, servicePhotos, styleGuide, styledLooks } from './photos.ts';
 
 test('every lash card points at a bookable main option', () => {
   assert.equal(lashCards.length, 6);
@@ -59,7 +59,22 @@ test('AI style-guide images are labelled as AI in both languages and never used 
     assert.match(photo(id).alt.zh, /^AI 生成示意图，非真实客人/);
   }
   const used = [...lashCards.map((c) => c.photo), ...styledLooks.map((l) => l.photo), homeHero,
-    ...nailGroups.flatMap((g) => g.items), ...Object.values(servicePhotos).flatMap((s) => [s.hero, s.detail])];
+    ...nailGroups.flatMap((g) => g.items), ...lashGroups.flatMap((g) => g.items), ...Object.values(servicePhotos).flatMap((s) => [s.hero, s.detail])];
   for (const id of ai) assert.ok(!used.includes(id), id);
   for (const g of styleGuide) assert.ok(findOption('lash-extensions', g.optionId), g.optionId);
+});
+
+test('lash portfolio: uniform ratio per group, real work only, no repeats of the cards above it', () => {
+  const ids = lashGroups.flatMap((g) => g.items);
+  assert.equal(new Set(ids).size, ids.length);
+  for (const g of lashGroups) for (const id of g.items) assert.equal(photo(id).ratio, g.ratio, id);
+  for (const id of ids) {
+    assert.equal(photo(id).dir, 'lash', id);
+    assert.ok(!/^AI-generated/.test(photo(id).alt.en), id);
+    assert.ok(!lashCards.some((c) => c.photo === id) && id !== homeHero, id);
+  }
+  // every real lash photo is shown somewhere on the home page or a service page
+  const shown = new Set([...ids, ...lashCards.map((c) => c.photo), homeHero, ...styledLooks.map((l) => l.photo), ...Object.values(servicePhotos).flatMap((s) => [s.hero, s.detail])]);
+  const unused = photos.filter((p) => p.dir === 'lash' && p.ratio !== 'original' && !shown.has(p.id)).map((p) => p.id);
+  assert.deepEqual(unused, []);
 });
