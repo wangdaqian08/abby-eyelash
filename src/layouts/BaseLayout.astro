@@ -4,7 +4,6 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SeoHead, { type Props as SeoProps } from '../components/seo/SeoHead.astro';
 import Analytics from '../components/Analytics.astro';
-import ThemePreview from '../components/ThemePreview.astro';
 import playfair500 from '@fontsource/playfair-display/files/playfair-display-latin-500-normal.woff2?url';
 import playfair500i from '@fontsource/playfair-display/files/playfair-display-latin-500-italic.woff2?url';
 
@@ -14,7 +13,7 @@ const { lang, title, description } = props;
 ---
 
 <!doctype html>
-<html lang={lang === 'zh' ? 'zh-Hans' : 'en-AU'} data-theme="mocha">
+<html lang={lang === 'zh' ? 'zh-Hans' : 'en-AU'}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -25,13 +24,6 @@ const { lang, title, description } = props;
     <link rel="preload" href={playfair500} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={playfair500i} as="font" type="font/woff2" crossorigin />
     <script is:inline>
-      // Theme preview (pre-launch only): ?theme=rose persists in localStorage. Remove once a theme is chosen.
-      try {
-        const q = new URLSearchParams(location.search).get('theme');
-        if (q) localStorage.setItem('theme', q);
-        const t = localStorage.getItem('theme');
-        if (t) document.documentElement.dataset.theme = t;
-      } catch {}
       document.documentElement.classList.add('js');
     </script>
     <SeoHead {...props} />
@@ -49,8 +41,23 @@ const { lang, title, description } = props;
       <slot />
     </main>
     <Footer lang={lang} />
-    <ThemePreview />
     <script>
+      // Press state for touch: phones apply :active late (or not at all) and a fast tap lifts before it shows.
+      // data-pressed goes on at pointerdown and stays at least 140 ms; CSS styles it exactly like :active.
+      document.addEventListener(
+        'pointerdown',
+        (e) => {
+          const el = (e.target as Element).closest<HTMLElement>('a, button, label, summary');
+          if (!el || el.matches(':disabled, [aria-disabled="true"]')) return;
+          const t0 = performance.now();
+          el.dataset.pressed = '';
+          el.dataset.pressedAt = String(t0);
+          const up = () => setTimeout(() => delete el.dataset.pressed, Math.max(0, 140 - (performance.now() - t0)));
+          addEventListener('pointerup', up, { once: true });
+          addEventListener('pointercancel', up, { once: true });
+        },
+        { passive: true },
+      );
       const io = new IntersectionObserver(
         (entries) =>
           entries.forEach((e) => {
