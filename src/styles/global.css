@@ -63,9 +63,9 @@
   --shadow-sm: 0 1px 2px rgb(46 33 28 / 0.06);
   --shadow-lift: 0 12px 32px -12px rgb(46 33 28 / 0.22);
   /* Liquid glass (variant B): a blurred, saturated pane with a bright top rim and a soft lensing shadow. */
-  --glass-blur: 16px;
-  --glass-fill: color-mix(in oklch, var(--surface-3) 42%, transparent);
-  --glass-fill-strong: color-mix(in oklch, var(--surface-3) 72%, transparent);
+  --glass-blur: 14px;
+  --glass-fill: rgb(255 255 255 / 0.18);
+  --glass-fill-strong: rgb(255 255 255 / 0.5);
   --glass-tint: color-mix(in oklch, var(--primary) 86%, transparent);
   --glass-rim: inset 0 1.5px 0 rgb(255 255 255 / 0.7), inset 0 0 0 0.6px rgb(255 255 255 / 0.4), inset 0 -1px 1px rgb(255 255 255 / 0.2);
   --glass-shadow: 0 10px 34px color-mix(in oklch, var(--fg) 16%, transparent), 0 1px 3px color-mix(in oklch, var(--fg) 10%, transparent);
@@ -188,8 +188,8 @@
   position: relative;
   isolation: isolate;
   background: var(--glass-fill);
-  backdrop-filter: blur(var(--glass-blur)) saturate(180%) brightness(1.05);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%) brightness(1.05);
+  backdrop-filter: blur(var(--glass-blur)) saturate(190%) brightness(1.06);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(190%) brightness(1.06);
   box-shadow: var(--glass-rim), var(--glass-shadow);
   transition: transform var(--t-hover) var(--ease), box-shadow var(--t-hover) var(--ease), background-color var(--t-hover) var(--ease);
   &::before {
@@ -232,16 +232,12 @@
 @utility blobs {
   position: relative;
   overflow: hidden;
-  &::before, &::after {
-    content: '';
-    position: absolute;
-    z-index: 0;
-    border-radius: 50%;
-    filter: blur(48px);
-    pointer-events: none;
-  }
-  &::before { width: 22rem; height: 22rem; left: -8rem; top: -6rem; background: color-mix(in oklch, var(--primary) 32%, transparent); }
-  &::after { width: 20rem; height: 20rem; right: -8rem; bottom: -4rem; background: color-mix(in oklch, var(--accent) 38%, transparent); }
+  background-image:
+    radial-gradient(28rem 28rem at 8% 0%, color-mix(in oklch, var(--primary) 42%, white) 0%, transparent 70%),
+    radial-gradient(26rem 26rem at 100% 42%, color-mix(in oklch, var(--accent) 55%, white) 0%, transparent 70%),
+    radial-gradient(24rem 24rem at 0% 100%, color-mix(in oklch, var(--primary) 30%, white) 0%, transparent 70%),
+    radial-gradient(20rem 20rem at 70% 95%, color-mix(in oklch, var(--accent) 40%, white) 0%, transparent 70%);
+  background-repeat: no-repeat;
   & > * { position: relative; z-index: 1; }
 }
 /* Text links dim while pressed so every tap answers (buttons and glass controls have their own press). */
@@ -281,7 +277,7 @@
 .js [data-hero-img] { animation: settle 1400ms var(--ease-soft) both; }
 
 /* Floating header pill: a touch more fill once the page scrolls under it. */
-[data-header].is-scrolled .glass:not(.glass-tint) { background: var(--glass-fill-strong); }
+[data-header].is-scrolled .glass:not(.glass-tint) { background: rgb(255 255 255 / 0.4); }
 
 /* Mobile menu items arrive one by one when the menu opens. */
 @keyframes fade-up { from { opacity: 0; transform: translateY(8px); } }

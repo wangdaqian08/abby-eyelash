@@ -4,6 +4,8 @@ import { readdirSync } from 'node:fs';
 import { site } from '../../data/site';
 import type { Lang } from '../../data/services';
 import { bookingStrings } from '../../i18n/booking';
+import { Picture } from 'astro:assets';
+import { photoSrc } from '../../lib/photo-src';
 
 interface Props {
   lang: Lang;
@@ -26,7 +28,13 @@ const config = {
 };
 ---
 
-<section class="blobs tabular-nums pb-[calc(var(--tabbar-h)+3rem)] pt-[calc(var(--header-h)+40px)] lg:pb-24 lg:pt-[calc(var(--header-h)+64px)]"><div class="mx-auto max-w-6xl px-4 sm:px-6">
+<section class="relative isolate tabular-nums pb-[calc(var(--tabbar-h)+3rem)] pt-[calc(var(--header-h)+40px)] lg:pb-24 lg:pt-[calc(var(--header-h)+64px)]">
+  {/* Decorative: a softened client photo behind the glass sheet so the blur has something to refract. */}
+  <div aria-hidden="true" class="absolute inset-0 -z-10 overflow-hidden">
+    <Picture src={photoSrc('hybrid-full-face')} alt="" formats={['avif', 'webp']} widths={[768, 1440]} sizes="100vw" loading="eager" class="size-full scale-105 object-cover object-[50%_20%] blur-sm" />
+    <div class="absolute inset-0 bg-[linear-gradient(180deg,color-mix(in_oklch,var(--bg)_55%,transparent),color-mix(in_oklch,var(--bg)_80%,transparent)_60%,var(--bg))]"></div>
+  </div>
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
   <p class:list={["text-[0.8125rem] font-medium uppercase text-accent-ink", lang === "en" && "tracking-[0.25em]"]}>{t.eyebrow}</p>
   <h1 class="mt-3 text-4xl leading-tight sm:text-5xl">{t.titleA}<em>{t.titleB}</em></h1>
 

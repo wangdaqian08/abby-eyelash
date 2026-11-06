@@ -42,7 +42,7 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
 <BaseLayout lang={lang} title={c.title} description={c.description} updated={service.updated}>
   <article>
     {/* Hero: breadcrumb, H1, answer-first intro, CTAs */}
-    <section class:list={[container, 'grid items-center gap-10 pb-16 pt-[calc(var(--header-h)+24px)] lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:pb-24 lg:pt-[calc(var(--header-h)+48px)]']}>
+    <section class="blobs"><div class:list={[container, 'grid items-center gap-10 pb-16 pt-[calc(var(--header-h)+24px)] lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:pb-24 lg:pt-[calc(var(--header-h)+48px)]']}>
       <div>
         <nav aria-label={t.breadcrumb} class="text-sm text-muted">
           <ol class="flex flex-wrap items-center gap-2">
@@ -60,12 +60,12 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
         </div>
       </div>
       <ServiceImage photo={sp?.hero} lang={lang} alt={c.alt?.hero} eager position={sp?.heroPos} class:list={[sp?.heroAspect ?? 'aspect-[4/3] lg:aspect-[4/5]', 'w-full']} />
-    </section>
+    </div></section>
 
     {service.id === 'lash-extensions' && <LashStyleGuide lang={lang} />}
 
     {/* Price table (same data as Service/Offer JSON-LD) */}
-    <section id="prices" class="bg-surface-2 py-16 lg:py-24">
+    <section id="prices" class="blobs bg-surface-2 py-16 lg:py-24">
       <div class:list={[container, 'grid gap-10 lg:grid-cols-[1fr_1.5fr] lg:gap-16']}>
         <div>
           <p class:list={eyebrow}>{t.priceEyebrow}</p>
