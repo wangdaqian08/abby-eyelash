@@ -539,7 +539,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `Prep: shaping, cuticles pushed back and tidied, a light buff of the surface.`,
             `Gel base, builder gel and background colour, each layer cured under the lamp.`,
             `Hand-painting layer by layer with fine brushes, curing between details.`,
-            `Gel top coat to seal the design, then cuticle oil.`,
+            `Gel top coat to seal the design.`,
           ],
         },
         {
@@ -595,7 +595,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `修型、推死皮、修整甲缘，轻轻打磨甲面。`,
             `上底胶、建构胶和底色，每层都照灯固化。`,
             `用细笔一层层手绘，细节之间照灯。`,
-            `上封层锁住图案，最后涂指缘油。`,
+            `上封层锁住图案。`,
           ],
         },
         {
@@ -657,7 +657,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `Cuticles gently pushed back and tidied; the surface is lightly buffed and cleansed so the gel bonds.`,
             `Base and builder gel for strength, cured under the lamp.`,
             `Colour or finish in thin layers, each cured, then a gel top coat.`,
-            `Cuticle oil to finish.`,
           ],
         },
         {
@@ -714,7 +713,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `轻推死皮、修整甲缘，轻轻打磨并清洁甲面，帮助凝胶附着。`,
             `上底胶和建构胶增加硬度，照灯固化。`,
             `分薄层上颜色或做效果，每层照灯，最后上封层。`,
-            `最后涂指缘油。`,
           ],
         },
         {
@@ -772,7 +770,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `Prep: shaping, cuticle care and a light buff.`,
             `A tip sized to each nail is bonded and shaped.`,
             `Builder gel, your colour or design, and a gel top coat, each cured under the lamp.`,
-            `Cuticle oil to finish.`,
           ],
         },
         {
@@ -828,7 +825,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `修型、甲缘护理、轻磨甲面。`,
             `每根手指选合适的甲片，粘贴并塑形。`,
             `上建构胶、颜色或图案，再上封层，每层照灯固化。`,
-            `最后涂指缘油。`,
           ],
         },
         {
