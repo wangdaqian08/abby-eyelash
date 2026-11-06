@@ -42,9 +42,9 @@ const ICON = {
 };
 const STEP_ICONS = [ICON.service, ICON.date, ICON.time, ICON.details];
 
-const BTN = 'glass glass-press inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 font-medium uppercase disabled:cursor-not-allowed disabled:opacity-50';
-const BTN_PRIMARY = `${BTN} glass-tint`;
-const BTN_OUTLINE = `${BTN} glass-strong text-primary`;
+const BTN = 'press inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 font-medium uppercase disabled:cursor-not-allowed disabled:opacity-50';
+const BTN_PRIMARY = `${BTN} btn-solid`;
+const BTN_OUTLINE = `${BTN} btn-tinted`;
 const PRESS_MS = 140;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const INPUT = 'block h-12 w-full appearance-none rounded-field bg-surface-2 px-4 text-base text-fg placeholder:text-muted aria-invalid:outline-2 aria-invalid:outline-danger';
@@ -180,7 +180,7 @@ export function start(root: HTMLElement) {
       const h = headline(s);
       const range = h.minutes![0] === h.minutes![1] ? mins(h.minutes![0]) : `${h.minutes![0]}–${mins(h.minutes![1])}`;
       const on = !!itemOf(s.id);
-      return `<label class="glass glass-strong glass-press relative flex min-h-16 items-center gap-3 rounded-[1.25rem] p-4 has-checked:bg-surface-3/90 has-checked:ring-2 has-checked:ring-inset has-checked:ring-primary/50 has-focus-visible:focus-ring">
+      return `<label class="press relative flex min-h-16 items-center gap-3 rounded-[1.25rem] bg-surface-2 p-4 transition-colors duration-200 has-checked:bg-primary/8 has-checked:ring-2 has-checked:ring-inset has-checked:ring-primary/60 has-focus-visible:focus-ring">
         <input type="checkbox" name="bk-service" value="${s.id}" class="sr-only" ${on ? 'checked' : ''}>
         <span aria-hidden="true" class="flex size-6 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${on ? 'bg-primary text-on-primary' : 'ring-1 ring-inset ring-muted/50'}">${on ? ICON.tick : ''}</span>
         <span><span class="block font-medium">${s.name[lang]}</span><span class="text-sm text-muted">${range} · ${price(h)}</span></span>
@@ -261,9 +261,9 @@ export function start(root: HTMLElement) {
       const avail = d in days;
       const sel = d === st.date;
       const cls = sel
-        ? 'glass glass-tint font-semibold'
+        ? 'bg-primary font-semibold text-on-primary shadow-[0_6px_14px_-6px_var(--primary)]'
         : avail
-          ? 'glass glass-strong glass-press font-medium text-fg'
+          ? 'press bg-surface-2 font-medium text-fg'
           : 'cursor-default text-muted/60';
       const label = `${fmtDate(d, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}, ${avail ? t.available : t.unavailable}${d === today ? `, ${t.today}` : ''}`;
       cells.push(`<span role="gridcell" class="flex justify-center" ${sel ? 'aria-selected="true"' : ''}>
@@ -276,7 +276,7 @@ export function start(root: HTMLElement) {
     for (let i = 0; i < cells.length; i += 7) rows.push(`<div role="row" class="grid grid-cols-7 gap-y-2">${cells.slice(i, i + 7).join('')}</div>`);
 
     const navBtn = (dir: 'prev' | 'next', disabled: boolean) =>
-      `<button type="button" data-action="${dir}" aria-label="${dir === 'prev' ? t.prevMonth : t.nextMonth}" ${disabled ? 'disabled' : ''} class="glass glass-press flex size-11 items-center justify-center rounded-full ${disabled ? 'cursor-not-allowed text-muted/60' : 'glass-strong text-fg'}">${ICON[dir]}</button>`;
+      `<button type="button" data-action="${dir}" aria-label="${dir === 'prev' ? t.prevMonth : t.nextMonth}" ${disabled ? 'disabled' : ''} class="press flex size-11 items-center justify-center rounded-full ${disabled ? 'cursor-not-allowed bg-surface-2 text-muted/60' : 'btn-tinted'}">${ICON[dir]}</button>`;
 
     const body =
       data === 'error'
@@ -310,9 +310,9 @@ export function start(root: HTMLElement) {
         const label = fmtTime(st.date!, time);
         const tag = rec.has(time) ? badge : '';
         return time === st.time
-          ? `<li class="grid grid-cols-2 gap-2"><span data-pop class="glass glass-strong relative flex h-12 items-center justify-center rounded-full font-medium text-primary ring-2 ring-inset ring-primary/50">${label}${tag && `<span class="sr-only">, ${t.recommended}</span>`}</span>
-              <button type="button" data-action="to-details" aria-label="${t.next}: ${label}" class="glass glass-tint glass-press h-12 rounded-full font-medium">${t.next}</button></li>`
-          : `<li><button type="button" data-time="${time}" class="glass glass-strong glass-press relative h-12 w-full rounded-full text-fg tabular-nums">${label}${tag}</button></li>`;
+          ? `<li class="grid grid-cols-2 gap-2"><span data-pop class="relative flex h-12 items-center justify-center rounded-full bg-primary/8 font-medium text-primary ring-2 ring-inset ring-primary/60">${label}${tag && `<span class="sr-only">, ${t.recommended}</span>`}</span>
+              <button type="button" data-action="to-details" aria-label="${t.next}: ${label}" class="btn-solid press h-12 rounded-full font-medium">${t.next}</button></li>`
+          : `<li><button type="button" data-time="${time}" class="press relative h-12 w-full rounded-full bg-surface-2 text-fg tabular-nums">${label}${tag}</button></li>`;
       })
       .join('');
     return `<h3 data-slots-heading tabindex="-1" class="font-sans text-base font-normal outline-none">${fmtDate(st.date, { weekday: 'long', day: 'numeric', month: 'long' })}</h3>

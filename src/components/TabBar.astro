@@ -19,7 +19,7 @@ const tabs = [
 ];
 ---
 <nav aria-label={lang === 'zh' ? '快捷导航' : 'Quick links'} class="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 lg:hidden">
-  <ul class="glass glass-strong flex h-[var(--tabbar-h)] items-center justify-around rounded-full px-1.5">
+  <ul class="glass flex h-[var(--tabbar-h)] items-center justify-around rounded-full px-1.5">
     {tabs.map((tab) => (
       <li class="flex-1">
         <a
@@ -28,7 +28,7 @@ const tabs = [
           aria-current={tab.on ? 'page' : undefined}
           class:list={[
             'mx-auto flex min-h-11 w-fit min-w-16 flex-col items-center justify-center gap-0.5 rounded-full px-3 py-1.5 text-[0.6875rem] font-medium transition duration-200 ease-brand active:scale-[.92]',
-            tab.on ? 'bg-surface-3/70 text-primary shadow-sm' : 'text-fg',
+            tab.on ? 'bg-primary/10 text-primary' : 'text-fg',
           ]}
         >
           <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={tab.d} /></svg>

@@ -8,12 +8,12 @@ interface Props { lang: Lang }
 const { lang } = Astro.props;
 const t = common[lang].services;
 // Demo colour-fill hover + lift; focus-visible gets the same state (MASTER §4).
-// Glass card over the section's colour blobs; lifts on hover, sinks on press (glass-press).
-const card = 'group glass glass-strong glass-press relative flex flex-col rounded-[1.6rem] p-6 sm:p-8 focus-visible:z-10';
+// Opaque white card on the grey band (Apple grouped cards); lifts on hover, sinks on press.
+const card = 'group press relative flex flex-col rounded-[1.6rem] bg-surface-3 p-6 shadow-[0_1px_2px_rgb(30_18_21/0.05),0_10px_30px_-14px_rgb(30_18_21/0.25)] sm:p-8 focus-visible:z-10';
 const onFill = '';
 const small = lang === 'en' ? 'text-[0.8125rem] uppercase tracking-[0.2em]' : 'text-sm';
 ---
-<section id="services" class="blobs bg-surface-2 py-16 md:py-24">
+<section id="services" class="bg-surface-2 py-16 md:py-24">
   <div class="mx-auto max-w-6xl px-4 sm:px-6">
     <div data-reveal class="grid gap-8 md:grid-cols-2 md:items-end md:gap-16">
       <SectionHeading lang={lang} eyebrow={t.eyebrow} title={t.title} accent={t.accent} />
@@ -35,7 +35,7 @@ const small = lang === 'en' ? 'text-[0.8125rem] uppercase tracking-[0.2em]' : 't
         </li>
       ))}
       <li class="flex">
-        <a href={localePath(lang, '/book')} data-track="book_click" class:list={[card, 'glass-tint w-full']}>
+        <a href={localePath(lang, '/book')} data-track="book_click" class:list={[card, 'w-full bg-primary! text-on-primary']}>
           <h3 class:list={['text-xl', onFill]}><em class="text-on-primary">{t.ctaTitle}</em></h3>
           <p class="mt-3 flex-1 text-on-primary/85">{t.ctaBody}</p>
           <span class:list={['mt-6 inline-flex items-center gap-2 text-on-primary', small]}>

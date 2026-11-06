@@ -62,10 +62,10 @@
   --danger: #b42318;
   --shadow-sm: 0 1px 2px rgb(46 33 28 / 0.06);
   --shadow-lift: 0 12px 32px -12px rgb(46 33 28 / 0.22);
-  /* Liquid glass (variant B): a blurred, saturated pane with a bright top rim and a soft lensing shadow. */
-  --glass-blur: 14px;
-  --glass-fill: rgb(255 255 255 / 0.18);
-  --glass-fill-strong: rgb(255 255 255 / 0.5);
+  /* Liquid glass (variant B), Apple HIG rules: glass only on the floating navigation/control layer (header, tab bar,
+     controls over photos); content cards, sheets and lists stay opaque; never glass on glass. 'Regular' (frosty) glass. */
+  --glass-blur: 20px;
+  --glass-fill: rgb(255 255 255 / 0.62);
   --glass-tint: color-mix(in oklch, var(--primary) 86%, transparent);
   --glass-rim: inset 0 1.5px 0 rgb(255 255 255 / 0.7), inset 0 0 0 0.6px rgb(255 255 255 / 0.4), inset 0 -1px 1px rgb(255 255 255 / 0.2);
   --glass-shadow: 0 10px 34px color-mix(in oklch, var(--fg) 16%, transparent), 0 1px 3px color-mix(in oklch, var(--fg) 10%, transparent);
@@ -182,14 +182,14 @@
 /* Pressed state also matches [data-pressed] (set on pointerdown in BaseLayout: phones delay :active on touch). */
 @custom-variant active (&:active, &[data-pressed]);
 
-/* Glass panes. `glass` = clear pane over content, `glass-strong` = readable content card, `glass-tint` = primary-coloured control.
+/* Glass panes. `glass` = frosty pane for the navigation layer, `glass-tint` = primary-coloured control over a photo.
    Press: sinks 1px, scales .97 and loses most of its shadow; hover lifts on pointer devices only. */
 @utility glass {
   position: relative;
   isolation: isolate;
   background: var(--glass-fill);
-  backdrop-filter: blur(var(--glass-blur)) saturate(190%) brightness(1.06);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(190%) brightness(1.06);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
   box-shadow: var(--glass-rim), var(--glass-shadow);
   transition: transform var(--t-hover) var(--ease), box-shadow var(--t-hover) var(--ease), background-color var(--t-hover) var(--ease);
   &::before {
@@ -202,46 +202,49 @@
     background: linear-gradient(155deg, rgb(255 255 255 / 0.5) 0%, rgb(255 255 255 / 0.08) 30%, transparent 55%, rgb(255 255 255 / 0.14) 100%);
   }
 }
-@utility glass-strong { background: var(--glass-fill-strong); }
 @utility glass-tint {
   background: var(--glass-tint);
   color: var(--on-primary);
   box-shadow: inset 0 1.5px 0 rgb(255 255 255 / 0.45), inset 0 0 0 0.6px rgb(255 255 255 / 0.25), 0 10px 28px color-mix(in oklch, var(--primary) 40%, transparent);
 }
-@utility glass-press {
+/* Shared control feedback (glass or solid): lift on pointer hover, sink on press, shadow follows. */
+@utility press {
   @media (hover: hover) and (pointer: fine) {
     &:hover:not(:active, [data-pressed], :disabled, [aria-disabled='true']) { transform: translateY(-2px); }
   }
   &:active, &[data-pressed] {
     transform: translateY(1px) scale(0.97);
-    box-shadow: var(--glass-rim), var(--glass-shadow-press);
+    box-shadow: var(--glass-shadow-press);
     transition-duration: var(--t-press);
   }
-  &:disabled, &[aria-disabled='true'] { box-shadow: var(--glass-rim); }
+  &:disabled, &[aria-disabled='true'] { box-shadow: none; }
 }
 /* Opaque fallbacks: no backdrop-filter, or the user asked for less transparency. */
 @supports not (backdrop-filter: blur(1px)) {
-  .glass { background: var(--surface); }
+  .glass { background: var(--surface-3); }
   .glass-tint { background: var(--primary); }
 }
 @media (prefers-reduced-transparency: reduce) {
-  .glass { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .glass { background: var(--surface-3); backdrop-filter: none; -webkit-backdrop-filter: none; }
   .glass-tint { background: var(--primary); }
 }
-/* Soft colour blobs behind glass sections so the blur has something to refract. */
-@utility blobs {
-  position: relative;
-  overflow: hidden;
-  background-image:
-    radial-gradient(28rem 28rem at 8% 0%, color-mix(in oklch, var(--primary) 42%, white) 0%, transparent 70%),
-    radial-gradient(26rem 26rem at 100% 42%, color-mix(in oklch, var(--accent) 55%, white) 0%, transparent 70%),
-    radial-gradient(24rem 24rem at 0% 100%, color-mix(in oklch, var(--primary) 30%, white) 0%, transparent 70%),
-    radial-gradient(20rem 20rem at 70% 95%, color-mix(in oklch, var(--accent) 40%, white) 0%, transparent 70%);
-  background-repeat: no-repeat;
-  & > * { position: relative; z-index: 1; }
+/* Solid controls: filled primary pill and a tinted/white secondary pill (Apple filled + tinted button styles). */
+@utility btn-solid {
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: 0 1px 2px color-mix(in oklch, var(--primary) 30%, transparent), 0 8px 20px -8px color-mix(in oklch, var(--primary) 55%, transparent);
+  transition: transform var(--t-hover) var(--ease), box-shadow var(--t-hover) var(--ease), filter var(--t-hover) var(--ease);
+  &:active, &[data-pressed] { filter: brightness(0.92); }
+}
+@utility btn-tinted {
+  background: var(--surface-3);
+  color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--border), 0 1px 2px color-mix(in oklch, var(--fg) 8%, transparent), 0 6px 16px -8px color-mix(in oklch, var(--fg) 30%, transparent);
+  transition: transform var(--t-hover) var(--ease), box-shadow var(--t-hover) var(--ease), background-color var(--t-hover) var(--ease);
+  &:active, &[data-pressed] { background: var(--surface-2); }
 }
 /* Text links dim while pressed so every tap answers (buttons and glass controls have their own press). */
-:is(a, button, summary):not(.glass, [class*='active:'], :has(.glass, .app-icon)):is(:active, [data-pressed]) { opacity: 0.6; transition-duration: var(--t-press); }
+:is(a, button, summary):not(.press, [class*='active:'], :has(.press, .app-icon)):is(:active, [data-pressed]) { opacity: 0.6; transition-duration: var(--t-press); }
 
 /* Selected option: a quick pop and a halo that spreads a beat later. */
 @keyframes pick-pop { 0% { scale: 1; } 40% { scale: 1.04; } 100% { scale: 1; } }
@@ -277,7 +280,7 @@
 .js [data-hero-img] { animation: settle 1400ms var(--ease-soft) both; }
 
 /* Floating header pill: a touch more fill once the page scrolls under it. */
-[data-header].is-scrolled .glass:not(.glass-tint) { background: rgb(255 255 255 / 0.4); }
+[data-header].is-scrolled .glass:not(.glass-tint) { background: rgb(255 255 255 / 0.78); }
 
 /* Mobile menu items arrive one by one when the menu opens. */
 @keyframes fade-up { from { opacity: 0; transform: translateY(8px); } }

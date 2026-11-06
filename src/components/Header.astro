@@ -58,7 +58,7 @@ const book = localePath(lang, '/book');
   {/* `hidden` keeps it closed without JS; the script swaps it for the grid-collapse animation. */}
   <div id="mobile-menu" hidden class="grid-collapse lg:hidden">
     <div>
-      <nav aria-label={t.main} class="glass glass-strong mx-auto mt-2 max-w-6xl rounded-card px-5 pb-5 pt-2">
+      <nav aria-label={t.main} class="mx-auto mt-2 max-w-6xl rounded-card bg-surface-3 px-5 pb-5 pt-2 shadow-[0_16px_40px_-16px_rgb(30_18_21/0.35)]">
         <ul>
           {links.map((l, i) => (
             <li data-i style={`--i:${i}`}><a href={l.href} class="flex min-h-12 items-center text-base text-muted transition-colors duration-200 hover:text-fg">{l.label}</a></li>

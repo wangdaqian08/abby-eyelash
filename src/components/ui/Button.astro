@@ -7,14 +7,15 @@ import type { Lang } from '../../data/services';
 interface Props extends HTMLAttributes<'a'> {
   href: string;
   lang: Lang;
-  variant?: 'primary' | 'outline' | 'inverse';
+  variant?: 'primary' | 'outline' | 'inverse' | 'glass';
   track?: string;
 }
 const { href, lang, variant = 'primary', track, class: cls, ...rest } = Astro.props;
 const variants = {
-  primary: 'glass glass-tint glass-press',
-  outline: 'glass glass-strong glass-press text-primary',
-  inverse: 'glass glass-press text-on-primary',
+  primary: 'btn-solid press',
+  outline: 'btn-tinted press',
+  inverse: 'glass press text-on-primary',
+  glass: 'glass press text-fg',
 };
 ---
 <a
