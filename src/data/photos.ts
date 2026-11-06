@@ -94,7 +94,7 @@ export const lashCards: { serviceId: string; optionId: string; photo: string }[]
   { serviceId: 'lash-extensions', optionId: 'classic-natural', photo: 'classic-natural' },
   { serviceId: 'lash-extensions', optionId: 'classic-full', photo: 'classic-full-bottom' },
   { serviceId: 'lash-extensions', optionId: 'hybrid-natural', photo: 'hybrid-natural' },
-  { serviceId: 'lash-extensions', optionId: 'hybrid-full', photo: 'hybrid-full-face' },
+  { serviceId: 'lash-extensions', optionId: 'hybrid-full', photo: 'hybrid-full-eye' },
   { serviceId: 'lash-extensions', optionId: 'styled', photo: 'styled-fairy' },
   { serviceId: 'lash-lift', optionId: 'keratin-lift', photo: 'lift-2' },
 ];
@@ -151,7 +151,7 @@ export const LASH_VISIBLE = 4; // lash photos shown per group before "show all"
 export const lashGroups: { id: string; name: L10n; ratio: '3:4' | '4:3'; items: string[] }[] = [
   { id: 'face', name: { en: 'Full-face looks', zh: '整脸效果' }, ratio: '3:4', items: ['face-natural', 'face-smile', 'styled-half-face', 'styled-mermaid-selfie'] },
   { id: 'natural-full', name: { en: 'Natural and full sets', zh: '自然款 · 浓密款' }, ratio: '4:3',
-    items: ['classic-natural-2', 'hybrid-full-eye', 'classic-natural-colour', 'hybrid-full-2', 'hybrid-full-bottom'] },
+    items: ['classic-natural-2', 'hybrid-full-face', 'classic-natural-colour', 'hybrid-full-2', 'hybrid-full-bottom'] },
   { id: 'styled', name: { en: 'Styled sets', zh: '造型款' }, ratio: '4:3', items: styledLooks.map((l) => l.photo).filter((p) => p !== 'styled-fairy') },
 ];
 
