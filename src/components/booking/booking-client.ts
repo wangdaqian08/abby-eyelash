@@ -1,5 +1,5 @@
-// Booking flow (vanilla TS): 1 Service → 2 Date → 3 Time → 4 Details → success.
-import { addonOptions, addonsParam, bookable, bookableWith, groupAt, headline, mainOptions, priceText, quote, quoteText, services, type Addons, type Lang, type Service, type ServiceOption } from '../../data/services';
+// Booking flow (vanilla TS): 1 Services (one or more, back to back) → 2 Date → 3 Time → 4 Details → success.
+import { addonOptions, bookable, bookableWith, groupAt, headline, itemsParam, mainOptions, priceText, quoteAll, quoteAllText, services, type Addons, type Lang, type Service, type ServiceOption } from '../../data/services';
 import { site } from '../../data/site';
 import { bookingStrings } from '../../i18n/booking';
 import { daysInMonth, localDate, maxDate, validateDetails, weekday, zonedTimeToUtc, type Details } from '../../lib/availability';
@@ -18,6 +18,7 @@ type Days = Record<string, string[]>;
 type Month = { days: Days; recommended: Days };
 type Step = 1 | 2 | 3 | 4 | 5;
 type Field = keyof Details | 'service' | 'option' | 'time';
+type Chosen = { service: Service; option?: ServiceOption; addons: Addons }; // one ticked service
 
 const TZ = site.timezone;
 const MIN = 60_000;
@@ -37,6 +38,7 @@ const ICON = {
   alert: svg('<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>', 'size-[1em] shrink-0 translate-y-[0.125em]'),
   check: svg('<path d="M20 6 9 17l-5-5"/>', 'size-6'),
   chevron: svg('<path d="m6 9 6 6 6-6"/>', 'pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-muted'),
+  tick: svg('<path d="M20 6 9 17l-5-5"/>', 'size-3.5'),
 };
 const STEP_ICONS = [ICON.service, ICON.date, ICON.time, ICON.details];
 
@@ -57,9 +59,7 @@ export function start(root: HTMLElement) {
 
   const st: {
     step: Step;
-    service?: Service;
-    option?: ServiceOption;
-    addons: Addons;
+    items: Chosen[]; // in menu order
     month: string;
     date?: string;
     time?: string;
@@ -67,11 +67,14 @@ export function start(root: HTMLElement) {
     details: Details;
     started: boolean;
     name?: string;
-  } = { step: 1, addons: {}, month: localDate(Date.now(), TZ).slice(0, 7), details: { name: '', phone: '', email: '', notes: '' }, started: false };
+  } = { step: 1, items: [], month: localDate(Date.now(), TZ).slice(0, 7), details: { name: '', phone: '', email: '', notes: '' }, started: false };
 
   const cache = new Map<string, Month | 'loading' | 'error'>();
-  const key = (m = st.month) => `${st.service?.id}/${st.option?.id}/${addonsParam(st.addons)}/${m}`;
-  const total = () => quote(st.service!.id, st.option!.id, st.addons)!; // the UI only offers valid combinations
+  const itemOf = (id: string) => st.items.find((i) => i.service.id === id);
+  const ready = () => st.items.length > 0 && st.items.every((i) => i.option);
+  const asItems = () => st.items.map((i) => ({ service: i.service.id, option: i.option!.id, addons: i.addons }));
+  const key = (m = st.month) => `${itemsParam(asItems())}/${m}`;
+  const total = () => quoteAll(asItems())!; // the UI only offers valid combinations
   let tsToken = '';
   let tsWidget: string | undefined;
   let gridFocusPending = false;
@@ -88,12 +91,12 @@ export function start(root: HTMLElement) {
     }).format(zonedTimeToUtc(date, time, TZ));
   const price = (o: Parameters<typeof priceText>[0] & { wasPrice?: number }) =>
     priceText(o, lang) + (o.wasPrice ? (lang === 'zh' ? `（原价 $${o.wasPrice}）` : ` (was $${o.wasPrice})`) : '');
-  // Booking total: an on-request design shows its add-ons on top, e.g. "Price on request + $24".
-  const totalPrice = (q: ReturnType<typeof total>) => (q.onRequest || q.pct ? quoteText(q, lang) : price(q));
-  const label = () => {
-    const q = total();
-    return [`${st.service!.name[lang]} · ${q.option.name[lang]}`, ...q.extras.map((e) => `${e.option.name[lang]}${e.units > 1 ? ` × ${e.units}` : ''}`)].join(' + ');
-  };
+  // Booking total: dollar part summed, then what isn't a dollar amount, e.g. "$80 + Price on request + $24".
+  const totalPrice = (q: ReturnType<typeof total>) => quoteAllText(q, lang);
+  const label = (l: Lang = lang) =>
+    total()
+      .items.flatMap((q) => [`${q.service.name[l]} · ${q.option.name[l]}`, ...q.extras.map((e) => `${e.option.name[l]}${e.units > 1 ? ` × ${e.units}` : ''}`)])
+      .join(' + ');
   const mins = (n: number) => fill(t.minutes, { n });
   const shortDate = (d: string) => fmtDate(d, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
   const announce = (msg: string) => ($('[data-live]')!.textContent = msg);
@@ -106,7 +109,7 @@ export function start(root: HTMLElement) {
     if (!force && cache.has(k) && cache.get(k) !== 'error') return;
     cache.set(k, 'loading');
     try {
-      const q = new URLSearchParams({ service: st.service!.id, option: st.option!.id, addons: addonsParam(st.addons), month });
+      const q = new URLSearchParams({ items: itemsParam(asItems()), month });
       const r = await fetch(`/api/availability?${q}`, force ? { cache: 'reload' } : {});
       if (!r.ok) throw new Error(String(r.status));
       const j = (await r.json()) as Month & { demo?: boolean };
@@ -129,7 +132,7 @@ export function start(root: HTMLElement) {
   // --- rail stepper (desktop) + progress bar (mobile) ---
   function renderChrome() {
     const values = [
-      st.option && label(),
+      ready() && label(),
       st.date && shortDate(st.date),
       st.date && st.time && fmtTime(st.date, st.time),
       st.step === 5 ? st.name : undefined,
@@ -174,36 +177,44 @@ export function start(root: HTMLElement) {
     const card = (s: Service) => {
       const h = headline(s);
       const range = h.minutes![0] === h.minutes![1] ? mins(h.minutes![0]) : `${h.minutes![0]}–${mins(h.minutes![1])}`;
+      const on = !!itemOf(s.id);
       return `<label class="flex min-h-16 items-center gap-3 rounded-card bg-surface-2/60 p-4 transition duration-200 hover:bg-surface-2 active:scale-[.98] has-checked:bg-surface-2 has-checked:ring-2 has-checked:ring-inset has-checked:ring-primary/50 has-focus-visible:focus-ring">
-        <input type="radio" name="bk-service" value="${s.id}" class="sr-only" ${s === st.service ? 'checked' : ''}>
-        <span aria-hidden="true" class="text-accent">✦</span>
+        <input type="checkbox" name="bk-service" value="${s.id}" class="sr-only" ${on ? 'checked' : ''}>
+        <span aria-hidden="true" class="flex size-6 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${on ? 'bg-primary text-on-primary' : 'ring-1 ring-inset ring-muted/50'}">${on ? ICON.tick : ''}</span>
         <span><span class="block font-medium">${s.name[lang]}</span><span class="text-sm text-muted">${range} · ${price(h)}</span></span>
       </label>`;
     };
-    const options = st.service
-      ? `<fieldset class="mt-8"><legend class="font-serif text-xl">${t.chooseOption}</legend>
-          <div class="mt-3 divide-y divide-border border-y border-border">${mainOptions(st.service)
+    // Per ticked service: its options (skipped when there is only one) and its add-ons.
+    const choices = (it: Chosen) => {
+      const s = it.service;
+      const main = mainOptions(s);
+      if (main.length === 1) return addonsView(it, `${s.name[lang]} · ${t.addons}`);
+      return `<fieldset class="mt-8"><legend class="font-serif text-xl">${s.name[lang]}<span class="mt-0.5 block font-sans text-sm text-muted">${t.chooseOption}</span></legend>
+          <div class="mt-3 divide-y divide-border border-y border-border">${main
             .map(
               (o, i, all) => `${groupAt(all, i) ? `<p class="px-1 pb-2 pt-5 text-xs font-medium uppercase tracking-wider text-accent-ink">${groupAt(all, i)![lang]}</p>` : ''}<label class="flex min-h-14 items-center justify-between gap-4 px-1 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring">
-                <span class="flex items-center gap-3"><input type="radio" name="bk-option" value="${o.id}" class="size-4 accent-primary" ${o === st.option ? 'checked' : ''}><span>${o.name[lang]}</span></span>
+                <span class="flex items-center gap-3"><input type="radio" name="bk-option-${s.id}" value="${o.id}" class="size-4 accent-primary" ${o === it.option ? 'checked' : ''}><span>${o.name[lang]}</span></span>
                 <span class="shrink-0 text-right text-sm text-muted"><span class="block whitespace-nowrap text-fg">${price(o)}</span><span class="whitespace-nowrap">${mins(o.minutes)}</span></span>
               </label>`,
             )
-            .join('')}</div></fieldset>${addonsView()}`
-      : '';
+            .join('')}</div></fieldset>${addonsView(it, t.addons)}`;
+    };
+    const together = st.items.length > 1 && ready() ? `<p class="mt-8 rounded-card bg-surface-2 px-4 py-3 text-sm"><span class="font-medium">${t.together}</span> ${mins(total().minutes)} · ${esc(totalPrice(total()))}</p>` : '';
     return `<h2 data-focus tabindex="-1" class="text-2xl outline-none sm:text-3xl">${t.chooseService}</h2>
+      <p class="mt-2 text-muted">${t.multiHint}</p>
       <fieldset class="mt-6"><legend class="sr-only">${t.chooseService}</legend>
         <div class="grid gap-3 sm:grid-cols-2">${bookable().map(card).join('')}</div>
       </fieldset>
-      ${options}
-      <button type="button" data-action="to-date" class="${BTN_PRIMARY}${tracking} mt-8 w-full sm:w-auto" ${st.option ? '' : 'disabled'}>${t.continue}</button>`;
+      ${st.items.map(choices).join('')}
+      ${together}
+      <button type="button" data-action="to-date" class="${BTN_PRIMARY}${tracking} mt-8 w-full sm:w-auto" ${ready() ? '' : 'disabled'}>${t.continue}</button>`;
   }
 
-  // Add-ons for the chosen option: either/or groups as radios (with "none"), per-unit add-ons as a 0..max select.
-  function addonsView() {
-    const s = st.service!;
+  // Add-ons for one ticked service: either/or groups as radios (with "none"), per-unit add-ons as a 0..max select.
+  function addonsView(it: Chosen, legend: string) {
+    const s = it.service;
     const list = addonOptions(s);
-    if (!st.option || st.option.noAddons || !list.length) return '';
+    if (!it.option || it.option.noAddons || !list.length) return '';
     const row = 'flex min-h-14 items-center justify-between gap-4 px-1 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring';
     const meta = (o: ServiceOption, p: string) =>
       `<span class="shrink-0 text-right text-sm text-muted"><span class="block whitespace-nowrap text-fg">${p}</span><span class="whitespace-nowrap">+${mins(o.minutes)}${o.unit ? ` / ${o.unit[lang]}` : ''}</span></span>`;
@@ -212,18 +223,18 @@ export function start(root: HTMLElement) {
       const opts = list.filter((o) => (o.group ?? o.id) === g);
       const one = opts[0];
       if (one.max && one.max > 1) {
-        const n = st.addons[one.id] ?? 0;
+        const n = it.addons[one.id] ?? 0;
         return `<label class="${row}"><span>${one.name[lang]}</span>
           <span class="flex items-center gap-3">${meta(one, price(one))}
-            <span class="relative"><select name="bk-units" data-addon="${one.id}" class="${INPUT} w-20 pr-8">${Array.from({ length: one.max + 1 }, (_, i) => `<option value="${i}" ${i === n ? 'selected' : ''}>${i}</option>`).join('')}</select>${ICON.chevron}</span></span></label>`;
+            <span class="relative"><select name="bk-units" data-service="${s.id}" data-addon="${one.id}" class="${INPUT} w-20 pr-8">${Array.from({ length: one.max + 1 }, (_, i) => `<option value="${i}" ${i === n ? 'selected' : ''}>${i}</option>`).join('')}</select>${ICON.chevron}</span></span></label>`;
       }
-      const name = `bk-addon-${gi}`;
-      const chosen = opts.find((o) => st.addons[o.id]);
+      const name = `bk-addon-${s.id}-${gi}`;
+      const chosen = opts.find((o) => it.addons[o.id]);
       return `${one.group ? `<p class="px-1 pb-2 pt-5 text-xs font-medium uppercase tracking-wider text-accent-ink">${one.group[lang]}</p>` : ''}
-        <label class="${row}"><span class="flex items-center gap-3"><input type="radio" name="${name}" value="" class="size-4 accent-primary" ${chosen ? '' : 'checked'}><span>${t.noAddon}</span></span></label>
-        ${opts.map((o) => `<label class="${row}"><span class="flex items-center gap-3"><input type="radio" name="${name}" value="${o.id}" class="size-4 accent-primary" ${o === chosen ? 'checked' : ''}><span>${o.name[lang]}</span></span>${meta(o, price(o))}</label>`).join('')}`;
+        <label class="${row}"><span class="flex items-center gap-3"><input type="radio" name="${name}" data-service="${s.id}" value="" class="size-4 accent-primary" ${chosen ? '' : 'checked'}><span>${t.noAddon}</span></span></label>
+        ${opts.map((o) => `<label class="${row}"><span class="flex items-center gap-3"><input type="radio" name="${name}" data-service="${s.id}" value="${o.id}" class="size-4 accent-primary" ${o === chosen ? 'checked' : ''}><span>${o.name[lang]}</span></span>${meta(o, price(o))}</label>`).join('')}`;
     });
-    return `<fieldset class="mt-8"><legend class="font-serif text-xl">${t.addons}</legend>
+    return `<fieldset class="mt-8"><legend class="font-serif text-xl">${legend}</legend>
       <div class="mt-3 divide-y divide-border border-y border-border">${blocks.join('')}</div></fieldset>`;
   }
 
@@ -315,6 +326,7 @@ export function start(root: HTMLElement) {
       [t.sTime, fmtTime(st.date!, st.time!)],
       [t.sDuration, mins(q.minutes)],
       [t.sPrice, totalPrice(q)],
+      [t.sDeposit, `$${q.deposit}`],
     ];
     return `<dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 bg-surface-2 p-5 text-sm">${rows
       .map(([k, v]) => `<dt class="text-muted">${k}</dt><dd>${esc(v)}</dd>`)
@@ -329,16 +341,12 @@ export function start(root: HTMLElement) {
     const d = st.details;
     return `<form data-form novalidate class="max-w-xl">
       <h2 data-focus tabindex="-1" class="text-2xl outline-none sm:text-3xl">${t.detailsTitle}</h2>
-      <p class="mt-2 text-muted">${fill(t.detailsSubtitle, { deposit: site.booking.deposit })}</p>
+      <p class="mt-2 text-muted">${fill(t.detailsSubtitle, { deposit: total().deposit })}</p>
       <div data-errsum role="alert" tabindex="-1" hidden class="mt-6 border-l-2 border-danger bg-surface-2 p-4 text-sm outline-none"></div>
       <div class="mt-6 grid gap-5">
         ${field('name', t.fName, `<input ${attrs('name')} required maxlength="80" autocomplete="name" class="${INPUT}" value="${esc(d.name)}">`)}
         ${field('phone', t.fPhone, `<input ${attrs('phone')} required type="tel" inputmode="tel" autocomplete="tel" maxlength="20" class="${INPUT}" value="${esc(d.phone)}">`)}
         ${field('email', t.fEmail, `<input ${attrs('email')} required type="email" autocomplete="email" maxlength="254" class="${INPUT}" value="${esc(d.email)}">`)}
-        <div class="grid gap-5 sm:grid-cols-2">
-          ${field('service', t.fService, `<div class="relative"><select ${attrs('service')} class="${INPUT} pr-10">${bookable().map((s) => `<option value="${s.id}" ${s === st.service ? 'selected' : ''}>${s.name[lang]}</option>`).join('')}</select>${ICON.chevron}</div>`)}
-          ${field('option', t.fOption, `<div class="relative"><select ${attrs('option')} class="${INPUT} pr-10">${optionList()}</select>${ICON.chevron}</div>`)}
-        </div>
         ${field('notes', t.fNotes, `<textarea ${attrs('notes')} rows="3" maxlength="500" placeholder="${esc(t.notesHint)}" class="${INPUT} h-auto py-3">${esc(d.notes)}</textarea>`, false)}
       </div>
       <div data-summary class="mt-8">${summary()}</div>
@@ -346,8 +354,6 @@ export function start(root: HTMLElement) {
       <button type="submit" class="${BTN_PRIMARY}${tracking} mt-6 w-full">${t.submit}</button>
     </form>`;
   }
-  const optionList = () =>
-    mainOptions(st.service!).map((o) => `<option value="${o.id}" ${o === st.option ? 'selected' : ''}>${o.name[lang]} · ${mins(o.minutes)} · ${price(o)}</option>`).join('');
 
   function setError(k: Field, msg?: string) {
     const input = $(`#bk-${k}`);
@@ -393,14 +399,11 @@ export function start(root: HTMLElement) {
     document.head.append(s);
   }
 
-  // Service/option changed on the form: the chosen time must still fit the new duration.
+  // Before sending: the chosen time must still be free for the whole visit.
   async function recheckSlot() {
-    $('[data-summary]')!.innerHTML = summary();
     await load(st.date!.slice(0, 7));
     const days = daysFor(st.date!.slice(0, 7));
-    const fits = !days || days[st.date!]?.includes(st.time!) === true; // unknown → let the server decide
-    setError('option', fits ? undefined : t.slotNoFit);
-    return fits;
+    return !days || days[st.date!]?.includes(st.time!) === true; // unknown → let the server decide
   }
 
   async function submit() {
@@ -408,7 +411,6 @@ export function start(root: HTMLElement) {
     const errs = validateDetails(d);
     (['name', 'phone', 'email', 'notes'] as const).forEach((k) => setError(k, errs[k] && errMsg(k, errs[k]!)));
     const list: [Field, string][] = Object.entries(errs).map(([k, c]) => [k as Field, errMsg(k as Field, c!)]);
-    if (!(await recheckSlot())) list.push(['option', t.slotNoFit]);
     if (list.length) {
       return showSummaryError(
         `<p class="font-medium">${t.errSummary}</p><ul class="mt-2 list-disc pl-5">${list
@@ -416,13 +418,14 @@ export function start(root: HTMLElement) {
           .join('')}</ul>`,
       );
     }
+    if (!(await recheckSlot())) return showSummaryError(`<p>${t.slotTaken}</p><button type="button" data-action="to-time" class="${BTN_OUTLINE}${tracking} mt-3">${t.chooseAnotherTime}</button>`);
     if (cfg.turnstileSiteKey && !tsToken) return showSummaryError(`<p>${t.captcha}</p>`);
 
     const btn = $<HTMLButtonElement>('[data-form] [type=submit]')!;
     btn.disabled = true;
     btn.setAttribute('aria-busy', 'true');
     btn.innerHTML = `<span aria-hidden="true" class="size-4 rounded-full border-2 border-on-primary/40 border-t-on-primary motion-safe:animate-spin"></span>${t.submitting}`;
-    const payload = { ...d, service: st.service!.id, option: st.option!.id, addons: addonsParam(st.addons), date: st.date, time: st.time, lang, turnstileToken: tsToken };
+    const payload = { ...d, items: itemsParam(asItems()), date: st.date, time: st.time, lang, turnstileToken: tsToken };
     let res: Response | undefined;
     let body: { ok?: boolean; demo?: boolean; error?: string; errors?: Record<string, string> } = {};
     try {
@@ -433,7 +436,7 @@ export function start(root: HTMLElement) {
     if (res?.ok && body.ok) {
       if (body.demo) showDemo();
       notifyOwner(d);
-      emit('booking_submitted', { service: st.service!.id, option: st.option!.id, value: total().price, currency: 'AUD' });
+      emit('booking_submitted', { service: st.items.map((i) => i.service.id).join('+'), option: st.items.map((i) => i.option!.id).join('+'), value: total().price, currency: 'AUD' });
       st.name = d.name.trim();
       load(st.date!.slice(0, 7), true); // bypass the browser's 60 s cache so the taken slot disappears
       return go(5);
@@ -463,7 +466,7 @@ export function start(root: HTMLElement) {
   function notifyOwner(d: Details) {
     if (!cfg.web3formsKey) return;
     const q = total();
-    const service = [`${q.service.name.en} – ${q.option.name.en}`, ...q.extras.map((e) => `${e.option.name.en}${e.units > 1 ? ` × ${e.units}` : ''}`)].join(' + ');
+    const service = label('en');
     fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       keepalive: true,
@@ -479,7 +482,8 @@ export function start(root: HTMLElement) {
         service: `${service} (${q.minutes} min)`,
         date: st.date,
         time: st.time,
-        price: totalPrice(q),
+        price: quoteAllText(q, 'en'),
+        deposit: `$${q.deposit}`,
         notes: d.notes.trim() || '-',
         language: lang,
         status: 'PENDING — confirm by SMS/WhatsApp, collect the deposit, then rename the calendar event',
@@ -495,7 +499,7 @@ export function start(root: HTMLElement) {
     const title = fill(t.calendarTitle, { service: label() });
     const a = site.address;
     const location = `${site.name}, ${a.street}, ${a.locality} ${a.region} ${a.postcode}`;
-    const successBody = fill(t.successBody, { deposit: site.booking.deposit, wechat: site.social.wechatId, hours: site.booking.cancelHours });
+    const successBody = fill(t.successBody, { deposit: total().deposit, wechat: site.social.wechatId, hours: site.booking.cancelHours });
     const details = `${t.pending}\n${successBody}\n${site.phoneDisplay}`;
     const gcal = `https://calendar.google.com/calendar/render?${new URLSearchParams({ action: 'TEMPLATE', text: title, dates: `${stamp(start)}/${stamp(end)}`, details, location, ctz: TZ })}`;
     const icsText = (s: string) => s.replace(/([\\;,])/g, '\\$1').replace(/\n/g, '\\n');
@@ -504,7 +508,7 @@ export function start(root: HTMLElement) {
       'VERSION:2.0',
       'PRODID:-//Abby Eyelash//Booking//EN',
       'BEGIN:VEVENT',
-      `UID:${stamp(start)}-${crypto.randomUUID()}@abby-eyelash`,
+      `UID:${stamp(start)}-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}@abby-eyelash`, // randomUUID only exists on HTTPS/localhost (not a phone on the LAN)
       `DTSTAMP:${stamp(Date.now())}`,
       `DTSTART:${stamp(start)}`,
       `DTEND:${stamp(end)}`,
@@ -592,40 +596,41 @@ export function start(root: HTMLElement) {
   }
 
   const startOnce = () => {
-    if (st.started || !st.service) return;
+    if (st.started || !st.items.length) return;
     st.started = true;
-    emit('booking_start', { service: st.service.id });
+    emit('booking_start', { service: st.items.map((i) => i.service.id).join('+') });
   };
 
   // --- events ---
   root.addEventListener('change', (e) => {
     const el = e.target as HTMLInputElement | HTMLSelectElement;
-    if (el.name === 'bk-service' || el.name === 'service') {
-      st.service = services.find((s) => s.id === el.value);
-      const main = mainOptions(st.service!);
-      st.option = main.length === 1 || el.name === 'service' ? main[0] : undefined;
-      st.addons = {};
+    const order = (s: Service) => bookable().indexOf(s);
+    if (el.name === 'bk-service') {
+      const s = services.find((x) => x.id === el.value)!;
+      if (!(el as HTMLInputElement).checked) st.items = st.items.filter((i) => i.service !== s);
+      else if (!itemOf(s.id)) {
+        const main = mainOptions(s);
+        st.items = [...st.items, { service: s, option: main.length === 1 ? main[0] : undefined, addons: {} }].sort((a, b) => order(a.service) - order(b.service));
+      }
       startOnce();
-    } else if (el.name === 'bk-option' || el.name === 'option') {
-      st.option = mainOptions(st.service!).find((o) => o.id === el.value);
-      if (st.option?.noAddons) st.addons = {};
+    } else if (el.name.startsWith('bk-option-')) {
+      const it = itemOf(el.name.slice('bk-option-'.length))!;
+      it.option = mainOptions(it.service).find((o) => o.id === el.value);
+      if (it.option?.noAddons) it.addons = {};
     } else if (el.name.startsWith('bk-addon-')) {
       // either/or: drop whichever option of this radio group was chosen before
-      root.querySelectorAll<HTMLInputElement>(`input[name="${el.name}"]`).forEach((r) => delete st.addons[r.value]);
-      if (el.value) st.addons[el.value] = 1;
+      const it = itemOf(el.dataset.service!)!;
+      root.querySelectorAll<HTMLInputElement>(`input[name="${el.name}"]`).forEach((r) => delete it.addons[r.value]);
+      if (el.value) it.addons[el.value] = 1;
     } else if (el.name === 'bk-units') {
-      const id = (el as HTMLSelectElement).dataset.addon!;
-      if (+el.value) st.addons[id] = +el.value;
-      else delete st.addons[id];
+      const it = itemOf(el.dataset.service!)!;
+      const id = el.dataset.addon!;
+      if (+el.value) it.addons[id] = +el.value;
+      else delete it.addons[id];
     } else return;
-    if (st.step === 1) {
-      st.time = undefined;
-      render();
-      view.querySelector<HTMLInputElement>(`input[name="${el.name}"]:checked`)?.focus();
-    } else {
-      $<HTMLSelectElement>('#bk-option')!.innerHTML = optionList();
-      void recheckSlot();
-    }
+    st.time = undefined;
+    render();
+    view.querySelector<HTMLElement>(el.name === 'bk-units' ? `select[data-service="${el.dataset.service}"]` : `input[name="${el.name}"][value="${el.value}"]`)?.focus();
   });
 
   root.addEventListener('click', (e) => {
@@ -714,9 +719,8 @@ export function start(root: HTMLElement) {
   const found = services.find((s) => s.id === q.get('service') || s.slug === q.get('service'));
   const pre = found && bookableWith(found);
   if (pre) {
-    st.service = pre;
     const main = mainOptions(pre);
-    st.option = main.find((o) => o.id === q.get('option')) ?? (main.length === 1 ? main[0] : undefined);
+    st.items = [{ service: pre, option: main.find((o) => o.id === q.get('option')) ?? (main.length === 1 ? main[0] : undefined), addons: {} }];
   }
   go(1, false);
 }

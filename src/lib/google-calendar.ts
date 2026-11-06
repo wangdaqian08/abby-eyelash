@@ -17,8 +17,9 @@ export const demoAllowed = (env: { BOOKING_DEMO?: string }, url: string) =>
   env.BOOKING_DEMO === '1' || ['localhost', '127.0.0.1'].includes(new URL(url).hostname);
 
 // Shared edge-cache key for /api/availability (slots depend only on duration + month), so a booking can purge what it just made stale.
-export const availabilityCacheKey = (origin: string, minutes: number, month: string) =>
-  new Request(`${origin}/api/availability?${new URLSearchParams({ minutes: String(minutes), month })}`);
+/** Edge-cache key for a month's busy times (one per month, whatever is being booked; a booking purges just this). */
+export const availabilityCacheKey = (origin: string, month: string) =>
+  new Request(`${origin}/api/availability?${new URLSearchParams({ busy: '1', month })}`);
 
 const API = 'https://www.googleapis.com/calendar/v3';
 const SCOPE = 'https://www.googleapis.com/auth/calendar.freebusy https://www.googleapis.com/auth/calendar.events';

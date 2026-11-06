@@ -58,8 +58,9 @@ Service cards on Home show price + duration and link to their service page.
 
 ## 8. Booking
 **UI** (reference: `reference/customer-booking-UI.png`, `reference/customer-booking-UI-3.png`; `reference/calendar.png` is a staff view and is NOT built):
-- Desktop 3 panes: left rail (Abby photo, title, vertical stepper: 1 Service → 2 Date → 3 Time → 4 Details), middle month calendar (available days as filled circles, unavailable/past greyed, prev/next month), right time-slot list (selected slot shows inline "Next" button).
-- Step 4 details form: Full name, Phone (AU), Email, Service, Service option, Notes (optional), "Book Appointment". Copy: "Fill in your information and we'll get back to you to confirm your appointment."
+- Desktop 3 panes: left rail (Abby photo, title, vertical stepper: 1 Services → 2 Date → 3 Time → 4 Details), middle month calendar (available days as filled circles, unavailable/past greyed, prev/next month), right time-slot list (selected slot shows inline "Next" button).
+- Step 1: one or more services (check-boxes; since 2026-11-06 lashes, brows and nails can be combined in one visit, done back to back). Each ticked service gets its own option and add-ons; the total time and price show underneath.
+- Step 4 details form: Full name, Phone (AU), Email, Notes (optional), "Book Appointment", plus a summary (services, date, time, duration, price, deposit). To change services the client goes back to step 1.
 - Mobile: one step at a time, stacked.
 - Success screen + "Add to my calendar" (.ics / Google Calendar link).
 
@@ -70,11 +71,11 @@ Service cards on Home show price + duration and link to their service page.
 - Any event in Abby's calendar = busy; customers only ever see "unavailable", never event details.
 
 **Backend** (Cloudflare Pages Functions):
-- `GET /api/availability?date|month&service` → free/busy from Abby's Google Calendar (service account; calendar shared with it, "make changes to events").
+- `GET /api/availability?items=<service>/<option>/<addon:n,…>;…&month=YYYY-MM` → free start times for the combined length, from Abby's Google Calendar (service account; calendar shared with it, "make changes to events").
 - `POST /api/book` → validate input server-side, verify **Cloudflare Turnstile**, re-check slot is still free, insert event `⏳ PENDING – <name> – <service>` (details in description), email Abby via **Web3Forms**.
 - Abby confirms manually (call/SMS) and renames the event.
 - **Demo mode** when Google credentials are absent: mocked availability, booking only emails (or logs).
-- No customer confirmation email until a domain exists (then add Resend). No payments/deposits.
+- No customer confirmation email until a domain exists (then add Resend). No online payments: the deposit ($20; $50 when the booking includes powder brows; one per booking) is paid by WeChat after booking. Returning-client "no deposit" by phone lookup is a post-launch idea (docs/REQUIREMENTS-2026-10.md §三).
 - Secrets only in Cloudflare env vars. `SETUP.md` gives Abby step-by-step Google Cloud + calendar sharing + Web3Forms + Turnstile setup.
 
 ## 9. SEO / GEO / analytics
