@@ -4,46 +4,9 @@
 @import '@fontsource/playfair-display/400-italic.css';
 @import '@fontsource-variable/dm-sans';
 
-/* Theme tokens — see design-system/MASTER.md §1. Only place raw hex is allowed.
+/* Theme tokens (plum, chosen 2026-11-06) — see design-system/MASTER.md §1. Only place raw hex is allowed.
    Four surface layers, 1.5–3% apart in OKLCH lightness: surface-2 (sunken) < bg (page) < surface (card) < surface-3 (raised). */
-:root,
-[data-theme='mocha'] {
-  --bg: #faf6f2;
-  --surface: #fefbf9;
-  --surface-2: #f5ede5;
-  --surface-3: #ffffff;
-  --fg: #2e211c;
-  --muted: #5f4b41;
-  --primary: #7a5a4c;
-  --on-primary: #fffcf9;
-  --accent: #b8927a;
-  --accent-ink: #7e5b47;
-}
-[data-theme='rose'] {
-  --bg: #fbf6f4;
-  --surface: #fefbfa;
-  --surface-2: #f6ede9;
-  --surface-3: #ffffff;
-  --fg: #2e1a1e;
-  --muted: #75545b;
-  --primary: #9e5562;
-  --on-primary: #fffbfa;
-  --accent: #c9a27e;
-  --accent-ink: #80603d;
-}
-[data-theme='sage'] {
-  --bg: #f6f5ef;
-  --surface: #fafaf6;
-  --surface-2: #efede1;
-  --surface-3: #fffffd;
-  --fg: #1f2a22;
-  --muted: #56635a;
-  --primary: #56705c;
-  --on-primary: #fcfbf7;
-  --accent: #a9b59a;
-  --accent-ink: #55644a;
-}
-[data-theme='plum'] {
+:root {
   --bg: #faf7f4;
   --surface: #fefcfa;
   --surface-2: #f4eee8;
@@ -61,7 +24,7 @@
   --focus-ring: 0 0 0 1px color-mix(in oklch, var(--ring) 80%, transparent), 0 0 0 4px color-mix(in oklch, var(--ring) 25%, transparent);
   --danger: #b42318;
   --shadow-sm: 0 1px 2px rgb(46 33 28 / 0.06);
-  --shadow-lift: 0 12px 32px -12px rgb(46 33 28 / 0.22);
+  --shadow-lift: 0 12px 32px -12px color-mix(in oklch, var(--fg) 24%, transparent);
   /* Liquid glass (variant B), Apple HIG rules: glass only on the floating navigation/control layer (header, tab bar,
      controls over photos); content cards, sheets and lists stay opaque; never glass on glass. 'Regular' (frosty) glass. */
   --glass-blur: 20px;
@@ -76,7 +39,7 @@
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-soft: cubic-bezier(0.33, 1, 0.68, 1);
   --ease: var(--ease-out);
-  --t-press: 140ms;
+  --t-press: 100ms; /* fast in, so even a quick phone tap reaches the full press before the finger lifts */
   --t-hover: 180ms;
   --t-ui: 240ms;
   --t-reveal: 700ms;
@@ -101,9 +64,12 @@
   border-radius: 28%;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), 0 1px 2px color-mix(in oklch, var(--fg) 16%, transparent), 0 8px 16px -8px color-mix(in oklch, var(--fg) 45%, transparent);
   transition: scale var(--t-ui) var(--ease), translate var(--t-ui) var(--ease), box-shadow var(--t-ui) var(--ease);
-  @media (hover: hover) { :where(.group):hover > & { translate: 0 -3px; } }
+  @media (hover: hover) { :where(.group):hover > & { translate: 0 -3px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.3), 0 2px 4px color-mix(in oklch, var(--fg) 14%, transparent), 0 14px 24px -10px color-mix(in oklch, var(--fg) 50%, transparent); } }
   :where(.group):is(:active, [data-pressed]) > & { scale: 0.9; translate: 0 1px; box-shadow: inset 0 2px 5px color-mix(in oklch, var(--fg) 35%, transparent); transition-duration: var(--t-press); }
 }
+
+/* `active:` utilities also match data-pressed (set on touch by BaseLayout), so every press state shows on phones. */
+@custom-variant active (&:active, &[data-pressed]);
 
 @theme inline {
   --color-bg: var(--bg);
@@ -130,6 +96,7 @@
 
 @layer base {
   html {
+    -webkit-tap-highlight-color: transparent; /* the browser's grey box is replaced by the press states below */
     background: var(--bg);
     color: var(--fg);
     -webkit-text-size-adjust: 100%;
@@ -178,9 +145,6 @@
   outline: none;
   box-shadow: var(--focus-ring);
 }
-
-/* Pressed state also matches [data-pressed] (set on pointerdown in BaseLayout: phones delay :active on touch). */
-@custom-variant active (&:active, &[data-pressed]);
 
 /* Glass panes. `glass` = frosty pane for the navigation layer, `glass-tint` = primary-coloured control over a photo.
    Press: sinks 1px, scales .97 and loses most of its shadow; hover lifts on pointer devices only. */
@@ -246,16 +210,34 @@
 /* Text links dim while pressed so every tap answers (buttons and glass controls have their own press). */
 :is(a, button, summary):not(.press, [class*='active:'], :has(.press, .app-icon)):is(:active, [data-pressed]) { opacity: 0.6; transition-duration: var(--t-press); }
 
-/* Selected option: a quick pop and a halo that spreads a beat later. */
-@keyframes pick-pop { 0% { scale: 1; } 40% { scale: 1.04; } 100% { scale: 1; } }
+
+/* Press feedback on phones (unlayered, so it beats per-element durations):
+   every press goes in at --t-press and comes back at the element's own pace; tappables without their own press state
+   (text links, icon buttons, the video tile) dim while held, like native iOS links. */
+:is(a, button, label, summary):is(:active, [data-pressed]) { transition-duration: var(--t-press); }
+
+/* Selection feedback (booking options, dates, times). JS sets [data-pop] on the one item just picked:
+   it pops once, its tick springs in, and a soft plum halo spreads out a beat later. One-shot, transform/opacity
+   (the halo is a pseudo-element's shadow, so the item's own layout never changes). Off under reduced motion. */
+@keyframes pick-pop { 0% { scale: 1; } 35% { scale: 1.035; } 70% { scale: 0.995; } 100% { scale: 1; } }
 @keyframes pick-halo {
   from { opacity: 1; box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 35%, transparent); }
   to { opacity: 0; box-shadow: 0 0 0 12px color-mix(in oklch, var(--primary) 0%, transparent); }
 }
-[data-pop] { animation: pick-pop 320ms var(--ease-out); }
-label[data-pop] { position: relative; }
-[data-pop]::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; animation: pick-halo 520ms 90ms var(--ease-out) both; }
+@keyframes tick-in { from { scale: 0.3; opacity: 0; } 60% { scale: 1.18; opacity: 1; } to { scale: 1; } }
 @keyframes radio-pop { 0% { scale: 1; } 40% { scale: 1.35; } 100% { scale: 1; } }
+[data-pop] { animation: pick-pop 420ms var(--ease-out) both; }
+label[data-pop], span[data-pop], button[data-pop] { position: relative; }
+label[data-pop]::after, span[data-pop]::after, button[data-pop]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: pick-halo 650ms 90ms var(--ease-out) both;
+}
+[data-pop] [data-tick] { animation: tick-in 380ms 60ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+input[type='radio'][data-pop] { animation: radio-pop 320ms var(--ease-out) both; }
 /* Radio pick, same in every look: the whole row releases (row pop + halo, from [data-pop] on the label); the dot inside pops too. */
 [data-radio] { display: inline-flex; flex-shrink: 0; }
 [data-pop] [data-radio] > input { animation: radio-pop 320ms var(--ease-out) both; }

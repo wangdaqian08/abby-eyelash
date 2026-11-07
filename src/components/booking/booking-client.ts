@@ -45,8 +45,6 @@ const STEP_ICONS = [ICON.service, ICON.date, ICON.time, ICON.details];
 const BTN = 'press inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 font-medium uppercase disabled:cursor-not-allowed disabled:opacity-50';
 const BTN_PRIMARY = `${BTN} btn-solid`;
 const BTN_OUTLINE = `${BTN} btn-tinted`;
-const PRESS_MS = 140;
-const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const INPUT = 'block h-12 w-full appearance-none rounded-field bg-surface-2 px-4 text-base text-fg placeholder:text-muted aria-invalid:outline-2 aria-invalid:outline-danger';
 
 export function start(root: HTMLElement) {
@@ -58,6 +56,8 @@ export function start(root: HTMLElement) {
   const $ = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel);
   const view = $('[data-view]')!;
   const mobile = matchMedia('(max-width: 1023px)');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const PRESS_MS = 140; // how long a tap's press stays visible before a button swaps the view
 
   const st: {
     step: Step;
@@ -182,7 +182,7 @@ export function start(root: HTMLElement) {
       const on = !!itemOf(s.id);
       return `<label class="press relative flex min-h-16 items-center gap-3 rounded-[1.25rem] bg-surface-2 p-4 transition-colors duration-200 has-checked:bg-primary/8 has-checked:ring-2 has-checked:ring-inset has-checked:ring-primary/60 has-focus-visible:focus-ring">
         <input type="checkbox" name="bk-service" value="${s.id}" class="sr-only" ${on ? 'checked' : ''}>
-        <span aria-hidden="true" class="flex size-6 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${on ? 'bg-primary text-on-primary' : 'ring-1 ring-inset ring-muted/50'}">${on ? ICON.tick : ''}</span>
+        <span aria-hidden="true" data-tick class="flex size-6 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${on ? 'bg-primary text-on-primary' : 'ring-1 ring-inset ring-muted/50'}">${on ? ICON.tick : ''}</span>
         <span><span class="block font-medium">${s.name[lang]}</span><span class="text-sm text-muted">${range} · ${price(h)}</span></span>
       </label>`;
     };
@@ -267,13 +267,13 @@ export function start(root: HTMLElement) {
           : 'cursor-default text-muted/60';
       const label = `${fmtDate(d, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}, ${avail ? t.available : t.unavailable}${d === today ? `, ${t.today}` : ''}`;
       cells.push(`<span role="gridcell" class="flex justify-center" ${sel ? 'aria-selected="true"' : ''}>
-        <button type="button" data-date="${d}" tabindex="${d === tabbable ? 0 : -1}" aria-label="${esc(label)}" ${avail ? '' : 'aria-disabled="true"'} class="relative flex size-11 items-center justify-center rounded-full text-sm ${cls}">
+        <button type="button" data-date="${d}" tabindex="${d === tabbable ? 0 : -1}" aria-label="${esc(label)}" ${avail ? '' : 'aria-disabled="true"'} class="relative flex aspect-square w-full max-w-11 items-center justify-center rounded-full text-sm ${cls}">
           ${+d.slice(8)}${d === today ? '<span aria-hidden="true" class="absolute bottom-1 size-1 rounded-full bg-current"></span>' : ''}
         </button></span>`);
     }
     while (cells.length % 7) cells.push('<span role="gridcell"></span>');
     const rows = [];
-    for (let i = 0; i < cells.length; i += 7) rows.push(`<div role="row" class="grid grid-cols-7 gap-y-2">${cells.slice(i, i + 7).join('')}</div>`);
+    for (let i = 0; i < cells.length; i += 7) rows.push(`<div role="row" class="grid grid-cols-7 gap-x-1.5">${cells.slice(i, i + 7).join('')}</div>`);
 
     const navBtn = (dir: 'prev' | 'next', disabled: boolean) =>
       `<button type="button" data-action="${dir}" aria-label="${dir === 'prev' ? t.prevMonth : t.nextMonth}" ${disabled ? 'disabled' : ''} class="press flex size-11 items-center justify-center rounded-full ${disabled ? 'cursor-not-allowed bg-surface-2 text-muted/60' : 'btn-tinted'}">${ICON[dir]}</button>`;
@@ -285,8 +285,8 @@ export function start(root: HTMLElement) {
             <button type="button" data-action="retry" class="${BTN_OUTLINE}${tracking} mt-4">${t.retry}</button>
             <p class="mt-4 text-muted">${t.callFallback} <a class="whitespace-nowrap text-fg underline underline-offset-4" href="${phoneHref}">${site.phoneDisplay}</a></p>
           </div>`
-        : `<div role="grid" data-grid aria-labelledby="bk-month" ${days ? '' : 'aria-busy="true"'} class="mt-6">
-            <div role="row" class="grid grid-cols-7 text-center text-xs text-muted">${wd.map((w) => `<span role="columnheader" class="py-2">${w}</span>`).join('')}</div>
+        : `<div role="grid" data-grid aria-labelledby="bk-month" ${days ? '' : 'aria-busy="true"'} class="mt-6 -mx-2 space-y-2.5 sm:mx-0">
+            <div role="row" class="grid grid-cols-7 gap-x-1.5 text-center text-xs text-muted">${wd.map((w) => `<span role="columnheader" class="py-2">${w}</span>`).join('')}</div>
             ${rows.join('')}
           </div>${days ? '' : `<p class="sr-only">${t.loading}</p>`}`;
 
@@ -438,6 +438,7 @@ export function start(root: HTMLElement) {
     if (res?.ok && body.ok) {
       if (body.demo) showDemo();
       notifyOwner(d);
+      navigator.vibrate?.(12); // one short tick to confirm the booking went through (Android; iOS ignores it)
       emit('booking_submitted', { service: st.items.map((i) => i.service.id).join('+'), option: st.items.map((i) => i.option!.id).join('+'), value: total().price, currency: 'AUD' });
       st.name = d.name.trim();
       load(st.date!.slice(0, 7), true); // bypass the browser's 60 s cache so the taken slot disappears
@@ -604,6 +605,11 @@ export function start(root: HTMLElement) {
     emit('booking_start', { service: st.items.map((i) => i.service.id).join('+') });
   };
 
+  // Selection feedback: the item just picked pops once (CSS [data-pop]); set after render so nothing else replays.
+  function pop(el: Element | null, card = false) {
+    (card ? el?.closest('label') : el)?.setAttribute('data-pop', '');
+  }
+
   // --- events ---
   root.addEventListener('change', (e) => {
     const el = e.target as HTMLInputElement | HTMLSelectElement;
@@ -647,7 +653,8 @@ export function start(root: HTMLElement) {
       $(el.getAttribute('href')!)?.focus();
       return;
     }
-    // Let the press show before the view re-renders (touch presses are mirrored in data-pressedAt by BaseLayout).
+    // A touch press is drawn by the layout's pointerdown handler (data-pressed). These buttons re-render the view at once,
+    // so wait until the press has been on screen for PRESS_MS before acting; keyboard and mouse-free clicks act at once.
     const shown = performance.now() - Number(el.dataset.pressedAt ?? -1e9);
     if (shown < PRESS_MS && !reduced.matches) setTimeout(() => el.isConnected && act(el), PRESS_MS - shown);
     else act(el);
@@ -659,12 +666,17 @@ export function start(root: HTMLElement) {
       if (el.getAttribute('aria-disabled')) return;
       st.date = st.focus = el.dataset.date;
       st.time = undefined;
-      return mobile.matches ? go(3) : ((st.step = 3), render());
+      if (mobile.matches) return go(3);
+      st.step = 3;
+      render();
+      return pop(view.querySelector(`[data-date="${st.date}"]`));
     }
     if (el.dataset.time) {
       st.time = el.dataset.time;
       render();
-      view.querySelector<HTMLElement>('[data-action="to-details"]')?.focus();
+      const next = view.querySelector<HTMLElement>('[data-action="to-details"]');
+      pop(next?.previousElementSibling ?? null);
+      next?.focus();
       return;
     }
     const [y, m] = st.month.split('-').map(Number);
