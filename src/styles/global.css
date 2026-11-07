@@ -248,19 +248,22 @@
 
 /* Selected option: a quick pop and a halo that spreads a beat later. */
 @keyframes pick-pop { 0% { scale: 1; } 40% { scale: 1.04; } 100% { scale: 1; } }
-@keyframes pick-halo { 0% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 45%, transparent); } 100% { box-shadow: 0 0 0 14px transparent; } }
+@keyframes pick-halo {
+  from { opacity: 1; box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 35%, transparent); }
+  to { opacity: 0; box-shadow: 0 0 0 12px color-mix(in oklch, var(--primary) 0%, transparent); }
+}
 [data-pop] { animation: pick-pop 320ms var(--ease-out); }
+label[data-pop] { position: relative; }
 [data-pop]::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; animation: pick-halo 520ms 90ms var(--ease-out) both; }
 @keyframes radio-pop { 0% { scale: 1; } 40% { scale: 1.35; } 100% { scale: 1; } }
-/* Radio pick, same in every look: the dot pops and a plum ring spreads out from it, then fades. */
-@keyframes radio-ring {
-  from { opacity: 1; box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 45%, transparent); }
-  to { opacity: 0; box-shadow: 0 0 0 14px color-mix(in oklch, var(--primary) 0%, transparent); }
+/* Radio pick, same in every look: the whole row releases (row pop + halo, from [data-pop] on the label); the dot inside pops too. */
+[data-radio] { display: inline-flex; flex-shrink: 0; }
+[data-pop] [data-radio] > input { animation: radio-pop 320ms var(--ease-out) both; }
+@keyframes row-release {
+  from { opacity: 1; background: color-mix(in oklch, var(--primary) 12%, transparent); box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 35%, transparent); }
+  to { opacity: 0; background: color-mix(in oklch, var(--primary) 12%, transparent); box-shadow: 0 0 0 10px color-mix(in oklch, var(--primary) 0%, transparent); }
 }
-[data-radio] { position: relative; display: inline-flex; flex-shrink: 0; border-radius: 9999px; }
-[data-radio][data-pop] { animation: none; }
-[data-radio][data-pop] > input { animation: radio-pop 320ms var(--ease-out) both; }
-[data-radio][data-pop]::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; animation: radio-ring 600ms 60ms var(--ease-out) both; }
+label[data-pop]:has([data-radio])::after { inset: 0 -0.25rem; border-radius: 0.875rem; animation: row-release 650ms 40ms var(--ease-out) both; }
 
 /* Scroll reveal: content stays visible without JS (crawlers, AI fetchers). Transform + opacity only (no CLS). */
 .js [data-reveal] {

@@ -636,7 +636,7 @@ export function start(root: HTMLElement) {
     const again = view.querySelector<HTMLElement>(el.name === 'bk-units' ? `select[data-service="${el.dataset.service}"]` : `input[name="${el.name}"][value="${el.value}"]`);
     again?.focus();
     // Selected option pops with a delayed halo (CSS [data-pop]).
-    if (again instanceof HTMLInputElement && again.checked && !reduced.matches) (again.type === 'radio' ? again.closest('[data-radio]') : again.closest('label'))?.setAttribute('data-pop', '');
+    if (again instanceof HTMLInputElement && again.checked && !reduced.matches) again.closest('label')?.setAttribute('data-pop', ''); // the whole row/card releases, radios included
   });
 
   root.addEventListener('click', (e) => {
