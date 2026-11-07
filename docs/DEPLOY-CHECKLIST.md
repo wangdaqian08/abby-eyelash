@@ -144,3 +144,14 @@ Protocol: <https://www.indexnow.org/documentation>.
 - Search Console: Performance and Generative AI report. Bing: AI Performance. GA4: the **AI assistants** channel and key events.
 - Cloudflare → AI Crawl Control: confirm that OAI-SearchBot, PerplexityBot, Claude-SearchBot and Bingbot fetch pages and are not blocked.
 - Run the EN/ZH prompt panel in `docs/geo-prompt-panel.md` and fix any wrong facts (hours, prices, address) at the source.
+
+## J. Style A/B test (look A = main, look B = liquid glass)
+
+`functions/_middleware.ts` gives each new visitor look A or B (cookie `style`, 30 days) at the same URLs; `/api/*` is never split. Settings live in `src/data/ab-test.ts`. `npm run check:go-live` blocks launch while `bPercent` is 0.
+
+1. Deploy the `feat/liquid-glass-ui` branch (Cloudflare builds every branch). Its address is `bOrigin`. Its build must use the production `SITE_URL` (Settings → Environment variables → **Preview**: `SITE_URL=https://www.abbyeyelashes.com`), or its canonicals and GA4 reporting point at the preview host.
+2. GA4 → Admin → Custom definitions: add `style_variant` as an **event**-scoped dimension and as a **user**-scoped dimension.
+3. At launch: `bPercent: 50`, commit, deploy. Check: open the site in two private windows until one shows the glass header; response header `x-style-variant` says which look you got; `?style=A` / `?style=B` forces one.
+4. Run it for a fixed period (6–8 weeks, or ~1,600 visitors per look). Compare the share of users with `book_click`, then `booking_submitted`, by `style_variant`. Don't stop early on a good day.
+5. End: keep A → set `bPercent: 0`, delete the middleware and the check. Keep B → merge `feat/liquid-glass-ui` into main, then delete the middleware and the check.
+
