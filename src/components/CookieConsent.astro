@@ -21,12 +21,14 @@ const btn = ['inline-flex min-h-11 flex-1 items-center justify-center rounded-fu
 <script is:inline>
   (() => {
     const bar = document.querySelector('[data-cookie-bar]');
-    const get = () => { try { const at = Number(localStorage.getItem('cookie-consent-at')); return Date.now() - at < 365 * 864e5 ? localStorage.getItem('cookie-consent') : null; } catch { return null; } }; // re-ask after 12 months
+    let mem = null; // this page's choice, for when localStorage is unavailable
+    const get = () => { try { const age = Date.now() - Number(localStorage.getItem('cookie-consent-at')); return age >= 0 && age < 365 * 864e5 ? localStorage.getItem('cookie-consent') : mem; } catch { return mem; } }; // re-ask after 12 months
     if (!get()) bar.hidden = false;
     bar.addEventListener('click', (e) => {
       const b = e.target.closest('[data-consent]');
       if (!b) return;
       const was = get();
+      mem = b.dataset.consent;
       try { localStorage.setItem('cookie-consent', b.dataset.consent); localStorage.setItem('cookie-consent-at', String(Date.now())); } catch {}
       if (was === 'all' && b.dataset.consent === 'necessary') {
         // Withdrawn: drop the GA cookies (set on the registrable domain) and reload without GA.

@@ -470,6 +470,7 @@ export function start(root: HTMLElement) {
     if (body.error === 'validation' && body.errors) {
       const entries = Object.entries(body.errors) as [Field, string][];
       entries.forEach(([k, c]) => setError(k, errMsg(k, c)));
+      if (body.errors.deposit) $<HTMLInputElement>('#bk-deposit')!.checked = false; // so ticking again clears it
       showSummaryError(`<p class="font-medium">${t.errSummary}</p><ul class="mt-2 list-disc pl-5">${entries.map(([k, c]) => `<li>${esc(errMsg(k, c))}</li>`).join('')}</ul>`);
     } else if (body.error === 'slot_taken') {
       cache.delete(key(st.date!.slice(0, 7)));
@@ -743,7 +744,12 @@ export function start(root: HTMLElement) {
     const el = e.target as HTMLInputElement;
     const k = el.name as keyof Details;
     if (!el.closest('[data-form]')) return;
-    if (el.name === 'deposit') return el.checked && setError('deposit');
+    if (el.name === 'deposit') {
+      if (!el.checked) return;
+      setError('deposit');
+      if (!$('[data-form] [aria-invalid]')) $('[data-errsum]')!.hidden = true; // nothing else wrong: drop the stale summary
+      return;
+    }
     readDetails();
     if (!['name', 'phone', 'email', 'notes'].includes(k) || (onlyIfInvalid && !el.hasAttribute('aria-invalid'))) return;
     const c = validateDetails(st.details)[k];

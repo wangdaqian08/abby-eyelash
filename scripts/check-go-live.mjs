@@ -45,6 +45,7 @@ const manual = [
   ['G', 'GA4: style_variant custom dimension (event + user); book_click and booking_submitted as key events.'],
   ['G', 'Google Search Console + Google Business Profile (address, phone, hours identical to the site).'],
   ['H', 'Bing Webmaster Tools + IndexNow key.'],
+  ['P', 'Privacy policy promises: two-step sign-in on Abby’s Google, Cloudflare and Web3Forms accounts; GA4 data retention set to 14 months.'],
 ];
 
 const failing = checks.filter((c) => c.failing);

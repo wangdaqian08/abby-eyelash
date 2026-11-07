@@ -37,7 +37,7 @@ const en = {
   },
   cookies: {
     label: 'Cookie choice',
-    body: 'We use cookies to keep the site working and, with your OK, Google Analytics cookies to see which pages help visitors so we can improve them. No ads, and we never sell your data.',
+    body: 'We use cookies to run the site and, with your OK, to see which pages help. We never sell your data.',
     necessary: 'Necessary only',
     all: 'Accept all',
     privacy: 'Privacy policy',
@@ -177,7 +177,7 @@ const zh: Strings = {
   },
   cookies: {
     label: 'Cookie 选择',
-    body: '我们使用 Cookie 保证网站正常运行；在你同意后，也会使用 Google Analytics 的 Cookie 了解哪些页面对访客有用，以便改进网站。我们不投放广告，也绝不出售你的数据。',
+    body: '我们用 Cookie 保证网站运行；经你同意，也用来了解哪些页面有用。我们绝不出售你的数据。',
     necessary: '仅必要',
     all: '全部接受',
     privacy: '隐私政策',

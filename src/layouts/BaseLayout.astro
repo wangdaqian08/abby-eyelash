@@ -37,12 +37,12 @@ const { lang, title, description } = props;
       class="sr-only z-[60] bg-primary px-4 py-3 text-on-primary focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
       >{lang === 'zh' ? '跳到主要内容' : 'Skip to content'}</a
     >
+    <CookieConsent lang={lang} /><!-- early in the DOM so keyboard users reach it first; shown fixed at the bottom -->
     <Header lang={lang} />
     <main id="main">
       <slot />
     </main>
     <Footer lang={lang} />
-    <CookieConsent lang={lang} />
     <script>
       // Press state for touch: phones apply :active late (or not at all) and a fast tap lifts before it shows.
       // data-pressed goes on at pointerdown and stays at least 140 ms; CSS styles it exactly like :active.

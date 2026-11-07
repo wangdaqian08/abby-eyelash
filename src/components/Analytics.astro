@@ -16,7 +16,7 @@ const host = Astro.site?.host ?? ''; // only the production host reports, so loc
       // Loads only after the visitor picks "Accept all" in ./CookieConsent.astro (now or on an earlier visit).
       let consent = null;
       let started = false;
-      try { const at = Number(localStorage.getItem('cookie-consent-at')); if (Date.now() - at < 365 * 864e5) consent = localStorage.getItem('cookie-consent'); } catch {} // re-ask after 12 months
+      try { const age = Date.now() - Number(localStorage.getItem('cookie-consent-at')); if (age >= 0 && age < 365 * 864e5) consent = localStorage.getItem('cookie-consent'); } catch {} // re-ask after 12 months
       if (consent === 'all') start();
       else addEventListener('cookie-consent', (e) => e.detail === 'all' && start());
       function start() {

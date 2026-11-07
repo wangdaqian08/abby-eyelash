@@ -24,7 +24,7 @@ const book = localePath(lang, '/book');
 <header data-header class="fixed inset-x-0 top-0 z-50 bg-bg/90 backdrop-blur-md">
   <div class="mx-auto flex h-[var(--header-h)] max-w-6xl items-center justify-between gap-3 px-4 sm:gap-6 sm:px-6">
     <a href={home} aria-label={t.home} class="flex min-h-11 items-center gap-3">
-      <span class="whitespace-nowrap font-serif text-xl leading-none sm:text-2xl text-primary">{site.name}</span>
+      <span class="whitespace-nowrap font-serif text-lg leading-none min-[360px]:text-xl sm:text-2xl text-primary">{site.name}</span>
       <span class:list={['hidden text-muted xl:inline', lang === 'en' ? 'text-[0.6875rem] uppercase tracking-[0.25em]' : 'text-xs']}>{t.tagline}</span>
     </a>
 
@@ -38,7 +38,7 @@ const book = localePath(lang, '/book');
 
     <div class="flex items-center gap-2 sm:gap-4">
       <LangSwitch lang={lang} />
-      <Button href={book} lang={lang} track="book_click" class="min-h-10! px-3! sm:px-5!"><span class="sm:hidden">{t.bookShort}</span><span class="hidden sm:inline">{t.book}</span></Button>
+      <Button href={book} lang={lang} track="book_click" class="min-h-10! px-3! sm:px-5!"><span class="whitespace-nowrap sm:hidden">{t.bookShort}</span><span class="hidden sm:inline">{t.book}</span></Button>
       <button
         type="button"
         data-menu-button

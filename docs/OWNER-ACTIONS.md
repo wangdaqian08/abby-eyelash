@@ -63,10 +63,10 @@ Time estimates are our rough guesses, not from the sources.
 **Ready-to-use SMS (send the same text to every client, the day after the appointment)**
 
 English:
-> Hi [Name], thanks for visiting Abby Eyelash. If you have a minute, we'd appreciate your honest review on Google: [review link]. Thank you! – Abby
+> Hi [Name], thanks for visiting Abby Eyelashes. If you have a minute, we'd appreciate your honest review on Google: [review link]. Thank you! – Abby
 
 中文 (for clients who speak Chinese with you):
-> [姓名]你好，感谢光临 Abby Eyelash。如果你方便，欢迎在 Google 上留下你的真实评价：[评价链接]。谢谢！– Abby
+> [姓名]你好，感谢光临 Abby Eyelashes。如果你方便，欢迎在 Google 上留下你的真实评价：[评价链接]。谢谢！– Abby
 
 Template notes: it does not mention stars, discounts or what to write, and it goes to everyone. Do not add "5-star", "leave us a good review" or any reward.
 
