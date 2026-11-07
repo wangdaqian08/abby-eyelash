@@ -8,7 +8,7 @@ This list covers the website and its tracking. The business profiles (Google Bus
 
 ## A. Before the first public launch
 
-- [ ] **Run `npm run check:go-live` first.** It checks the code against every go-live reminder (stock About photos, dummy reviews, theme preview switcher, empty placeholders, domain, powder-brows photo, AI style guide, Google Fonts) and fails while any blocker remains. Add new reminders to `scripts/check-go-live.mjs`.
+- [ ] **Run `npm run check:go-live` first.** One list of every go-live reminder: BLOCK (fix in code), WARN (needs Abby), BY HAND (settings in this checklist). It fails while any BLOCK remains. Add new reminders to `scripts/check-go-live.mjs`.
 - [ ] Every value marked `PLACEHOLDER` in `src/data/site.ts` and `src/data/services.ts` is real: address, phone, email, socials, Google review link, and prices. The address, phone and hours must be **exactly** the same as on Google Business Profile.
 - [ ] Prices and durations live in `src/data/prices.csv` (how-to: `docs/PRICES.md`). When you change a row, set its `更新日期` to today's date; a service's `updated` is the latest date among its rows. Change it **only** when the content really changes. That date is published as "Prices updated", in the page data and in the sitemap, and Google warns against fake date bumps ([Google: creating helpful content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)).
 - [ ] Dummy reviews are replaced by real ones. The build fails on purpose while `LAUNCH=1` is set and dummy reviews remain (decision D3).
