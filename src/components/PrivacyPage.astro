@@ -1,0 +1,106 @@
+---
+// Privacy policy (EN + ZH). Facts must match the code: cookies (CookieConsent.astro, functions/_middleware.ts),
+// booking data (functions/api/book.ts → Google Calendar, booking-client.ts → Web3Forms), photo consent wording (i18n/booking.ts).
+import type { Lang } from '../data/services';
+import { site } from '../data/site';
+import { waHref } from '../i18n/common';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const updated = '2026-11-07';
+const link = 'class="underline underline-offset-4"';
+// "text or WhatsApp {phone}": the number opens SMS, the word WhatsApp opens a chat.
+const phone = `<a href="sms:${site.phone.replace(/\s/g, '')}" ${link}>${site.phoneDisplay}</a>`;
+const wa = `<a href="${waHref(site.phone)}" target="_blank" rel="noopener" ${link}>WhatsApp</a>`;
+const oaic = '<a href="https://www.oaic.gov.au/privacy/privacy-complaints" target="_blank" rel="noopener" class="underline underline-offset-4">oaic.gov.au</a>';
+
+const copy: Record<Lang, { title: string; updated: string; sections: [string, string[]][] }> = {
+  en: {
+    title: 'Privacy policy',
+    updated: 'Last updated 7 November 2026',
+    sections: [
+      ['Who we are', [`${site.name} is ${site.owner}’s lash, brow and nail studio in ${site.address.locality} ${site.address.region}. For any privacy question or request, text ${phone} or message ${wa}.`]],
+      ['What we collect', [
+        'When you book: your name, phone, email, notes, the services and time you pick, and your answers to the deposit terms and the photo consent. Your notes may include health information such as allergies; please only add what Abby needs to treat you safely.',
+        'Technical details: your IP address and browser, which our hosting and the security check on the booking form use to block spam and abuse.',
+        'You don’t have to give us your details, but without a name and a way to contact you we can’t take a booking.',
+        'Photos of your lashes, brows or nails (including before-and-after photos), only if you are 18 or over and tick the photo consent.',
+        'How you use this website, only if you choose “Accept all” cookies: pages visited, device and browser, and approximate location (Google Analytics).',
+      ]],
+      ['Why we use it', [
+        'To confirm and manage your appointment, contact you about it, and keep the business records the law requires.',
+        'Photos: to promote the studio on our website, social media and ads, and only with your consent.',
+        'Website statistics: to see which pages help visitors so we can improve them. Statistics are never used for advertising, and we never sell your data.',
+      ]],
+      ['Who else handles it', [
+        `Only ${site.owner} sees your booking details. The services that run this site process some of them for us: Google (calendar and, with your OK, Analytics), Cloudflare (hosting and the security check on the booking form) and Web3Forms (sends the booking notice to ${site.owner}’s email). These companies may store data outside Australia, for example in the United States. ${site.owner} stays responsible for your information when they handle it.`,
+        `We keep your information secure: only ${site.owner} can sign in to these accounts, and they are protected by passwords and two-step sign-in.`,
+      ]],
+      ['Cookies', [
+        'Necessary (always on): your cookie choice (kept in your browser), a cookie that keeps the same site look on each visit, and Cloudflare’s security check on the booking form.',
+        'Analytics (only after “Accept all”): Google Analytics cookies whose names start with _ga.',
+        'You can change your choice at any time with “Cookie settings” at the bottom of every page. We ask again after 12 months.',
+      ]],
+      ['Photos', [
+        `Photo consent is optional, only for people 18 or over, and never a condition of booking. You can withdraw it at any time by texting ${phone} or messaging ${wa}: ${site.owner} then removes the photos from her website and social accounts within a reasonable time and stops using them in new posts and ads. Printed materials and other people’s shares can’t be recalled.`,
+      ]],
+      ['How long we keep it', [
+        'Booking records: 5 years (Australian tax record rules), then deleted. Website statistics: up to 14 months, kept by Google.',
+      ]],
+      ['Your rights', [
+        `You can ask to see, correct or delete your information, or withdraw a consent, by texting ${phone} or messaging ${wa}.`,
+        `To make a complaint, contact ${site.owner} the same way first; she replies within 30 days. If you are unhappy with the answer, you can complain to the Office of the Australian Information Commissioner at ${oaic}.`,
+      ]],
+    ],
+  },
+  zh: {
+    title: '隐私政策',
+    updated: '最后更新：2026 年 11 月 7 日',
+    sections: [
+      ['我们是谁', [`${site.name} 是 ${site.owner} 在 ${site.address.locality} ${site.address.region} 的美睫、美眉与美甲工作室。如有任何隐私问题或请求，请发短信至 ${phone} 或通过 ${wa} 联系。`]],
+      ['我们收集哪些信息', [
+        '预约时：你的姓名、电话、邮箱、备注、所选项目和时间，以及你对订金条款和照片授权的选择。备注可能包含过敏等健康信息，请只填写 Abby 安全服务所需的内容。',
+        '技术信息：你的 IP 地址和浏览器信息，网站托管和预约表单的安全验证会用它们拦截垃圾信息和滥用。',
+        '你可以不提供个人信息，但没有姓名和联系方式，我们无法为你预约。',
+        '睫毛、眉毛或美甲照片（包括术前术后对比照）：仅在你年满 18 岁并勾选照片授权时拍摄。',
+        '网站使用情况：仅在你选择“全部接受” Cookie 后收集，包括浏览的页面、设备和浏览器、大致位置（Google Analytics）。',
+      ]],
+      ['我们为什么使用这些信息', [
+        '确认和管理你的预约、就预约与你联系，并按法律要求保存经营记录。',
+        '照片：仅在你同意后，用于工作室的网站、社交媒体和广告宣传。',
+        '网站统计：了解哪些页面对访客有用，以便改进网站。统计数据绝不用于广告，我们也绝不出售你的数据。',
+      ]],
+      ['还有谁会处理这些信息', [
+        `只有 ${site.owner} 会查看你的预约信息。运行本网站的服务会代我们处理其中一部分：Google（日历，以及经你同意后的 Analytics）、Cloudflare（网站托管和预约表单的安全验证）、Web3Forms（把预约通知发送到 ${site.owner} 的邮箱）。这些公司可能把数据存储在澳洲以外，例如美国。这些服务处理你的信息时，${site.owner} 仍对其负责。`,
+        `我们会妥善保护你的信息：只有 ${site.owner} 能登录这些账号，账号设有密码和两步验证。`,
+      ]],
+      ['Cookie', [
+        '必要 Cookie（始终开启）：你的 Cookie 选择（保存在你的浏览器中）、让你每次访问看到同一网站外观的 Cookie，以及预约表单上 Cloudflare 的安全验证。',
+        '统计 Cookie（仅在“全部接受”后）：名称以 _ga 开头的 Google Analytics Cookie。',
+        '你可以随时通过每个页面底部的“Cookie 设置”更改选择。12 个月后我们会再次询问。',
+      ]],
+      ['照片', [
+        `照片授权为选填，仅限年满 18 岁的顾客，绝不是预约的前提条件。你可以随时发短信至 ${phone} 或通过 ${wa} 撤回同意：${site.owner} 会在合理时间内删除她网站和社交账号上的相关照片，并停止在新的帖子和广告中使用。已印刷的物料及他人转发的内容无法收回。`,
+      ]],
+      ['保存多久', [
+        '预约记录：保存 5 年（澳洲税务记录要求），之后删除。网站统计数据：由 Google 保存，最长 14 个月。',
+      ]],
+      ['你的权利', [
+        `你可以发短信至 ${phone} 或通过 ${wa}，要求查看、更正或删除你的信息，或撤回同意。`,
+        `如需投诉，请先通过同样方式联系 ${site.owner}，她会在 30 天内回复。如对答复不满意，可向澳大利亚信息专员办公室投诉：${oaic}。`,
+      ]],
+    ],
+  },
+};
+const t = copy[lang];
+---
+<section class="mx-auto max-w-3xl px-4 pb-16 pt-[calc(var(--header-h)+40px)] sm:px-6 lg:pb-24 lg:pt-[calc(var(--header-h)+64px)]">
+  <h1 class="text-4xl leading-tight sm:text-5xl">{t.title}</h1>
+  <p class="mt-3 text-sm text-muted"><time datetime={updated}>{t.updated}</time></p>
+  {t.sections.map(([h, ps]) => (
+    <>
+      <h2 class="mt-10 text-2xl">{h}</h2>
+      {ps.map((p) => <p class="mt-3 text-muted" set:html={p} />)}
+    </>
+  ))}
+</section>

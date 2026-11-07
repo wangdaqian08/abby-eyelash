@@ -51,6 +51,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   const booking = items && quoteAll(items);
   if (!booking) errors.option = 'invalid';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(b.date) || !/^\d{2}:\d{2}$/.test(b.time)) errors.time = 'invalid';
+  if (raw.deposit !== true) errors.deposit = 'required'; // deposit terms must be agreed
   if (Object.keys(errors).length || !booking) return json({ error: 'validation', errors }, 400);
   const { minutes, deposit } = booking;
 
@@ -88,6 +89,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       `Service: ${label} (${minutes} min)`,
       `Price: ${quoteAllText(booking, 'en')}`,
       `Deposit: $${deposit} by bank transfer — not yet received (send the bank details when confirming)`,
+      ...consentLines(raw),
       `Language: ${b.lang === 'zh' ? 'Chinese' : 'English'}`,
       `Notes: ${plain(b.notes) || '-'}`,
       '',
@@ -102,6 +104,13 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   }
   return json({ ok: true, demo });
 };
+
+// The consent record in the calendar event. Only `photos: true` counts as yes (optional consent, recorded for Abby).
+export const consentLines = (raw: Record<string, unknown>) => [
+  `Terms version: ${site.booking.termsVersion}`,
+  `Deposit terms: agreed (not refunded if the client cancels or reschedules within ${site.booking.cancelHours} h, or doesn't turn up)`,
+  `Photo consent: ${raw.photos === true ? 'YES, may use photos for promotion' : 'NO, do not post photos'}`,
+];
 
 // Drop this month's cached busy times so the new booking shows as taken straight away.
 async function purgeAvailability(url: string, month: string) {

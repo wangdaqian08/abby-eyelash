@@ -49,7 +49,11 @@ const link = 'inline-flex min-h-11 items-center text-muted transition-colors dur
   <div class="border-t border-border">
     <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-4 text-xs text-muted sm:flex-row sm:px-6">
       <p>© {new Date().getFullYear()} {site.name} · {napAddress(site)}</p>
-      <LangSwitch lang={lang} />
+      <div class="flex items-center gap-4">
+        <a href={localePath(lang, '/privacy')} class="inline-flex min-h-11 items-center underline-offset-4 hover:text-fg hover:underline sm:min-h-9">{t.privacy}</a>
+        <button type="button" data-cookie-settings class="inline-flex min-h-11 items-center underline-offset-4 hover:text-fg hover:underline sm:min-h-9">{t.cookieSettings}</button>
+        <LangSwitch lang={lang} />
+      </div>
     </div>
   </div>
 </footer>
