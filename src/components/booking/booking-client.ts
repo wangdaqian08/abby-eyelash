@@ -639,10 +639,8 @@ export function start(root: HTMLElement) {
     } else return;
     st.time = undefined;
     render();
-    const again = view.querySelector<HTMLElement>(el.name === 'bk-units' ? `select[data-service="${el.dataset.service}"]` : `input[name="${el.name}"][value="${el.value}"]`);
-    again?.focus();
-    // Selected option pops with a delayed halo (CSS [data-pop]).
-    if (again instanceof HTMLInputElement && again.checked && !reduced.matches) again.closest('label')?.setAttribute('data-pop', ''); // the whole row/card releases, radios included
+    if ((el as HTMLInputElement).checked) pop(view.querySelector(`input[name="${el.name}"][value="${el.value}"]`), true); // the whole row/card releases, radios included
+    view.querySelector<HTMLElement>(el.name === 'bk-units' ? `select[data-service="${el.dataset.service}"]` : `input[name="${el.name}"][value="${el.value}"]`)?.focus();
   });
 
   root.addEventListener('click', (e) => {

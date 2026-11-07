@@ -247,6 +247,15 @@ input[type='radio'][data-pop] { animation: radio-pop 320ms var(--ease-out) both;
 }
 label[data-pop]:has([data-radio])::after { inset: 0 -0.25rem; border-radius: 0.875rem; animation: row-release 650ms 40ms var(--ease-out) both; }
 
+/* Radio pick, same in every look: the whole row releases (row pop + halo, from [data-pop] on the label); the dot inside pops too. */
+[data-radio] { display: inline-flex; flex-shrink: 0; }
+[data-pop] [data-radio] > input { animation: radio-pop 320ms var(--ease-out) both; }
+@keyframes row-release {
+  from { opacity: 1; background: color-mix(in oklch, var(--primary) 12%, transparent); box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 35%, transparent); }
+  to { opacity: 0; background: color-mix(in oklch, var(--primary) 12%, transparent); box-shadow: 0 0 0 10px color-mix(in oklch, var(--primary) 0%, transparent); }
+}
+label[data-pop]:has([data-radio])::after { inset: 0 -0.25rem; border-radius: 0.875rem; animation: row-release 650ms 40ms var(--ease-out) both; }
+
 /* Scroll reveal: content stays visible without JS (crawlers, AI fetchers). Transform + opacity only (no CLS). */
 .js [data-reveal] {
   opacity: 0;
