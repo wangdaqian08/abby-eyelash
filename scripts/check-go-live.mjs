@@ -58,6 +58,11 @@ check('WARN', 'google-fonts', /fonts\.googleapis\.com/.test(layout),
   'Chinese pages load ~1.5 MB of Noto fonts from Google Fonts (render-blocking; /zh/ LCP ~2.4 s on mobile).',
   'Drop the Google Fonts <link> in src/layouts/BaseLayout.astro and rely on the system CJK font stack (measured: LCP 1.2–1.4 s).');
 
+const ab = read('src/data/ab-test.ts');
+check('BLOCK', 'ab-test-split', /bPercent:\s*0\b/.test(ab),
+  'Style A/B test is off (bPercent: 0): every visitor gets look A, so the glass look (B) is never measured.',
+  'At launch set bPercent: 50 in src/data/ab-test.ts (and confirm bOrigin serves the feat/liquid-glass-ui build with the production SITE_URL; register style_variant as a GA4 custom dimension). If the test is dropped, delete functions/_middleware.ts and this check.');
+
 const show = (c) => `${c.failing ? (c.level === 'BLOCK' ? '✗ BLOCK' : '! WARN ') : '✓ ok   '}  ${c.id}${c.failing ? `\n           ${c.problem}\n           → ${c.fix}` : ''}`;
 console.log('Go-live check (code vs reminders)\n');
 console.log(checks.map(show).join('\n'));

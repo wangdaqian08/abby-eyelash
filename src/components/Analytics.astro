@@ -3,6 +3,7 @@
 // (PUBLIC_GA4_ID build env, or site.google.ga4Id). Events:
 //   click on any [data-track="<event>"] → gtag event <event> {link_url, page_location, lang}
 //   window CustomEvents booking_start {service} / booking_submitted {service, option, value, currency}
+// Every event carries style_variant (A/B look, from the `style` cookie set by functions/_middleware.ts; A when no test runs).
 import { site } from '../data/site';
 const raw = import.meta.env.PUBLIC_GA4_ID || site.google.ga4Id;
 const id = /^G-[A-Z0-9]+$/.test(raw) ? raw : ''; // only a well-formed measurement ID ever reaches the page
@@ -20,16 +21,18 @@ const host = Astro.site?.host ?? ''; // only the production host reports, so loc
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
         gtag('js', new Date());
-        gtag('config', id);
+        const style_variant = (/(?:^|;\s*)style=(A|B)(?:;|$)/.exec(document.cookie) || [, 'A'])[1];
+        gtag('set', 'user_properties', { style_variant });
+        gtag('config', id, { style_variant });
         const lang = document.documentElement.lang;
         document.addEventListener('click', (e) => {
           const el = e.target.closest && e.target.closest('[data-track]');
-          if (el) gtag('event', el.dataset.track, { link_url: el.href, page_location: location.href, lang });
+          if (el) gtag('event', el.dataset.track, { link_url: el.href, page_location: location.href, lang, style_variant });
         });
-        addEventListener('booking_start', (e) => gtag('event', 'booking_start', { service: e.detail.service, lang }));
+        addEventListener('booking_start', (e) => gtag('event', 'booking_start', { service: e.detail.service, lang, style_variant }));
         addEventListener('booking_submitted', (e) => {
           const d = e.detail;
-          gtag('event', 'booking_submitted', { service: d.service, option: d.option, value: d.value, currency: d.currency, lang });
+          gtag('event', 'booking_submitted', { service: d.service, option: d.option, value: d.value, currency: d.currency, lang, style_variant });
         });
       }
     </script>
