@@ -608,7 +608,7 @@ export function start(root: HTMLElement) {
 
   // Selection feedback: the item just picked pops once (CSS [data-pop]); set after render so nothing else replays.
   function pop(el: Element | null, card = false) {
-    (card ? el?.closest('label') : (el?.closest('[data-radio]') ?? el))?.setAttribute('data-pop', '');
+    (card ? el?.closest('label') : el)?.setAttribute('data-pop', '');
   }
 
   // --- events ---
@@ -640,7 +640,7 @@ export function start(root: HTMLElement) {
     } else return;
     st.time = undefined;
     render();
-    if ((el as HTMLInputElement).checked) pop(view.querySelector(`input[name="${el.name}"][value="${el.value}"]`), el.type === 'checkbox');
+    if ((el as HTMLInputElement).checked) pop(view.querySelector(`input[name="${el.name}"][value="${el.value}"]`), true); // the whole row/card releases, radios included
     view.querySelector<HTMLElement>(el.name === 'bk-units' ? `select[data-service="${el.dataset.service}"]` : `input[name="${el.name}"][value="${el.value}"]`)?.focus();
   });
 
