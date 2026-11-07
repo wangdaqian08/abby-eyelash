@@ -194,8 +194,8 @@ export function start(root: HTMLElement) {
       return `<fieldset class="mt-8"><legend class="font-serif text-xl">${s.name[lang]}<span class="mt-0.5 block font-sans text-sm text-muted">${t.chooseOption}</span></legend>
           <div class="mt-3 divide-y divide-border border-y border-border">${main
             .map(
-              (o, i, all) => `${groupAt(all, i) ? `<p class="px-1 pb-2 pt-5 text-xs font-medium uppercase tracking-wider text-accent-ink">${groupAt(all, i)![lang]}</p>` : ''}<label class="relative flex min-h-14 items-center justify-between gap-4 rounded-field px-2 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring">
-                <span class="flex items-center gap-3"><input type="radio" name="bk-option-${s.id}" value="${o.id}" class="size-4 accent-primary" ${o === it.option ? 'checked' : ''}><span>${o.name[lang]}</span></span>
+              (o, i, all) => `${groupAt(all, i) ? `<p class="px-1 pb-2 pt-5 text-xs font-medium uppercase tracking-wider text-accent-ink">${groupAt(all, i)![lang]}</p>` : ''}<label class="relative flex min-h-14 items-center justify-between gap-4 px-1 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring">
+                <span class="flex items-center gap-3"><span data-radio><input type="radio" name="bk-option-${s.id}" value="${o.id}" class="size-4 accent-primary" ${o === it.option ? 'checked' : ''}></span><span>${o.name[lang]}</span></span>
                 <span class="shrink-0 text-right text-sm text-muted"><span class="block whitespace-nowrap text-fg">${price(o)}</span><span class="whitespace-nowrap">${mins(o.minutes)}</span></span>
               </label>`,
             )
@@ -233,8 +233,8 @@ export function start(root: HTMLElement) {
       const name = `bk-addon-${s.id}-${gi}`;
       const chosen = opts.find((o) => it.addons[o.id]);
       return `${one.group ? `<p class="px-1 pb-2 pt-5 text-xs font-medium uppercase tracking-wider text-accent-ink">${one.group[lang]}</p>` : ''}
-        <label class="${row}"><span class="flex items-center gap-3"><input type="radio" name="${name}" data-service="${s.id}" value="" class="size-4 accent-primary" ${chosen ? '' : 'checked'}><span>${t.noAddon}</span></span></label>
-        ${opts.map((o) => `<label class="${row}"><span class="flex items-center gap-3"><input type="radio" name="${name}" data-service="${s.id}" value="${o.id}" class="size-4 accent-primary" ${o === chosen ? 'checked' : ''}><span>${o.name[lang]}</span></span>${meta(o, price(o))}</label>`).join('')}`;
+        <label class="${row}"><span class="flex items-center gap-3"><span data-radio><input type="radio" name="${name}" data-service="${s.id}" value="" class="size-4 accent-primary" ${chosen ? '' : 'checked'}></span><span>${t.noAddon}</span></span></label>
+        ${opts.map((o) => `<label class="${row}"><span class="flex items-center gap-3"><span data-radio><input type="radio" name="${name}" data-service="${s.id}" value="${o.id}" class="size-4 accent-primary" ${o === chosen ? 'checked' : ''}></span><span>${o.name[lang]}</span></span>${meta(o, price(o))}</label>`).join('')}`;
     });
     return `<fieldset class="mt-8"><legend class="font-serif text-xl">${legend}</legend>
       <div class="mt-3 divide-y divide-border border-y border-border">${blocks.join('')}</div></fieldset>`;
@@ -636,7 +636,7 @@ export function start(root: HTMLElement) {
     const again = view.querySelector<HTMLElement>(el.name === 'bk-units' ? `select[data-service="${el.dataset.service}"]` : `input[name="${el.name}"][value="${el.value}"]`);
     again?.focus();
     // Selected option pops with a delayed halo (CSS [data-pop]).
-    if (again instanceof HTMLInputElement && again.checked && !reduced.matches) again.closest('label')?.setAttribute('data-pop', '');
+    if (again instanceof HTMLInputElement && again.checked && !reduced.matches) (again.type === 'radio' ? again.closest('[data-radio]') : again.closest('label'))?.setAttribute('data-pop', '');
   });
 
   root.addEventListener('click', (e) => {
