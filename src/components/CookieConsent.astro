@@ -1,0 +1,49 @@
+---
+// Cookie choice bar: "Necessary only" or "Accept all". Saved in localStorage `cookie-consent` (necessary | all) + `cookie-consent-at`; asked again after 12 months.
+// Google Analytics (./Analytics.astro) loads only after "all". The footer's [data-cookie-settings] button reopens the bar.
+// Necessary = the `style` look cookie (functions/_middleware.ts), Turnstile on /book, and this choice itself.
+import type { Lang } from '../data/services';
+import { common } from '../i18n/common';
+import { localePath } from '../lib/i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = common[lang].cookies;
+const btn = ['inline-flex min-h-11 flex-1 items-center justify-center rounded-full px-4 font-medium whitespace-nowrap transition duration-200 active:scale-[.97] sm:flex-none', lang === 'en' ? 'text-xs uppercase tracking-[0.1em]' : 'text-sm'];
+---
+<div data-cookie-bar role="region" aria-label={t.label} hidden class="fixed inset-x-3 bottom-3 z-[55] mx-auto max-w-3xl rounded-card bg-surface p-4 text-sm shadow-lg ring-1 ring-border sm:p-5 pb-[max(1rem,env(safe-area-inset-bottom))]">
+  <p class="text-muted">{t.body} <a href={localePath(lang, '/privacy')} class="underline underline-offset-4 hover:text-fg">{t.privacy}</a></p>
+  <div class="mt-3 flex gap-3 sm:justify-end">
+    <button type="button" data-consent="necessary" class:list={[btn, 'btn-soft border border-primary/30 text-primary hover:bg-surface-2']}>{t.necessary}</button>
+    <button type="button" data-consent="all" class:list={[btn, 'btn-raise bg-primary text-on-primary hover:bg-primary/90']}>{t.all}</button>
+  </div>
+</div>
+<script is:inline>
+  (() => {
+    const bar = document.querySelector('[data-cookie-bar]');
+    let mem = null; // this page's choice, for when localStorage is unavailable
+    const get = () => { try { const age = Date.now() - Number(localStorage.getItem('cookie-consent-at')); return age >= 0 && age < 365 * 864e5 ? localStorage.getItem('cookie-consent') : mem; } catch { return mem; } }; // re-ask after 12 months
+    if (!get()) bar.hidden = false;
+    bar.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-consent]');
+      if (!b) return;
+      const was = get();
+      mem = b.dataset.consent;
+      try { localStorage.setItem('cookie-consent', b.dataset.consent); localStorage.setItem('cookie-consent-at', String(Date.now())); } catch {}
+      if (was === 'all' && b.dataset.consent === 'necessary') {
+        // Withdrawn: drop the GA cookies (set on the registrable domain) and reload without GA.
+        const domain = location.hostname.replace(/^www\./, '');
+        document.cookie.split(/;\s*/).map((c) => c.split('=')[0]).filter((n) => n.startsWith('_ga'))
+          .forEach((n) => [domain, '.' + domain, ''].forEach((d) => (document.cookie = `${n}=; Max-Age=0; Path=/${d && '; Domain=' + d}`)));
+        return location.reload();
+      }
+      bar.hidden = true;
+      dispatchEvent(new CustomEvent('cookie-consent', { detail: b.dataset.consent }));
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('[data-cookie-settings]')) return;
+      bar.hidden = false;
+      bar.querySelector(`[data-consent="${get() || 'all'}"]`).focus();
+    });
+  })();
+</script>

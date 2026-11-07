@@ -2,7 +2,7 @@
 // Used by pages, JSON-LD and the booking API. Values marked PLACEHOLDER must be replaced before launch.
 
 export const site = {
-  name: 'Abby Eyelash',
+  name: 'Abby Eyelashes',
   owner: 'Abby',
   // Home studio: street name only, never the house number (Abby sends it when confirming). Must match Google Business Profile.
   address: {
@@ -52,6 +52,7 @@ export const site = {
     maxAdvanceDays: 60,
     deposit: 20, // AUD per service (powder brows: its own `deposit` in services.ts), paid by bank transfer; not refunded inside cancelHours
     cancelHours: 48,
+    termsVersion: '2026-11-07', // deposit terms + photo consent wording (i18n/booking.ts); bump when that text changes
   },
 } as const;
 

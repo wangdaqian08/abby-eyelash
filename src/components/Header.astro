@@ -24,7 +24,7 @@ const book = localePath(lang, '/book');
 <header data-header class="fixed inset-x-3 top-3 z-50 sm:inset-x-4">
   <div class="glass mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 rounded-full pl-5 pr-2 sm:gap-6 sm:pl-6 sm:pr-2">
     <a href={home} aria-label={t.home} class="flex min-h-11 items-center gap-3">
-      <span class="whitespace-nowrap font-serif text-xl leading-none sm:text-2xl text-primary">{site.name}</span>
+      <span class="whitespace-nowrap font-serif text-lg leading-none min-[360px]:text-xl sm:text-2xl text-primary">{site.name}</span>
       <span class:list={['hidden text-muted xl:inline', lang === 'en' ? 'text-[0.6875rem] uppercase tracking-[0.25em]' : 'text-xs']}>{t.tagline}</span>
     </a>
 

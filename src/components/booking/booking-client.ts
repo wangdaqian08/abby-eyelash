@@ -17,7 +17,7 @@ declare global {
 type Days = Record<string, string[]>;
 type Month = { days: Days; recommended: Days };
 type Step = 1 | 2 | 3 | 4 | 5;
-type Field = keyof Details | 'service' | 'option' | 'time';
+type Field = keyof Details | 'service' | 'option' | 'time' | 'deposit';
 type Chosen = { service: Service; option?: ServiceOption; addons: Addons }; // one ticked service
 
 const TZ = site.timezone;
@@ -339,6 +339,11 @@ export function start(root: HTMLElement) {
     const field = (k: Field, label: string, control: string, required = true) =>
       `<div><label for="bk-${k}" class="mb-1.5 block text-sm font-medium">${label}${required ? ' <span aria-hidden="true" class="text-danger">*</span>' : ` <span class="font-normal text-muted">${t.optional}</span>`}</label>
         ${control}<p id="bk-${k}-err" class="mt-1.5 flex items-start gap-1.5 text-sm text-danger" hidden></p></div>`;
+    // Unticked by default. Deposit terms are required; photo consent stays optional (consent can't be a condition of booking).
+    const agree = (k: string, text: string, required: boolean) =>
+      `<div><label class="flex cursor-pointer items-start gap-3"><input type="checkbox" id="bk-${k}" name="${k}" ${required ? 'required aria-describedby="bk-' + k + '-err"' : ''} class="mt-0.5 size-5 shrink-0 accent-[var(--color-primary)] aria-invalid:outline-2 aria-invalid:outline-danger">
+        <span class="${required ? '' : 'text-muted'}">${esc(text)}${required ? ' <span aria-hidden="true" class="text-danger">*</span>' : ''}</span></label>
+        ${required ? `<p id="bk-${k}-err" class="mt-1.5 flex items-start gap-1.5 text-sm text-danger" hidden></p>` : ''}</div>`;
     const attrs = (k: Field) => `id="bk-${k}" name="${k}" aria-describedby="bk-${k}-err"`;
     const d = st.details;
     return `<form data-form novalidate class="max-w-xl">
@@ -352,8 +357,13 @@ export function start(root: HTMLElement) {
         ${field('notes', t.fNotes, `<textarea ${attrs('notes')} rows="3" maxlength="500" placeholder="${esc(t.notesHint)}" class="${INPUT} h-auto py-3">${esc(d.notes)}</textarea>`, false)}
       </div>
       <div data-summary class="mt-8">${summary()}</div>
+      <div class="mt-6 grid gap-4 text-sm">
+        ${agree('deposit', fill(t.agreeDeposit, { deposit: total().deposit, hours: site.booking.cancelHours }), true)}
+        ${agree('photos', t.agreePhotos, false)}
+      </div>
       <div data-turnstile class="mt-6 min-h-0"></div>
       <button type="submit" class="${BTN_PRIMARY}${tracking} mt-6 w-full">${t.submit}</button>
+      <p class="mt-3 text-center text-xs text-muted">${fill(t.privacyNote, { link: `<a href="${lang === 'zh' ? '/zh/privacy/' : '/privacy/'}" target="_blank" class="underline underline-offset-4 hover:text-fg">${t.privacyLink}</a>` })}</p>
     </form>`;
   }
 
@@ -372,6 +382,8 @@ export function start(root: HTMLElement) {
     const v = (k: string) => $<HTMLInputElement>(`#bk-${k}`)?.value ?? '';
     return (st.details = { name: v('name'), phone: v('phone'), email: v('email'), notes: v('notes') });
   }
+
+  const ticked = (k: string) => $<HTMLInputElement>(`#bk-${k}`)?.checked === true;
 
   function showSummaryError(html: string) {
     const box = $('[data-errsum]')!;
@@ -413,6 +425,9 @@ export function start(root: HTMLElement) {
     const errs = validateDetails(d);
     (['name', 'phone', 'email', 'notes'] as const).forEach((k) => setError(k, errs[k] && errMsg(k, errs[k]!)));
     const list: [Field, string][] = Object.entries(errs).map(([k, c]) => [k as Field, errMsg(k as Field, c!)]);
+    const depositOk = ticked('deposit');
+    setError('deposit', depositOk ? undefined : t.err.deposit.required);
+    if (!depositOk) list.push(['deposit', t.err.deposit.required]);
     if (list.length) {
       return showSummaryError(
         `<p class="font-medium">${t.errSummary}</p><ul class="mt-2 list-disc pl-5">${list
@@ -427,7 +442,7 @@ export function start(root: HTMLElement) {
     btn.disabled = true;
     btn.setAttribute('aria-busy', 'true');
     btn.innerHTML = `<span aria-hidden="true" class="size-4 rounded-full border-2 border-on-primary/40 border-t-on-primary motion-safe:animate-spin"></span>${t.submitting}`;
-    const payload = { ...d, items: itemsParam(asItems()), date: st.date, time: st.time, lang, turnstileToken: tsToken };
+    const payload = { ...d, deposit: depositOk, photos: ticked('photos'), items: itemsParam(asItems()), date: st.date, time: st.time, lang, turnstileToken: tsToken };
     let res: Response | undefined;
     let body: { ok?: boolean; demo?: boolean; error?: string; errors?: Record<string, string> } = {};
     try {
@@ -437,7 +452,7 @@ export function start(root: HTMLElement) {
 
     if (res?.ok && body.ok) {
       if (body.demo) showDemo();
-      notifyOwner(d);
+      notifyOwner(d, payload.photos);
       navigator.vibrate?.(12); // one short tick to confirm the booking went through (Android; iOS ignores it)
       emit('booking_submitted', { service: st.items.map((i) => i.service.id).join('+'), option: st.items.map((i) => i.option!.id).join('+'), value: total().price, currency: 'AUD' });
       st.name = d.name.trim();
@@ -454,6 +469,7 @@ export function start(root: HTMLElement) {
     if (body.error === 'validation' && body.errors) {
       const entries = Object.entries(body.errors) as [Field, string][];
       entries.forEach(([k, c]) => setError(k, errMsg(k, c)));
+      if (body.errors.deposit) $<HTMLInputElement>('#bk-deposit')!.checked = false; // so ticking again clears it
       showSummaryError(`<p class="font-medium">${t.errSummary}</p><ul class="mt-2 list-disc pl-5">${entries.map(([k, c]) => `<li>${esc(errMsg(k, c))}</li>`).join('')}</ul>`);
     } else if (body.error === 'slot_taken') {
       cache.delete(key(st.date!.slice(0, 7)));
@@ -466,7 +482,7 @@ export function start(root: HTMLElement) {
   }
 
   // Web3Forms only accepts browser-side submissions on the free plan; keepalive lets it finish during navigation.
-  function notifyOwner(d: Details) {
+  function notifyOwner(d: Details, photos: boolean) {
     if (!cfg.web3formsKey) return;
     const q = total();
     const service = label('en');
@@ -477,7 +493,7 @@ export function start(root: HTMLElement) {
       body: JSON.stringify({
         access_key: cfg.web3formsKey,
         subject: `New booking request (pending): ${d.name.trim()} – ${st.date} ${st.time}`,
-        from_name: 'Abby Eyelash website',
+        from_name: 'Abby Eyelashes website',
         replyto: d.email.trim(),
         name: d.name.trim(),
         phone: d.phone.trim(),
@@ -488,6 +504,8 @@ export function start(root: HTMLElement) {
         price: quoteAllText(q, 'en'),
         deposit: `$${q.deposit}`,
         notes: d.notes.trim() || '-',
+        deposit_terms: `agreed (terms ${site.booking.termsVersion})`,
+        photo_consent: photos ? 'YES, may use photos for promotion' : 'NO, do not post photos',
         language: lang,
         status: 'PENDING — confirm by SMS/WhatsApp, collect the deposit, then rename the calendar event',
       }),
@@ -509,7 +527,7 @@ export function start(root: HTMLElement) {
     const ics = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//Abby Eyelash//Booking//EN',
+      'PRODID:-//Abby Eyelashes//Booking//EN',
       'BEGIN:VEVENT',
       `UID:${stamp(start)}-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}@abby-eyelash`, // randomUUID only exists on HTTPS/localhost (not a phone on the LAN)
       `DTSTAMP:${stamp(Date.now())}`,
@@ -725,6 +743,12 @@ export function start(root: HTMLElement) {
     const el = e.target as HTMLInputElement;
     const k = el.name as keyof Details;
     if (!el.closest('[data-form]')) return;
+    if (el.name === 'deposit') {
+      if (!el.checked) return;
+      setError('deposit');
+      if (!$('[data-form] [aria-invalid]')) $('[data-errsum]')!.hidden = true; // nothing else wrong: drop the stale summary
+      return;
+    }
     readDetails();
     if (!['name', 'phone', 'email', 'notes'].includes(k) || (onlyIfInvalid && !el.hasAttribute('aria-invalid'))) return;
     const c = validateDetails(st.details)[k];
