@@ -17,7 +17,7 @@ const en = {
     openMenu: 'Open menu',
     closeMenu: 'Close menu',
     main: 'Main',
-    home: 'Abby Eyelash home',
+    home: 'Abby Eyelashes home',
     tagline: 'Lash & Nail Studio',
     language: 'Language',
   },
@@ -134,7 +134,7 @@ const en = {
     byAppointment: 'By appointment only — Abby works on her own, so please book ahead. Please text rather than call (SMS or WhatsApp): if a call goes unanswered, she’s with a client and will text you back as soon as she can.',
     lastStart: 'Hours are booking times: the last appointment starts at {time}.',
     openMaps: 'Open in Google Maps',
-    mapTitle: 'Map showing Abby Eyelash in Burwood',
+    mapTitle: 'Map showing Abby Eyelashes in Burwood',
     bookOnline: 'Book your appointment online',
     call: 'WhatsApp to book',
   },
@@ -157,7 +157,7 @@ const zh: Strings = {
     openMenu: '打开菜单',
     closeMenu: '关闭菜单',
     main: '主导航',
-    home: 'Abby Eyelash 首页',
+    home: 'Abby Eyelashes 首页',
     tagline: '美睫 · 美甲工作室',
     language: '语言',
   },
@@ -273,7 +273,7 @@ const zh: Strings = {
     byAppointment: '仅限预约 —— Abby 一人工作，请提前预约。联系请尽量发短信或 WhatsApp，不要直接打电话；如果来电没有接听，多半是正在为客人服务，她会稍后用短信回复你。',
     lastStart: '以上为可预约时间，最晚 {time} 开始。',
     openMaps: '在 Google 地图中打开',
-    mapTitle: 'Abby Eyelash 在宝活的位置地图',
+    mapTitle: 'Abby Eyelashes 在宝活的位置地图',
     bookOnline: '在线预约',
     call: 'WhatsApp 预约',
   },
@@ -363,7 +363,7 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
     },
     {
       q: 'Where is the studio?',
-      a: 'Abby Eyelash is a home studio on {address}, about a 5-minute walk from Burwood station. The exact address is sent when your booking is confirmed.',
+      a: 'Abby Eyelashes is a home studio on {address}, about a 5-minute walk from Burwood station. The exact address is sent when your booking is confirmed.',
     },
     {
       q: 'What happens at my first visit?',
@@ -401,7 +401,7 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
     },
     {
       q: '工作室在哪里？',
-      a: 'Abby Eyelash 是位于 {address} 的家庭工作室，从宝活火车站（Burwood station）步行约 5 分钟。确认预约时会把详细地址发给你。',
+      a: 'Abby Eyelashes 是位于 {address} 的家庭工作室，从宝活火车站（Burwood station）步行约 5 分钟。确认预约时会把详细地址发给你。',
     },
     {
       q: '第一次去需要注意什么？',

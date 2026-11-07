@@ -2,7 +2,7 @@
 // Used by pages, JSON-LD and the booking API. Values marked PLACEHOLDER must be replaced before launch.
 
 export const site = {
-  name: 'Abby Eyelash',
+  name: 'Abby Eyelashes',
   owner: 'Abby',
   // Home studio: street name only, never the house number (Abby sends it when confirming). Must match Google Business Profile.
   address: {

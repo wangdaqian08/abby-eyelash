@@ -85,10 +85,10 @@ const nailSafety = {
 const content: Record<string, Record<Lang, ServiceContent>> = {
   [L]: {
     en: {
-      title: 'Eyelash Extensions in Burwood | Abby Eyelash',
+      title: 'Eyelash Extensions in Burwood | Abby Eyelashes',
       description: `Japanese classic and hybrid eyelash extensions by Abby in Burwood NSW. Full sets from ${$(L, 'classic-natural')}, infills from ${opt(L, 'infill-2w').pct}% of your last price. Aftercare and allergy advice.`,
       h1: ['Eyelash extensions ', 'in Burwood.'],
-      intro: `Eyelash extensions are single synthetic lashes bonded one at a time to your natural lashes with a cosmetic adhesive. At Abby Eyelash in Burwood NSW 2134, a Japanese classic set is ${$(L, 'classic-natural')} natural or ${$(L, 'classic-full')} full (about ${span(L, 'classic-natural', 'classic-full')} minutes), and a hybrid set is ${$(L, 'hybrid-natural')} natural or ${$(L, 'hybrid-full')} full. Each extension lasts as long as the natural lash it sits on, so most clients book an infill every 2–3 weeks; the price depends on how soon you come back.`,
+      intro: `Eyelash extensions are single synthetic lashes bonded one at a time to your natural lashes with a cosmetic adhesive. At Abby Eyelashes in Burwood NSW 2134, a Japanese classic set is ${$(L, 'classic-natural')} natural or ${$(L, 'classic-full')} full (about ${span(L, 'classic-natural', 'classic-full')} minutes), and a hybrid set is ${$(L, 'hybrid-natural')} natural or ${$(L, 'hybrid-full')} full. Each extension lasts as long as the natural lash it sits on, so most clients book an infill every 2–3 weeks; the price depends on how soon you come back.`,
       sections: [
         {
           h2: ['Classic, hybrid or styled: ', 'which suits you?'],
@@ -164,10 +164,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       ],
     },
     zh: {
-      title: '宝活 Burwood 嫁接睫毛 | Abby Eyelash 美睫',
+      title: '宝活 Burwood 嫁接睫毛 | Abby Eyelashes 美睫',
       description: `悉尼宝活 Burwood 嫁接睫毛：日式单根 ${$(L, 'classic-natural')} 起，回补为上次价格的 ${opt(L, 'infill-2w').pct}% 起。Abby 亲手逐根嫁接，附术后护理、回补价格和过敏说明。`,
       h1: ['宝活 Burwood ', '嫁接睫毛'],
-      intro: `嫁接睫毛（也叫种睫毛、接睫毛）是用专用睫毛胶，把一根根合成睫毛逐根粘在你的真睫毛上。在 Burwood NSW 2134 的 Abby Eyelash，日式单根自然款 ${$(L, 'classic-natural')}、浓密款 ${$(L, 'classic-full')}（约 ${span(L, 'classic-natural', 'classic-full')} 分钟），开花 / 轻盈自然款 ${$(L, 'hybrid-natural')}、浓密款 ${$(L, 'hybrid-full')}。嫁接的睫毛会随真睫毛自然脱落，大多数客人每 2–3 周回补一次，越早回补越便宜。`,
+      intro: `嫁接睫毛（也叫种睫毛、接睫毛）是用专用睫毛胶，把一根根合成睫毛逐根粘在你的真睫毛上。在 Burwood NSW 2134 的 Abby Eyelashes，日式单根自然款 ${$(L, 'classic-natural')}、浓密款 ${$(L, 'classic-full')}（约 ${span(L, 'classic-natural', 'classic-full')} 分钟），开花 / 轻盈自然款 ${$(L, 'hybrid-natural')}、浓密款 ${$(L, 'hybrid-full')}。嫁接的睫毛会随真睫毛自然脱落，大多数客人每 2–3 周回补一次，越早回补越便宜。`,
       sections: [
         {
           h2: ['日式单根、开花还是造型款？', '怎么选'],
@@ -244,10 +244,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
 
   [LL]: {
     en: {
-      title: 'Keratin Lash Lift in Burwood | Abby Eyelash',
+      title: 'Keratin Lash Lift in Burwood | Abby Eyelashes',
       description: `Keratin lash lift in Burwood NSW: ${$(LL, 'keratin-lift')}, about ${m(LL, 'keratin-lift')} minutes, results last 1–2 months. What happens, aftercare, sensitive eyes and who it suits.`,
       h1: ['Keratin lash lift ', 'in Burwood.'],
-      intro: `A keratin lash lift curls your own lashes upward from the root with a lifting solution and a keratin treatment, so they look longer and more open without mascara or extensions. Tinting is not included. At Abby Eyelash in Burwood NSW 2134, a keratin lash lift is ${$(LL, 'keratin-lift')} and takes about ${m(LL, 'keratin-lift')} minutes. Results usually last 1–2 months, depending on how fast your lashes grow.`,
+      intro: `A keratin lash lift curls your own lashes upward from the root with a lifting solution and a keratin treatment, so they look longer and more open without mascara or extensions. Tinting is not included. At Abby Eyelashes in Burwood NSW 2134, a keratin lash lift is ${$(LL, 'keratin-lift')} and takes about ${m(LL, 'keratin-lift')} minutes. Results usually last 1–2 months, depending on how fast your lashes grow.`,
       sections: [
         {
           h2: ['Who a lash lift ', 'suits'],
@@ -318,10 +318,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       ],
     },
     zh: {
-      title: '宝活 Burwood 角蛋白翘睫 | Abby Eyelash',
+      title: '宝活 Burwood 角蛋白翘睫 | Abby Eyelashes',
       description: `悉尼宝活 Burwood 角蛋白翘睫：${$(LL, 'keratin-lift')}，约 ${m(LL, 'keratin-lift')} 分钟，效果可维持 1–2 个月。流程、术后护理、敏感眼睛和适合人群说明。`,
       h1: ['宝活 Burwood ', '角蛋白翘睫'],
-      intro: `翘睫（也叫睫毛翘、角蛋白翘睫）是用专用药水把你自己的睫毛从根部往上定型，再做角蛋白护理，不用睫毛膏、不用嫁接也显得更长更有神。不含染色。在 Burwood NSW 2134 的 Abby Eyelash，角蛋白翘睫 ${$(LL, 'keratin-lift')}，约 ${m(LL, 'keratin-lift')} 分钟。效果可维持 1–2 个月，视个人睫毛生长速度而定。`,
+      intro: `翘睫（也叫睫毛翘、角蛋白翘睫）是用专用药水把你自己的睫毛从根部往上定型，再做角蛋白护理，不用睫毛膏、不用嫁接也显得更长更有神。不含染色。在 Burwood NSW 2134 的 Abby Eyelashes，角蛋白翘睫 ${$(LL, 'keratin-lift')}，约 ${m(LL, 'keratin-lift')} 分钟。效果可维持 1–2 个月，视个人睫毛生长速度而定。`,
       sections: [
         {
           h2: ['哪些人', '适合翘睫'],
@@ -395,10 +395,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
 
   [B]: {
     en: {
-      title: 'Powder Brows in Burwood | Semi-Permanent | Abby Eyelash',
+      title: 'Powder Brows in Burwood | Semi-Permanent | Abby Eyelashes',
       description: `Semi-permanent powder brows by Abby in Burwood NSW: ${$(B, 'powder')} (was $${was(B, 'powder')}), about ${m(B, 'powder')} minutes, one free touch-up within 3 months. Healing and aftercare.`,
       h1: ['Powder brows ', 'in Burwood.'],
-      intro: `Powder brows (also called ombré brows or a powder brow tattoo) are a semi-permanent brow treatment: fine dots of cosmetic pigment are placed in the skin to build a soft, filled-in look, like a light brow powder that doesn’t wash off. At Abby Eyelash in Burwood NSW 2134, powder brows are currently ${$(B, 'powder')} (usually $${was(B, 'powder')}) and take about ${m(B, 'powder')} minutes, including mapping the shape with you. One touch-up within 3 months is included free.`,
+      intro: `Powder brows (also called ombré brows or a powder brow tattoo) are a semi-permanent brow treatment: fine dots of cosmetic pigment are placed in the skin to build a soft, filled-in look, like a light brow powder that doesn’t wash off. At Abby Eyelashes in Burwood NSW 2134, powder brows are currently ${$(B, 'powder')} (usually $${was(B, 'powder')}) and take about ${m(B, 'powder')} minutes, including mapping the shape with you. One touch-up within 3 months is included free.`,
       sections: [
         {
           h2: ['Who powder brows ', 'suit'],
@@ -451,15 +451,15 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         CANCEL_BROWS.en,
       ],
       alt: {
-        hero: 'Soft, shaded powder brows after a semi-permanent brow appointment at Abby Eyelash, Burwood',
+        hero: 'Soft, shaded powder brows after a semi-permanent brow appointment at Abby Eyelashes, Burwood',
         detail: 'Abby mapping a brow shape before a powder brows treatment',
       },
     },
     zh: {
-      title: '宝活 Burwood 半永久雾眉 | Abby Eyelash',
+      title: '宝活 Burwood 半永久雾眉 | Abby Eyelashes',
       description: `悉尼宝活 Burwood 半永久雾眉：现价 ${$(B, 'powder')}（原价 $${was(B, 'powder')}），约 ${m(B, 'powder')} 分钟，3 个月内免费补色一次。流程、恢复期与护理说明。`,
       h1: ['宝活 Burwood ', '半永久雾眉'],
-      intro: `雾眉（也就是常说的半永久纹眉、粉雾眉）是一种半永久眉妆：用很细的点状手法把色料打入皮肤浅层，形成柔和的粉雾感，像淡淡的眉粉，但不会被洗掉。在 Burwood NSW 2134 的 Abby Eyelash，雾眉现价 ${$(B, 'powder')}（原价 $${was(B, 'powder')}），约 ${m(B, 'powder')} 分钟，包含和你一起设计眉形。3 个月内免费补色一次。`,
+      intro: `雾眉（也就是常说的半永久纹眉、粉雾眉）是一种半永久眉妆：用很细的点状手法把色料打入皮肤浅层，形成柔和的粉雾感，像淡淡的眉粉，但不会被洗掉。在 Burwood NSW 2134 的 Abby Eyelashes，雾眉现价 ${$(B, 'powder')}（原价 $${was(B, 'powder')}），约 ${m(B, 'powder')} 分钟，包含和你一起设计眉形。3 个月内免费补色一次。`,
       sections: [
         {
           h2: ['哪些人', '适合雾眉'],
@@ -512,7 +512,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         CANCEL_BROWS.zh,
       ],
       alt: {
-        hero: 'Abby Eyelash（Burwood）完成的柔和半永久雾眉',
+        hero: 'Abby Eyelashes（Burwood）完成的柔和半永久雾眉',
         detail: 'Abby 在做雾眉前为客人设计眉形',
       },
     },
@@ -520,10 +520,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
 
   [H]: {
     en: {
-      title: 'Hand-Painted Nail Art in Burwood | Abby Eyelash',
+      title: 'Hand-Painted Nail Art in Burwood | Abby Eyelashes',
       description: `Custom hand-painted nail art designed with you and painted by Abby in Burwood NSW. Priced per design, from about ${m(H, 'nail-art')} minutes. Extensions ${ext()} per nail.`,
       h1: ['Hand-painted nail art ', 'in Burwood.'],
-      intro: `Hand-painted nail art is a custom design that Abby plans with you and paints by hand with fine brushes, not stickers or printed wraps. At Abby Eyelash in Burwood NSW 2134, each design is priced individually because it depends on the detail and the number of nails; Abby confirms the price with you before she starts. Allow at least ${m(H, 'nail-art')} minutes. Painted over gel and sealed with a gel top coat, it typically lasts about 4 weeks.`, // OWNER-REVIEW: wear time
+      intro: `Hand-painted nail art is a custom design that Abby plans with you and paints by hand with fine brushes, not stickers or printed wraps. At Abby Eyelashes in Burwood NSW 2134, each design is priced individually because it depends on the detail and the number of nails; Abby confirms the price with you before she starts. Allow at least ${m(H, 'nail-art')} minutes. Painted over gel and sealed with a gel top coat, it typically lasts about 4 weeks.`, // OWNER-REVIEW: wear time
       sections: [
         {
           h2: ['Designs ', 'made with you'],
@@ -576,10 +576,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       ],
     },
     zh: {
-      title: '宝活 Burwood 手绘造型美甲 | Abby Eyelash',
+      title: '宝活 Burwood 手绘造型美甲 | Abby Eyelashes',
       description: `悉尼宝活 Burwood 手绘造型美甲：和你一起设计，由 Abby 亲手绘制。按款式报价，约 ${m(H, 'nail-art')} 分钟起。延长每只 ${ext()}。`,
       h1: ['宝活 Burwood ', '手绘造型'],
-      intro: `手绘造型是 Abby 和你一起设计、再用细笔一笔一笔手绘的定制款，不用贴纸，也不是印花甲片。在 Burwood NSW 2134 的 Abby Eyelash，每款都单独报价，价格取决于图案的复杂程度和画几根，Abby 会在开始前跟你确认价格。时间请预留 ${m(H, 'nail-art')} 分钟以上。图案画在凝胶上，再用封层封住，一般能维持 4 周左右。`, // OWNER-REVIEW
+      intro: `手绘造型是 Abby 和你一起设计、再用细笔一笔一笔手绘的定制款，不用贴纸，也不是印花甲片。在 Burwood NSW 2134 的 Abby Eyelashes，每款都单独报价，价格取决于图案的复杂程度和画几根，Abby 会在开始前跟你确认价格。时间请预留 ${m(H, 'nail-art')} 分钟以上。图案画在凝胶上，再用封层封住，一般能维持 4 周左右。`, // OWNER-REVIEW
       sections: [
         {
           h2: ['和你一起', '设计'],
@@ -635,10 +635,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
 
   [G]: {
     en: {
-      title: 'Gel Nails Burwood | Cat-Eye · Aurora · French | Abby Eyelash',
+      title: 'Gel Nails Burwood · Cat-Eye, Aurora, French | Abby Eyelashes',
       description: `Gel nails in Burwood NSW by Abby: solid colour ${$(G, 'solid')}, cat-eye or aurora ${$(G, 'cat-eye')}, French ${$(G, 'french')}, builder gel included. Extensions ${ext()} per nail.`,
       h1: ['Gel nails ', 'in Burwood.'],
-      intro: `Gel nails (a gel manicure, sometimes called gel polish) are coloured gel cured under a lamp, so they leave the studio dry and glossy and typically last about 4 weeks. At Abby Eyelash in Burwood NSW 2134, every gel set includes a builder gel layer for strength: solid colour is ${$(G, 'solid')} (about ${m(G, 'solid')} minutes), cat-eye and aurora are ${$(G, 'cat-eye')} (about ${m(G, 'cat-eye')} minutes), and French is ${$(G, 'french')} (about ${m(G, 'french')} minutes). Extensions can be added for ${ext()} per nail.`,
+      intro: `Gel nails (a gel manicure, sometimes called gel polish) are coloured gel cured under a lamp, so they leave the studio dry and glossy and typically last about 4 weeks. At Abby Eyelashes in Burwood NSW 2134, every gel set includes a builder gel layer for strength: solid colour is ${$(G, 'solid')} (about ${m(G, 'solid')} minutes), cat-eye and aurora are ${$(G, 'cat-eye')} (about ${m(G, 'cat-eye')} minutes), and French is ${$(G, 'french')} (about ${m(G, 'french')} minutes). Extensions can be added for ${ext()} per nail.`,
       sections: [
         {
           h2: ['Four finishes: ', 'which one?'],
@@ -691,10 +691,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       ],
     },
     zh: {
-      title: '宝活 Burwood 凝胶美甲 | 猫眼 · 极光 · 法式 | Abby Eyelash',
+      title: '宝活 Burwood 凝胶美甲 | 猫眼 · 极光 · 法式 | Abby Eyelashes',
       description: `悉尼宝活 Burwood 凝胶美甲：单色 ${$(G, 'solid')}，猫眼或极光 ${$(G, 'cat-eye')}，法式 ${$(G, 'french')}，已含 Gel 建构。延长每只 ${ext()}。`,
       h1: ['宝活 Burwood ', '凝胶美甲'],
-      intro: `凝胶美甲（也叫光疗甲、甲油胶美甲）是照灯固化的彩色凝胶，做完就干、有光泽，一般能维持 4 周左右。在 Burwood NSW 2134 的 Abby Eyelash，每一套凝胶美甲都已包含 Gel 建构，让指甲更坚固：单色 ${$(G, 'solid')}（约 ${m(G, 'solid')} 分钟），猫眼和极光 ${$(G, 'cat-eye')}（约 ${m(G, 'cat-eye')} 分钟），法式 ${$(G, 'french')}（约 ${m(G, 'french')} 分钟）。需要加长可加选延长，每只 ${ext()}。`,
+      intro: `凝胶美甲（也叫光疗甲、甲油胶美甲）是照灯固化的彩色凝胶，做完就干、有光泽，一般能维持 4 周左右。在 Burwood NSW 2134 的 Abby Eyelashes，每一套凝胶美甲都已包含 Gel 建构，让指甲更坚固：单色 ${$(G, 'solid')}（约 ${m(G, 'solid')} 分钟），猫眼和极光 ${$(G, 'cat-eye')}（约 ${m(G, 'cat-eye')} 分钟），法式 ${$(G, 'french')}（约 ${m(G, 'french')} 分钟）。需要加长可加选延长，每只 ${ext()}。`,
       sections: [
         {
           h2: ['四种款式，', '怎么选'],
@@ -750,10 +750,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
 
   [X]: {
     en: {
-      title: 'Nail Extensions in Burwood | $6 per Nail | Abby Eyelash',
+      title: 'Nail Extensions in Burwood | $6 per Nail | Abby Eyelashes',
       description: `Nail tip extensions in Burwood NSW by Abby: ${ext()} per nail, added to any gel or hand-painted design. How it works, how long it lasts and aftercare.`,
       h1: ['Nail extensions ', 'in Burwood.'],
-      intro: `Nail extensions add length and shape with a nail tip bonded to your natural nail and finished in gel. At Abby Eyelash in Burwood NSW 2134, extensions are ${ext()} per nail and are added to any ${link('en', G, 'gel nail')} or ${link('en', H, 'hand-painted')} design, so you only pay for the nails you want longer. When you book, choose your design first and then the number of nails to extend.`,
+      intro: `Nail extensions add length and shape with a nail tip bonded to your natural nail and finished in gel. At Abby Eyelashes in Burwood NSW 2134, extensions are ${ext()} per nail and are added to any ${link('en', G, 'gel nail')} or ${link('en', H, 'hand-painted')} design, so you only pay for the nails you want longer. When you book, choose your design first and then the number of nails to extend.`,
       sections: [
         {
           h2: ['How the price ', 'works'],
@@ -805,10 +805,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
       ],
     },
     zh: {
-      title: '宝活 Burwood 延长甲 | 每只 $6 | Abby Eyelash',
+      title: '宝活 Burwood 延长甲 | 每只 $6 | Abby Eyelashes',
       description: `悉尼宝活 Burwood 甲片延长：每只 ${ext()}，可加在任何凝胶或手绘款上。流程、能维持多久和护理方法。`,
       h1: ['宝活 Burwood ', '延长甲'],
-      intro: `延长甲是在真指甲上接上甲片、再用凝胶完成的加长方式，马上就有长度和甲型。在 Burwood NSW 2134 的 Abby Eyelash，延长每只 ${ext()}，可以加在任何${link('zh', G, '凝胶美甲')}或${link('zh', H, '手绘造型')}上，想加长几只就付几只。预约时先选款式，再选要延长几只。`,
+      intro: `延长甲是在真指甲上接上甲片、再用凝胶完成的加长方式，马上就有长度和甲型。在 Burwood NSW 2134 的 Abby Eyelashes，延长每只 ${ext()}，可以加在任何${link('zh', G, '凝胶美甲')}或${link('zh', H, '手绘造型')}上，想加长几只就付几只。预约时先选款式，再选要延长几只。`,
       sections: [
         {
           h2: ['价格', '怎么算'],

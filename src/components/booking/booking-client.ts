@@ -493,7 +493,7 @@ export function start(root: HTMLElement) {
       body: JSON.stringify({
         access_key: cfg.web3formsKey,
         subject: `New booking request (pending): ${d.name.trim()} – ${st.date} ${st.time}`,
-        from_name: 'Abby Eyelash website',
+        from_name: 'Abby Eyelashes website',
         replyto: d.email.trim(),
         name: d.name.trim(),
         phone: d.phone.trim(),
@@ -527,7 +527,7 @@ export function start(root: HTMLElement) {
     const ics = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//Abby Eyelash//Booking//EN',
+      'PRODID:-//Abby Eyelashes//Booking//EN',
       'BEGIN:VEVENT',
       `UID:${stamp(start)}-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}@abby-eyelash`, // randomUUID only exists on HTTPS/localhost (not a phone on the LAN)
       `DTSTAMP:${stamp(Date.now())}`,

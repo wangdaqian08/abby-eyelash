@@ -2,7 +2,7 @@
 import type { Lang } from '../data/services';
 
 const en = {
-  metaTitle: 'Book an appointment | Abby Eyelash, Burwood',
+  metaTitle: 'Book an appointment | Abby Eyelashes, Burwood',
   metaDescription:
     'Book eyelash extensions, lash lifts, powder brows or gel nails with Abby in Burwood NSW. Pick a service and time online; we confirm by SMS or WhatsApp.',
   eyebrow: 'Online booking',
@@ -58,7 +58,7 @@ const en = {
   sPrice: 'Price',
   sDeposit: 'Deposit',
   agreeDeposit: 'I agree to the deposit terms: if I cancel or reschedule within {hours} hours of my appointment, or don’t turn up, the ${deposit} deposit is not refunded. If I cancel earlier, it moves to my new booking or is refunded in full. If Abby has to cancel, it is refunded in full.',
-  agreePhotos: 'Optional: I am 18 or over, and Abby may photograph the result at my appointment (lashes, brows or nails; part of my face may show) and use the photos to promote Abby Eyelash on its website, social media and ads, with no payment to me. Abby Eyelash owns these photos and any income from them. Saying no doesn’t affect my booking. I can withdraw by message at any time: Abby then removes the photos from her website and social accounts within a reasonable time (printed materials and other people’s shares can’t be recalled).',
+  agreePhotos: 'Optional: I am 18 or over, and Abby may photograph the result at my appointment (lashes, brows or nails; part of my face may show) and use the photos to promote Abby Eyelashes on its website, social media and ads, with no payment to me. Abby Eyelashes owns these photos and any income from them. Saying no doesn’t affect my booking. I can withdraw by message at any time: Abby then removes the photos from her website and social accounts within a reasonable time (printed materials and other people’s shares can’t be recalled).',
   submit: 'Book appointment',
   submitting: 'Sending…',
   privacyNote: 'By booking you confirm you have read our {link}.',
@@ -85,13 +85,13 @@ const en = {
   addGoogle: 'Add to Google Calendar',
   downloadIcs: 'Download .ics',
   home: 'Back to home',
-  calendarTitle: '{service} at Abby Eyelash (pending)',
+  calendarTitle: '{service} at Abby Eyelashes (pending)',
 };
 
 type Strings = typeof en;
 
 const zh: Strings = {
-  metaTitle: '在线预约 | Abby Eyelash · Burwood 美睫美甲',
+  metaTitle: '在线预约 | Abby Eyelashes · Burwood 美睫美甲',
   metaDescription: '在线预约 Abby 的嫁接睫毛、翘睫、雾眉与美甲服务（悉尼 Burwood）。选择项目、日期和时间，我们会通过短信或 WhatsApp 确认。',
   eyebrow: '在线预约',
   titleA: '预约你的',
@@ -141,7 +141,7 @@ const zh: Strings = {
   sPrice: '价格',
   sDeposit: '订金',
   agreeDeposit: '我同意订金条款：如我在预约前 {hours} 小时以内取消或改期，或未到店，${deposit} 订金不予退还；提前 {hours} 小时以上取消，订金可顺延到新的预约，或全额退还；如 Abby 取消预约，订金全额退还。',
-  agreePhotos: '（选填）我已满 18 岁，同意 Abby 拍摄本次服务效果（睫毛、眉毛或美甲，照片可能包含部分面部），并用于 Abby Eyelash 的网站、社交媒体和广告宣传，我不收取任何费用。这些照片及由此产生的任何收益均归 Abby Eyelash 所有。不同意不影响预约。我可随时发消息撤回同意：Abby 会在合理时间内删除她网站和社交账号上的相关照片（已印刷的物料及他人转发的内容无法收回）。',
+  agreePhotos: '（选填）我已满 18 岁，同意 Abby 拍摄本次服务效果（睫毛、眉毛或美甲，照片可能包含部分面部），并用于 Abby Eyelashes 的网站、社交媒体和广告宣传，我不收取任何费用。这些照片及由此产生的任何收益均归 Abby Eyelashes 所有。不同意不影响预约。我可随时发消息撤回同意：Abby 会在合理时间内删除她网站和社交账号上的相关照片（已印刷的物料及他人转发的内容无法收回）。',
   submit: '提交预约',
   submitting: '提交中…',
   privacyNote: '提交即表示你已阅读我们的{link}。',
@@ -168,7 +168,7 @@ const zh: Strings = {
   addGoogle: '添加到 Google 日历',
   downloadIcs: '下载 .ics 日历文件',
   home: '返回首页',
-  calendarTitle: 'Abby Eyelash · {service}（待确认）',
+  calendarTitle: 'Abby Eyelashes · {service}（待确认）',
 };
 
 export const bookingStrings: Record<Lang, Strings> = { en, zh };
