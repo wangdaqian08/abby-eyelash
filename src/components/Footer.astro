@@ -62,7 +62,9 @@ const link = 'inline-flex min-h-11 items-center text-muted transition-colors dur
   // Copy icon turns into a tick with a "Copied" status for 2.5 s; a second click restarts the timer.
   // Clipboard API needs a secure context (https/localhost); plain http (LAN preview) and some in-app browsers lack it.
   const copy = async (text: string) => {
-    if (navigator.clipboard) return navigator.clipboard.writeText(text);
+    if (navigator.clipboard) {
+      try { return await navigator.clipboard.writeText(text); } catch {} // denied or insecure: fall back below
+    }
     const ta = Object.assign(document.createElement('textarea'), { value: text, readOnly: true });
     ta.style.cssText = 'position:fixed;opacity:0';
     document.body.append(ta);
