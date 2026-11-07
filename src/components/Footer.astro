@@ -13,7 +13,7 @@ const t = common[lang].footer;
 const head = ['font-medium text-fg', lang === 'en' ? 'text-xs uppercase tracking-[0.2em]' : 'text-sm'];
 const link = 'inline-flex min-h-11 items-center text-muted transition-colors duration-200 hover:text-fg sm:min-h-9';
 ---
-<footer class="border-t border-border bg-surface-2/50 text-sm">
+<footer class="border-t border-border bg-surface-2/50 pb-[calc(var(--tabbar-h)+1rem)] text-sm lg:pb-0">
   <div class="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1fr_0.8fr_1.2fr_1.5fr] lg:gap-12">
     <div>
       <p class="font-serif text-2xl text-primary">{site.name}</p>
@@ -58,7 +58,9 @@ const link = 'inline-flex min-h-11 items-center text-muted transition-colors dur
   // Copy icon turns into a tick with a "Copied" status for 2.5 s; a second click restarts the timer.
   // Clipboard API needs a secure context (https/localhost); plain http (LAN preview) and some in-app browsers lack it.
   const copy = async (text: string) => {
-    if (navigator.clipboard) return navigator.clipboard.writeText(text);
+    if (navigator.clipboard) {
+      try { return await navigator.clipboard.writeText(text); } catch {} // denied or insecure: fall back below
+    }
     const ta = Object.assign(document.createElement('textarea'), { value: text, readOnly: true });
     ta.style.cssText = 'position:fixed;opacity:0';
     document.body.append(ta);

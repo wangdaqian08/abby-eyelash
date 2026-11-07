@@ -6,7 +6,6 @@ import { reviewSummary } from '../../data/reviews';
 import { common, fill } from '../../i18n/common';
 import { localePath } from '../../lib/i18n';
 import Button from '../ui/Button.astro';
-import Eyebrow from '../ui/Eyebrow.astro';
 import Stars from '../ui/Stars.astro';
 import { homeHero, photo } from '../../data/photos';
 import { photoSrc } from '../../lib/photo-src';
@@ -16,38 +15,37 @@ const { lang } = Astro.props;
 const t = common[lang].hero;
 const body = fill(t.body, { name: site.name, owner: site.owner, suburb: site.address.locality, region: site.address.region, postcode: site.address.postcode });
 ---
-<section class="grid pt-[var(--header-h)] lg:min-h-svh lg:grid-cols-2">
-  <div class="flex flex-col justify-center px-4 py-16 sm:px-6 lg:py-24 lg:pl-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))] lg:pr-16">
-    <Eyebrow lang={lang}>{t.eyebrow}</Eyebrow>
-    <h1 class="mt-6 text-4xl leading-[1.08] sm:text-5xl md:text-6xl 2xl:text-7xl">
-      <span class="block" data-hero-line style="--i:0">{t.titleA}</span>
-      <em class="block" data-hero-line style="--i:1">{t.accent}</em>
-      <span class="block" data-hero-line style="--i:2">{t.titleB}</span>
-    </h1>
-    <p class="mt-8 max-w-md text-lg text-muted" data-hero-in style="--i:3">{body}</p>
-    <div class="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3" data-hero-in style="--i:4">
-      <Button href={localePath(lang, '/book?service=lash-extensions')} lang={lang} track="book_click">{t.book}</Button>
-      <a href="#services" class="group inline-flex min-h-12 items-center gap-2 text-sm text-muted transition-colors duration-200 hover:text-fg">
-        {t.services}
-        <svg viewBox="0 0 24 24" class="size-[1.15em] translate-y-[0.125em] transition-transform duration-200 group-hover:translate-y-[0.25em]" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
-      </a>
-    </div>
-    <p class="mt-10 flex items-center gap-3 text-sm text-muted" data-hero-in style="--i:5">
-      <Stars rating={reviewSummary.rating} label={`${reviewSummary.rating} / 5`} />
-      <span><span class="font-medium text-fg">{reviewSummary.rating}</span> · {t.rating}</span>
-    </p>
-  </div>
-  <div class="relative aspect-[4/5] overflow-hidden sm:aspect-[16/10] lg:aspect-auto">
+{/* Full-bleed photo; the copy floats over it. Phones: white text at the foot over a dark fade. Desktop: ink text in a light fade on the left. */}
+<section class="relative isolate flex min-h-svh flex-col justify-end overflow-hidden lg:justify-center">
+  <div class="absolute inset-0 -z-10">
     <Picture
       src={photoSrc(homeHero)}
       alt={photo(homeHero).alt[lang]}
       formats={['avif', 'webp']}
-      widths={[480, 768, 1080, 1200]}
-      sizes="(min-width: 1024px) 50vw, 100vw"
+      widths={[480, 768, 1080, 1440, 1920]}
+      sizes="100vw"
       loading="eager"
       fetchpriority="high"
       data-hero-img
-      class="absolute inset-0 size-full object-cover object-[50%_35%] sm:object-[50%_5%] lg:object-[50%_35%]"
+      class="size-full object-cover object-[50%_25%] lg:object-[65%_30%]"
     />
+    <div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgb(30_18_21/0.18)_0%,transparent_30%,rgb(30_18_21/0.62)_100%)] lg:bg-[linear-gradient(90deg,var(--bg)_0%,color-mix(in_oklch,var(--bg)_70%,transparent)_40%,transparent_62%)]"></div>
+  </div>
+  <div class="mx-auto w-full max-w-6xl px-4 pb-[calc(var(--tabbar-h)+2.5rem)] pt-[calc(var(--header-h)+3rem)] text-on-primary sm:px-6 lg:max-w-none lg:pb-24 lg:pl-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))] lg:pr-16 lg:text-fg">
+    <span class="glass inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium text-fg" data-hero-in style="--i:0"><Stars rating={reviewSummary.rating} label={`${reviewSummary.rating} / 5`} /> {reviewSummary.rating} · {t.eyebrow}</span>
+    <h1 class="mt-5 text-4xl leading-[1.08] [text-shadow:0_2px_24px_rgb(0_0_0/0.25)] sm:text-5xl md:text-6xl lg:[text-shadow:none] 2xl:text-7xl">
+      <span class="block" data-hero-line style="--i:0">{t.titleA}</span>
+      <em class="block max-lg:text-on-primary" data-hero-line style="--i:1">{t.accent}</em>
+      <span class="block" data-hero-line style="--i:2">{t.titleB}</span>
+    </h1>
+    <p class="mt-6 max-w-md text-lg opacity-90 lg:text-muted lg:opacity-100" data-hero-in style="--i:3">{body}</p>
+    <div class="mt-8 flex flex-wrap items-center gap-3" data-hero-in style="--i:4">
+      <Button href={localePath(lang, '/book?service=lash-extensions')} lang={lang} track="book_click" class="min-h-13 flex-1 sm:flex-none sm:px-9">{t.book}</Button>
+      <a href="#services" class="glass press group inline-flex min-h-13 items-center justify-center gap-2 rounded-full px-6 text-sm font-medium text-fg">
+        {t.services}
+        <svg viewBox="0 0 24 24" class="size-[1.15em] translate-y-[0.125em] transition-transform duration-200 group-hover:translate-y-[0.25em]" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+      </a>
+    </div>
+    <p class="mt-6 text-sm opacity-90 lg:text-muted lg:opacity-100" data-hero-in style="--i:5">{t.rating}</p>
   </div>
 </section>

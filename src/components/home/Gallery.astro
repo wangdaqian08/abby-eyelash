@@ -76,7 +76,7 @@ const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };
             ))}
           </div>
           <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
-            <button type="button" data-show-all aria-expanded="false" hidden data-all={fill(t.showAll, { n: count })} data-less={t.showLess} class="inline-flex min-h-11 items-center btn-soft rounded-full bg-surface px-5 text-sm font-medium transition duration-200 hover:bg-surface-3 active:scale-[.97]">{fill(t.showAll, { n: count })}</button>
+            <button type="button" data-show-all aria-expanded="false" hidden data-all={fill(t.showAll, { n: count })} data-less={t.showLess} class="btn-tinted press inline-flex min-h-11 items-center rounded-full px-5 text-sm font-medium">{fill(t.showAll, { n: count })}</button>
             <a href={part.book} data-track="book_click" class="inline-flex min-h-11 items-center text-sm text-muted underline underline-offset-4 transition-colors duration-200 hover:text-fg">{part.bookLabel}</a>
           </div>
         </div>

@@ -21,8 +21,8 @@ const links = [
 ].map(([id, label]) => ({ href: `${home}#${id}`, label }));
 const book = localePath(lang, '/book');
 ---
-<header data-header class="fixed inset-x-0 top-0 z-50 bg-bg/90 backdrop-blur-md">
-  <div class="mx-auto flex h-[var(--header-h)] max-w-6xl items-center justify-between gap-3 px-4 sm:gap-6 sm:px-6">
+<header data-header class="fixed inset-x-3 top-3 z-50 sm:inset-x-4">
+  <div class="glass mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 rounded-full pl-5 pr-2 sm:gap-6 sm:pl-6 sm:pr-2">
     <a href={home} aria-label={t.home} class="flex min-h-11 items-center gap-3">
       <span class="whitespace-nowrap font-serif text-xl leading-none sm:text-2xl text-primary">{site.name}</span>
       <span class:list={['hidden text-muted xl:inline', lang === 'en' ? 'text-[0.6875rem] uppercase tracking-[0.25em]' : 'text-xs']}>{t.tagline}</span>
@@ -31,14 +31,14 @@ const book = localePath(lang, '/book');
     <nav aria-label={t.main} class="hidden lg:block">
       <ul class="flex items-center gap-1">
         {links.map((l) => (
-          <li><a href={l.href} class="inline-flex min-h-11 items-center px-3 text-sm text-muted transition-colors duration-200 hover:text-fg">{l.label}</a></li>
+          <li><a href={l.href} class="inline-flex min-h-10 items-center rounded-full px-3.5 text-sm text-muted transition duration-200 hover:bg-surface-3/60 hover:text-fg">{l.label}</a></li>
         ))}
       </ul>
     </nav>
 
     <div class="flex items-center gap-2 sm:gap-4">
       <LangSwitch lang={lang} />
-      <Button href={book} lang={lang} track="book_click" class="min-h-10! px-3! sm:px-5!"><span class="sm:hidden">{t.bookShort}</span><span class="hidden sm:inline">{t.book}</span></Button>
+      <Button href={book} lang={lang} track="book_click" class="min-h-10! px-5! max-lg:hidden">{t.book}</Button>
       <button
         type="button"
         data-menu-button
@@ -47,7 +47,7 @@ const book = localePath(lang, '/book');
         aria-label={t.openMenu}
         data-label-open={t.openMenu}
         data-label-close={t.closeMenu}
-        class="-mr-2 inline-flex size-11 items-center justify-center text-fg lg:hidden"
+        class="inline-flex size-10 items-center justify-center rounded-full text-fg transition duration-200 active:bg-surface-3/70 lg:hidden"
       >
         <svg data-icon-open viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
         <svg data-icon-close viewBox="0 0 24 24" class="hidden size-6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
@@ -56,9 +56,9 @@ const book = localePath(lang, '/book');
   </div>
 
   {/* `hidden` keeps it closed without JS; the script swaps it for the grid-collapse animation. */}
-  <div id="mobile-menu" hidden class="grid-collapse bg-bg lg:hidden">
+  <div id="mobile-menu" hidden class="grid-collapse lg:hidden">
     <div>
-      <nav aria-label={t.main} class="mx-auto max-w-6xl px-4 pb-6 pt-2 sm:px-6">
+      <nav aria-label={t.main} class="mx-auto mt-2 max-w-6xl rounded-card bg-surface-3 px-5 pb-5 pt-2 shadow-[0_16px_40px_-16px_rgb(30_18_21/0.35)]">
         <ul>
           {links.map((l, i) => (
             <li data-i style={`--i:${i}`}><a href={l.href} class="flex min-h-12 items-center text-base text-muted transition-colors duration-200 hover:text-fg">{l.label}</a></li>

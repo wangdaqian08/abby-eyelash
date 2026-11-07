@@ -1,0 +1,40 @@
+---
+// Phone-only floating tab bar (glass pill): Home · Services · Gallery · Book. Desktop keeps the header nav.
+// Plain links (no JS), so it is one more set of internal links for crawlers, not a replacement for the header nav.
+import type { Lang } from '../data/services';
+import { common } from '../i18n/common';
+import { localePath } from '../lib/i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = common[lang].nav;
+const home = localePath(lang, '/');
+const book = localePath(lang, '/book');
+const onBook = Astro.url.pathname.startsWith(book);
+const tabs = [
+  { href: home, label: lang === 'zh' ? '首页' : 'Home', on: !onBook && Astro.url.pathname === home, d: 'M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z' },
+  { href: `${home}#services`, label: t.services, on: false, d: 'M12 3c2 3.5 6 5 6 10a6 6 0 0 1-12 0c0-5 4-6.5 6-10z' },
+  { href: `${home}#gallery`, label: t.gallery, on: false, d: 'M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4' },
+  { href: book, label: t.bookShort, on: onBook, track: 'book_click', d: 'M5 6h14v14H5zM5 10h14M9 3v4M15 3v4' },
+];
+---
+<nav aria-label={lang === 'zh' ? '快捷导航' : 'Quick links'} class="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 lg:hidden">
+  <ul class="glass flex h-[var(--tabbar-h)] items-center justify-around rounded-full px-1.5">
+    {tabs.map((tab) => (
+      <li class="flex-1">
+        <a
+          href={tab.href}
+          data-track={tab.track}
+          aria-current={tab.on ? 'page' : undefined}
+          class:list={[
+            'mx-auto flex min-h-11 w-fit min-w-16 flex-col items-center justify-center gap-0.5 rounded-full px-3 py-1.5 text-[0.6875rem] font-medium transition duration-200 ease-brand active:scale-[.92]',
+            tab.on ? 'bg-primary/10 text-primary' : 'text-fg',
+          ]}
+        >
+          <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={tab.d} /></svg>
+          {tab.label}
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>

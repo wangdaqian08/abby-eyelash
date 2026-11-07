@@ -42,9 +42,9 @@ const ICON = {
 };
 const STEP_ICONS = [ICON.service, ICON.date, ICON.time, ICON.details];
 
-const BTN = 'inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 font-medium uppercase transition duration-200 active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50';
-const BTN_PRIMARY = `${BTN} btn-raise bg-primary text-on-primary hover:bg-primary/90`;
-const BTN_OUTLINE = `${BTN} btn-soft border border-primary/30 text-primary hover:bg-surface-2`;
+const BTN = 'press inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 font-medium uppercase disabled:cursor-not-allowed disabled:opacity-50';
+const BTN_PRIMARY = `${BTN} btn-solid`;
+const BTN_OUTLINE = `${BTN} btn-tinted`;
 const INPUT = 'block h-12 w-full appearance-none rounded-field bg-surface-2 px-4 text-base text-fg placeholder:text-muted aria-invalid:outline-2 aria-invalid:outline-danger';
 
 export function start(root: HTMLElement) {
@@ -180,7 +180,7 @@ export function start(root: HTMLElement) {
       const h = headline(s);
       const range = h.minutes![0] === h.minutes![1] ? mins(h.minutes![0]) : `${h.minutes![0]}–${mins(h.minutes![1])}`;
       const on = !!itemOf(s.id);
-      return `<label class="relative flex min-h-16 items-center gap-3 rounded-card bg-surface-2/60 p-4 transition duration-200 hover:bg-surface-2 pointer-fine:hover:-translate-y-0.5 active:scale-[.98] has-checked:bg-surface-2 has-checked:shadow-[var(--shadow-soft)] has-checked:ring-2 has-checked:ring-inset has-checked:ring-primary/50 has-focus-visible:focus-ring">
+      return `<label class="press relative flex min-h-16 items-center gap-3 rounded-[1.25rem] bg-surface-2 p-4 transition-colors duration-200 has-checked:bg-primary/8 has-checked:ring-2 has-checked:ring-inset has-checked:ring-primary/60 has-focus-visible:focus-ring">
         <input type="checkbox" name="bk-service" value="${s.id}" class="sr-only" ${on ? 'checked' : ''}>
         <span aria-hidden="true" data-tick class="flex size-6 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${on ? 'bg-primary text-on-primary' : 'ring-1 ring-inset ring-muted/50'}">${on ? ICON.tick : ''}</span>
         <span><span class="block font-medium">${s.name[lang]}</span><span class="text-sm text-muted">${range} · ${price(h)}</span></span>
@@ -194,7 +194,7 @@ export function start(root: HTMLElement) {
       return `<fieldset class="mt-8"><legend class="font-serif text-xl">${s.name[lang]}<span class="mt-0.5 block font-sans text-sm text-muted">${t.chooseOption}</span></legend>
           <div class="mt-3 divide-y divide-border border-y border-border">${main
             .map(
-              (o, i, all) => `${groupAt(all, i) ? `<p class="px-1 pb-2 pt-5 text-xs font-medium uppercase tracking-wider text-accent-ink">${groupAt(all, i)![lang]}</p>` : ''}<label class="flex min-h-14 items-center justify-between gap-4 px-1 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring">
+              (o, i, all) => `${groupAt(all, i) ? `<p class="px-1 pb-2 pt-5 text-xs font-medium uppercase tracking-wider text-accent-ink">${groupAt(all, i)![lang]}</p>` : ''}<label class="relative flex min-h-14 items-center justify-between gap-4 px-1 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring">
                 <span class="flex items-center gap-3"><span data-radio><input type="radio" name="bk-option-${s.id}" value="${o.id}" class="size-4 accent-primary" ${o === it.option ? 'checked' : ''}></span><span>${o.name[lang]}</span></span>
                 <span class="shrink-0 text-right text-sm text-muted"><span class="block whitespace-nowrap text-fg">${price(o)}</span><span class="whitespace-nowrap">${mins(o.minutes)}</span></span>
               </label>`,
@@ -261,13 +261,13 @@ export function start(root: HTMLElement) {
       const avail = d in days;
       const sel = d === st.date;
       const cls = sel
-        ? 'bg-primary text-on-primary'
+        ? 'bg-primary font-semibold text-on-primary shadow-[0_6px_14px_-6px_var(--primary)]'
         : avail
-          ? 'bg-surface-2 font-medium text-fg hover:bg-primary hover:text-on-primary'
+          ? 'press bg-surface-2 font-medium text-fg'
           : 'cursor-default text-muted/60';
       const label = `${fmtDate(d, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}, ${avail ? t.available : t.unavailable}${d === today ? `, ${t.today}` : ''}`;
       cells.push(`<span role="gridcell" class="flex justify-center" ${sel ? 'aria-selected="true"' : ''}>
-        <button type="button" data-date="${d}" tabindex="${d === tabbable ? 0 : -1}" aria-label="${esc(label)}" ${avail ? '' : 'aria-disabled="true"'} class="relative flex aspect-square w-full max-w-11 items-center justify-center rounded-full text-sm transition-colors duration-200 ${cls}">
+        <button type="button" data-date="${d}" tabindex="${d === tabbable ? 0 : -1}" aria-label="${esc(label)}" ${avail ? '' : 'aria-disabled="true"'} class="relative flex aspect-square w-full max-w-11 items-center justify-center rounded-full text-sm ${cls}">
           ${+d.slice(8)}${d === today ? '<span aria-hidden="true" class="absolute bottom-1 size-1 rounded-full bg-current"></span>' : ''}
         </button></span>`);
     }
@@ -276,7 +276,7 @@ export function start(root: HTMLElement) {
     for (let i = 0; i < cells.length; i += 7) rows.push(`<div role="row" class="grid grid-cols-7 gap-x-1.5">${cells.slice(i, i + 7).join('')}</div>`);
 
     const navBtn = (dir: 'prev' | 'next', disabled: boolean) =>
-      `<button type="button" data-action="${dir}" aria-label="${dir === 'prev' ? t.prevMonth : t.nextMonth}" ${disabled ? 'disabled' : ''} class="flex size-11 items-center justify-center rounded-full transition-colors duration-200 ${disabled ? 'cursor-not-allowed bg-surface-2 text-muted/60' : 'bg-primary text-on-primary hover:bg-primary/90'}">${ICON[dir]}</button>`;
+      `<button type="button" data-action="${dir}" aria-label="${dir === 'prev' ? t.prevMonth : t.nextMonth}" ${disabled ? 'disabled' : ''} class="press flex size-11 items-center justify-center rounded-full ${disabled ? 'cursor-not-allowed bg-surface-2 text-muted/60' : 'btn-tinted'}">${ICON[dir]}</button>`;
 
     const body =
       data === 'error'
@@ -304,16 +304,15 @@ export function start(root: HTMLElement) {
     if (!st.date) return `<p class="text-sm text-muted lg:pt-3">${t.pickDateHint}</p>`;
     const list = daysFor(st.date.slice(0, 7))?.[st.date] ?? [];
     const rec = recommendedFor(st.date);
-    // The badge sits at the right edge, out of the flow, so a recommended time stays centred in line with the others.
-    const badge = `<span class="absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-accent-ink">${t.recommended}</span>`;
+    const badge = `<span class="absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-accent-ink">${t.recommended}</span>`;
     const items = list
       .map((time) => {
         const label = fmtTime(st.date!, time);
         const tag = rec.has(time) ? badge : '';
         return time === st.time
-          ? `<li class="grid grid-cols-2 gap-2"><span class="flex h-12 items-center justify-center rounded-field bg-muted tabular-nums text-on-primary">${label}${tag && `<span class="sr-only">, ${t.recommended}</span>`}</span>
-              <button type="button" data-action="to-details" aria-label="${t.next}: ${label}" class="btn-raise h-12 rounded-field bg-primary font-medium text-on-primary transition duration-200 hover:bg-primary/90 active:scale-[.97]">${t.next}</button></li>`
-          : `<li><button type="button" data-time="${time}" class="relative h-12 w-full rounded-field bg-surface-2/70 tabular-nums text-muted transition duration-200 hover:bg-surface-2 hover:text-fg active:scale-[.97]">${label}${tag}</button></li>`;
+          ? `<li class="grid grid-cols-2 gap-2"><span data-pop class="relative flex h-12 items-center justify-center rounded-full bg-primary/8 font-medium text-primary ring-2 ring-inset ring-primary/60">${label}${tag && `<span class="sr-only">, ${t.recommended}</span>`}</span>
+              <button type="button" data-action="to-details" aria-label="${t.next}: ${label}" class="btn-solid press h-12 rounded-full font-medium">${t.next}</button></li>`
+          : `<li><button type="button" data-time="${time}" class="press relative h-12 w-full rounded-full bg-surface-2 text-fg tabular-nums">${label}${tag}</button></li>`;
       })
       .join('');
     return `<h3 data-slots-heading tabindex="-1" class="font-sans text-base font-normal outline-none">${fmtDate(st.date, { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
