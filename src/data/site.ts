@@ -52,6 +52,7 @@ export const site = {
     maxAdvanceDays: 60,
     deposit: 20, // AUD per service (powder brows: its own `deposit` in services.ts), paid by bank transfer; not refunded inside cancelHours
     cancelHours: 48,
+    termsVersion: '2026-11-07', // deposit terms + photo consent wording (i18n/booking.ts); bump when that text changes
   },
 } as const;
 

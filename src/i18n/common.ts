@@ -32,6 +32,15 @@ const en = {
     copied: 'Copied',
     copyWechat: 'Copy WeChat ID',
     rights: 'All rights reserved.',
+    cookieSettings: 'Cookie settings',
+    privacy: 'Privacy',
+  },
+  cookies: {
+    label: 'Cookie choice',
+    body: 'We use cookies to keep the site working and, with your OK, Google Analytics cookies to see which pages help visitors so we can improve them. No ads, and we never sell your data.',
+    necessary: 'Necessary only',
+    all: 'Accept all',
+    privacy: 'Privacy policy',
   },
   hero: {
     eyebrow: 'Burwood, Sydney',
@@ -163,6 +172,15 @@ const zh: Strings = {
     copied: '已复制',
     copyWechat: '复制微信号',
     rights: '版权所有。',
+    cookieSettings: 'Cookie 设置',
+    privacy: '隐私政策',
+  },
+  cookies: {
+    label: 'Cookie 选择',
+    body: '我们使用 Cookie 保证网站正常运行；在你同意后，也会使用 Google Analytics 的 Cookie 了解哪些页面对访客有用，以便改进网站。我们不投放广告，也绝不出售你的数据。',
+    necessary: '仅必要',
+    all: '全部接受',
+    privacy: '隐私政策',
   },
   hero: {
     eyebrow: '悉尼 · 宝活 Burwood',

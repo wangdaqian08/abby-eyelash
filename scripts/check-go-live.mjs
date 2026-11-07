@@ -40,6 +40,7 @@ const manual = [
   ['C', 'Cloudflare production vars: SITE_URL, LAUNCH=1, booking keys set; BOOKING_DEMO deleted.'],
   ['C2', 'Rate-limit rule on /api/ (20 / min / IP).'],
   ['E', 'Cloudflare does not block AI crawlers.'],
+  ['J', 'A/B look B: merge main into feat/liquid-glass-ui first, so B also has the cookie bar, booking consents and privacy page.'],
   ['J', 'A/B look B: feat/liquid-glass-ui deployed with production SITE_URL (Preview vars) = bOrigin.'],
   ['G', 'GA4: style_variant custom dimension (event + user); book_click and booking_submitted as key events.'],
   ['G', 'Google Search Console + Google Business Profile (address, phone, hours identical to the site).'],

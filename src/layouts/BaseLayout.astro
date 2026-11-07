@@ -4,6 +4,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SeoHead, { type Props as SeoProps } from '../components/seo/SeoHead.astro';
 import Analytics from '../components/Analytics.astro';
+import CookieConsent from '../components/CookieConsent.astro';
 import playfair500 from '@fontsource/playfair-display/files/playfair-display-latin-500-normal.woff2?url';
 import playfair500i from '@fontsource/playfair-display/files/playfair-display-latin-500-italic.woff2?url';
 
@@ -41,6 +42,7 @@ const { lang, title, description } = props;
       <slot />
     </main>
     <Footer lang={lang} />
+    <CookieConsent lang={lang} />
     <script>
       // Press state for touch: phones apply :active late (or not at all) and a fast tap lifts before it shows.
       // data-pressed goes on at pointerdown and stays at least 140 ms; CSS styles it exactly like :active.

@@ -51,6 +51,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   const booking = items && quoteAll(items);
   if (!booking) errors.option = 'invalid';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(b.date) || !/^\d{2}:\d{2}$/.test(b.time)) errors.time = 'invalid';
+  if (raw.deposit !== true) errors.deposit = 'required'; // deposit terms must be agreed
+  const photos = raw.photos === true; // optional photo consent, recorded for Abby
   if (Object.keys(errors).length || !booking) return json({ error: 'validation', errors }, 400);
   const { minutes, deposit } = booking;
 
@@ -88,6 +90,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       `Service: ${label} (${minutes} min)`,
       `Price: ${quoteAllText(booking, 'en')}`,
       `Deposit: $${deposit} by bank transfer — not yet received (send the bank details when confirming)`,
+      `Terms version: ${site.booking.termsVersion}`,
+      `Deposit terms: agreed (not refunded if the client cancels or reschedules within ${site.booking.cancelHours} h, or doesn't turn up)`,
+      `Photo consent: ${photos ? 'YES, may use photos for promotion' : 'NO, do not post photos'}`,
       `Language: ${b.lang === 'zh' ? 'Chinese' : 'English'}`,
       `Notes: ${plain(b.notes) || '-'}`,
       '',
