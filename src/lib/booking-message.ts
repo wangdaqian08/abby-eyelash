@@ -31,7 +31,7 @@ export const newCode = () => Array.from(crypto.getRandomValues(new Uint8Array(8)
 export const CODE_RE = /^[2-9a-hj-km-np-zA]{8}$/;
 
 // Calendar text is rendered by Google (links, some HTML): drop control/bidi chars and angle brackets.
-const plain = (s: string) => s.replace(/[\u0000-\u001f\u007f‪-‮⁦-⁩<>]+/g, ' ').trim();
+const plain = (s: string) => s.replace(/[\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069<>]+/g, ' ').trim();
 const stamp = (ms: number) => new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 
 /** Google Calendar "new event" URL for Abby: title, time, length and the booking details filled in. */
