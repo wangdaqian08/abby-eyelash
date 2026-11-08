@@ -91,10 +91,10 @@ export const photos: Photo[] = [
   brow('8979', 'IMG_8979.JPG', 'Powder brows before and after on one face: the left half before, the right half with soft shaded brows', '同一张脸的雾眉前后对比：左半边是做之前，右半边是柔和的粉雾眉', { ratio: '3:4' }),
   brow('8645', 'IMG_8645.JPG', 'Powder brows before and after on one face: faint brows on one side, defined soft brows on the other', '同一张脸的雾眉前后对比：一边眉色浅淡，一边眉形清晰柔和', { ratio: '3:4' }),
   brow('6863', 'IMG_6863.jpg', 'Client with fresh powder brows, soft arched shape with a natural shaded finish', '刚做完雾眉的客人，眉形柔和上扬，粉雾感自然', { ratio: '3:4' }),
-  brow('3166', 'IMG_3166.JPG', 'Close-up of powder brows: a soft shaded brow above a brown eye', '雾眉特写：棕色眼睛上方柔和的粉雾眉'),
+  brow('3166', 'IMG_3166.JPG', 'Close-up of powder brows: a soft shaded brow above a brown eye', '雾眉特写：棕色眼睛上方柔和的粉雾眉', { ratio: '3:4', box: { left: 0.27, top: 0, width: 0.544, height: 1 } }),
   // Video still (ffmpeg -ss 3 from eyebrow/雾眉留色度3个月.MP4); once /tmp is cleared the photo script skips it and keeps the master.
   brow('video-poster', '/tmp/abby-brow-video-poster.jpg', 'Powder brows touch-up at 3 months, video still', '雾眉 3 个月补色，视频封面', { ratio: '3:4' }),
-  brow('6069', 'IMG_6069.JPG', 'Close-up of a freshly done powder brow with a clean, softly shaded shape', '刚做完的雾眉特写，眉形干净，粉雾过渡柔和'),
+  brow('6069', 'IMG_6069.JPG', 'Close-up of a freshly done powder brow with a clean, softly shaded shape', '刚做完的雾眉特写，眉形干净，粉雾过渡柔和', { ratio: '3:4' }),
 ];
 
 const byId = new Map(photos.map((p) => [p.id, p]));
@@ -172,9 +172,9 @@ export const LASH_VISIBLE = 4; // lash photos shown per group before "show all"
 /** Home portfolio, lash part: grouped by look; one ratio per group so each grid is uniform. The six "lash looks" cards and the hero aren't repeated. */
 /** Home portfolio, brows part. The brows page shows brow-9795 and brow-6863, so they aren't repeated here. */
 export const BROW_VISIBLE = 4;
-export const browGroups: { id: string; name: L10n; ratio: '3:4' | '4:3'; items: string[] }[] = [
+export const browGroups: { id: string; name: L10n; ratio: '3:4'; items: string[] }[] = [ // 3:4 like the nail tiles
   { id: 'before-after', name: { en: 'Before and after', zh: '术前术后对比' }, ratio: '3:4', items: ['brow-video', 'brow-8979', 'brow-8645'] },
-  { id: 'close-ups', name: { en: 'Close-ups', zh: '效果特写' }, ratio: '4:3', items: ['brow-3166', 'brow-6069'] },
+  { id: 'close-ups', name: { en: 'Close-ups', zh: '效果特写' }, ratio: '3:4', items: ['brow-3166', 'brow-6069'] },
 ];
 
 export const lashGroups: { id: string; name: L10n; ratio: '3:4' | '4:3'; items: string[] }[] = [
