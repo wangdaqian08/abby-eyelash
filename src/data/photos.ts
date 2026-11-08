@@ -29,8 +29,7 @@ export const photos: Photo[] = [
   lash('classic-natural', '单根自然.jpg', 'Japanese classic natural lash extensions on a brown eye, Burwood', '棕色眼睛上的日式单根自然款嫁接睫毛，细密整齐，Burwood'),
   lash('classic-full-bottom', '单根浓+下睫毛.JPG', 'Japanese classic full lash extensions with dense bottom lashes on a brown eye, Burwood', '棕色眼睛上的日式单根浓密款嫁接睫毛，搭配浓密下睫毛，Burwood'),
   lash('hybrid-natural', '轻盈-自然.jpg', 'Light hybrid natural lash extensions with soft fanned tips on a grey-green eye, Burwood', '灰绿色眼睛上的开花轻盈自然款嫁接睫毛，睫毛尖柔和散开，Burwood'),
-  // Face shots (preferred over eye-only close-ups). Box = top panel (face) of a face + both-eyes two-panel image.
-  lash('hybrid-full-face', '开花-浓密-整脸.jpg', 'Client smiling softly with dense, fluffy hybrid full lash extensions on both eyes, Burwood', '客人浅笑自拍，双眼开花浓密款嫁接睫毛蓬松自然，Burwood', { box: { left: 0, top: 0, width: 1, height: 0.685 } }),
+  // Not used: 开花-浓密-整脸.jpg looks AI-made (owner, 2026-11-08). Only real client work goes in the gallery.
   // Half-face portrait: a 4:3 crop would shrink it to an eye close-up, so it stays portrait (lash-extensions hero).
   lash('styled-half-face', '造型款-半脸.jpg', 'Half-face portrait showing spiky, wispy styled lash extensions with defined bottom lashes', '半脸近照，造型款嫁接睫毛尖翘分明，搭配清晰下睫毛', { ratio: '3:4', position: 'top' }),
   lash('styled-fairy', '造型款-仙子.JPG', 'Fairy styled lash set with a few long wispy spikes on top, Burwood', '仙子造型款嫁接睫毛，上睫毛间插几根纤长尖翘的长毛，Burwood'),
@@ -96,7 +95,7 @@ export const lashCards: { serviceId: string; optionId: string; photo: string }[]
   { serviceId: 'lash-extensions', optionId: 'classic-natural', photo: 'classic-natural' },
   { serviceId: 'lash-extensions', optionId: 'classic-full', photo: 'classic-full-bottom' },
   { serviceId: 'lash-extensions', optionId: 'hybrid-natural', photo: 'hybrid-natural' },
-  { serviceId: 'lash-extensions', optionId: 'hybrid-full', photo: 'hybrid-full-eye' },
+  { serviceId: 'lash-extensions', optionId: 'hybrid-full', photo: 'hybrid-full-2' },
   { serviceId: 'lash-extensions', optionId: 'styled', photo: 'styled-fairy' },
   { serviceId: 'lash-lift', optionId: 'keratin-lift', photo: 'lift-1' },
 ];
@@ -153,7 +152,7 @@ export const LASH_VISIBLE = 4; // lash photos shown per group before "show all"
 export const lashGroups: { id: string; name: L10n; ratio: '3:4' | '4:3'; items: string[] }[] = [
   { id: 'face', name: { en: 'Full-face looks', zh: '整脸效果' }, ratio: '3:4', items: ['face-natural', 'face-smile', 'styled-half-face', 'styled-mermaid-selfie'] },
   { id: 'natural-full', name: { en: 'Natural and full sets', zh: '自然款 · 浓密款' }, ratio: '4:3',
-    items: ['classic-natural-2', 'hybrid-full-face', 'classic-natural-colour', 'hybrid-full-2', 'hybrid-full-bottom'] },
+    items: ['classic-natural-2', 'hybrid-full-eye', 'classic-natural-colour', 'hybrid-full-bottom'] },
   { id: 'styled', name: { en: 'Styled sets', zh: '造型款' }, ratio: '4:3', items: styledLooks.map((l) => l.photo).filter((p) => p !== 'styled-fairy') },
 ];
 
