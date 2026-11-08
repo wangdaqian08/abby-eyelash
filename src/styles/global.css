@@ -203,7 +203,7 @@ html[data-look='B'] { --header-h: 72px; }
 /* Shared control feedback (glass or solid): lift on pointer hover, sink on press, shadow follows. */
 @utility press {
   @media (hover: hover) and (pointer: fine) {
-    &:hover:not(:active, [data-pressed], :disabled, [aria-disabled='true']) { transform: translateY(-2px); }
+    &:hover:not(:active, [data-pressed], :disabled, [aria-disabled='true'], .no-hover) { transform: translateY(-2px); } /* .no-hover: press only (booking service cards) */
   }
   &:active, &[data-pressed] {
     transform: translateY(1px) scale(0.97);
