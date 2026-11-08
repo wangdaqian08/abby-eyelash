@@ -4,7 +4,7 @@
 import { Picture, getImage } from 'astro:assets';
 import type { Lang } from '../../data/services';
 import { site } from '../../data/site';
-import { BROW_VISIBLE, LASH_VISIBLE, NAIL_VISIBLE, browGroups, lashGroups, nailGroups, nailVideo, photo } from '../../data/photos';
+import { BROW_VISIBLE, LASH_VISIBLE, NAIL_VISIBLE, browGroups, lashGroups, nailGroups, photo, videos } from '../../data/photos';
 import { common, fill } from '../../i18n/common';
 import { localePath } from '../../lib/i18n';
 import { photoSrc } from '../../lib/photo-src';
@@ -15,7 +15,7 @@ const lookB = lookOf(Astro.url) === 'B'; // look B markup (lib/ab-test.ts)
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const t = common[lang].gallery;
-const posterUrl = (await getImage({ src: photoSrc(nailVideo.poster), width: 480, format: 'webp' })).src;
+const posterUrl = Object.fromEntries(await Promise.all(Object.entries(videos).map(async ([id, v]) => [id, (await getImage({ src: photoSrc(v.poster), width: 480, format: 'webp' })).src])));
 
 type Group = { id: string; name: { en: string; zh: string }; swatch?: string; ratio: '3:4' | '4:3'; items: string[] };
 const parts: { id: string; title: string; groups: Group[]; visible: number; book: string; bookLabel: string }[] = [
@@ -23,9 +23,9 @@ const parts: { id: string; title: string; groups: Group[]; visible: number; book
   { id: 'nails', title: t.nails, groups: nailGroups.map((g) => ({ ...g, ratio: '3:4' as const })), visible: NAIL_VISIBLE, book: `${localePath(lang, '/book')}?service=gel-nails`, bookLabel: t.bookNails },
   { id: 'brows', title: t.brows, groups: browGroups, visible: BROW_VISIBLE, book: `${localePath(lang, '/book')}?service=powder-brows`, bookLabel: t.bookBrows },
 ];
-// Nails: three portrait tiles per row (as before). Lashes and brows: two per row on phones, four on desktop.
-const grid = (p: string) => (p === 'nails' ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-2 gap-2 lg:grid-cols-4');
-const sizes = (p: string) => (p === 'nails' ? '(min-width: 1152px) 360px, 31vw' : '(min-width: 1024px) 270px, 47vw');
+// Nails, and brows' portrait group (video + 2): three tiles per row. Lashes and brows' wide group: two per row on phones, four on desktop.
+const grid = (p: string, r: string) => (p === 'nails' || (p === 'brows' && r === '3:4') ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-2 gap-2 lg:grid-cols-4');
+const sizes = (p: string, r: string) => (p === 'nails' || (p === 'brows' && r === '3:4') ? '(min-width: 1152px) 360px, 31vw' : '(min-width: 1024px) 270px, 47vw');
 const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };
 ---
 <section id="gallery" class="bg-surface-2 py-16 md:py-24">
@@ -38,13 +38,13 @@ const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };
     {parts.map((part) => {
       const count = part.groups.reduce((n, g) => n + g.items.length, 0);
       const tiles = (g: Group, ids: string[]) => (
-        <ul class={grid(part.id)}>
+        <ul class={grid(part.id, g.ratio)}>
           {ids.map((id) => (
             <li class:list={['relative overflow-hidden rounded-field bg-surface', aspect[g.ratio]]}>
-              {id === 'video' ? (
+              {videos[id] ? (
                 <>
-                  <video muted loop playsinline preload="none" poster={posterUrl} width="480" height="640" class="aspect-[3/4] size-full object-cover" aria-label={nailVideo.alt[lang]} data-video>
-                    <source src={nailVideo.src} type="video/mp4" />
+                  <video muted loop playsinline preload="none" poster={posterUrl[id]} width="480" height="640" class="aspect-[3/4] size-full object-cover" aria-label={videos[id].alt[lang]} data-video>
+                    <source src={videos[id].src} type="video/mp4" />
                   </video>
                   <button type="button" data-video-toggle aria-pressed="false" aria-label={t.playVideo} class="group absolute inset-0">
                     <span aria-hidden="true" class="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-surface/80 text-fg backdrop-blur-sm transition-opacity duration-200 group-aria-pressed:opacity-0">
@@ -53,7 +53,7 @@ const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };
                   </button>
                 </>
               ) : (
-                <Picture src={photoSrc(id)} alt={photo(id).alt[lang]} formats={['avif', 'webp']} widths={[240, 480, 720]} sizes={sizes(part.id)} loading="lazy" class="size-full object-cover" />
+                <Picture src={photoSrc(id)} alt={photo(id).alt[lang]} formats={['avif', 'webp']} widths={[240, 480, 720]} sizes={sizes(part.id, g.ratio)} loading="lazy" class="size-full object-cover" />
               )}
             </li>
           ))}
@@ -106,9 +106,8 @@ const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };
     });
   });
   // No autoplay. Hover plays on mouse devices (unless reduced motion); tap or Enter toggles everywhere.
-  const video = document.querySelector<HTMLVideoElement>('[data-video]');
-  const toggle = document.querySelector<HTMLButtonElement>('[data-video-toggle]');
-  if (video && toggle) {
+  document.querySelectorAll<HTMLVideoElement>('#gallery [data-video]').forEach((video) => {
+    const toggle = video.parentElement!.querySelector<HTMLButtonElement>('[data-video-toggle]')!;
     const set = (play: boolean) => {
       if (play) video.play().catch(() => {}); else video.pause();
       toggle.setAttribute('aria-pressed', String(play));
@@ -118,5 +117,5 @@ const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };
       toggle.addEventListener('mouseenter', () => set(true));
       toggle.addEventListener('mouseleave', () => set(false));
     }
-  }
+  });
 </script>

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { bookableWith, findOption, mainOptions, priceText, services } from './services.ts';
-import { browGroups, homeHero, lashCards, lashGroups, lashLooks, nailGroups, nailVideo, NAIL_VISIBLE, photo, photos, servicePhotos, styleGuide, styledLooks } from './photos.ts';
+import { browGroups, browVideo, homeHero, lashCards, lashGroups, lashLooks, nailGroups, nailVideo, NAIL_VISIBLE, photo, photos, servicePhotos, styleGuide, styledLooks } from './photos.ts';
 
 test('every lash card points at a bookable main option', () => {
   assert.equal(lashCards.length, 6);
@@ -14,15 +14,15 @@ test('every lash card points at a bookable main option', () => {
 test('nail groups use each of the 22 nail photos exactly once, plus the video', () => {
   const items = nailGroups.flatMap((g) => g.items);
   assert.equal(new Set(items).size, items.length);
-  assert.equal(items.filter((i) => i === 'video').length, 1);
-  assert.equal(items.filter((i) => i !== 'video').length, 22);
+  assert.equal(items.filter((i) => i === 'nail-video').length, 1);
+  assert.equal(items.filter((i) => i !== 'nail-video').length, 22);
   assert.equal(nailGroups.flatMap((g) => g.items.slice(0, NAIL_VISIBLE)).length, 15);
 });
 test('every referenced id exists, with the right ratio', () => {
   for (const c of lashCards) assert.equal(photo(c.photo).ratio, '4:3');
   for (const l of styledLooks) assert.equal(photo(l.photo).ratio, '4:3');
-  for (const i of nailGroups.flatMap((g) => g.items)) if (i !== 'video') assert.equal(photo(i).ratio, '3:4');
-  photo(nailVideo.poster); photo(homeHero);
+  for (const i of nailGroups.flatMap((g) => g.items)) if (i !== 'nail-video') assert.equal(photo(i).ratio, '3:4');
+  photo(nailVideo.poster); photo(browVideo.poster); photo(homeHero);
   assert.equal(styledLooks.length, 12);
 });
 test('ids are unique ASCII and every alt is filled in both languages', () => {
@@ -80,10 +80,10 @@ test('lash portfolio: uniform ratio per group, real work only, no repeats of the
 });
 
 test('brows portfolio: uniform ratio per group, every brow photo shown once (gallery or brows page)', () => {
-  const ids = browGroups.flatMap((g) => g.items);
-  for (const g of browGroups) for (const id of g.items) assert.equal(photo(id).ratio, g.ratio, id);
+  const ids = browGroups.flatMap((g) => g.items).filter((id) => id !== 'brow-video');
+  for (const g of browGroups) for (const id of g.items) assert.equal(id === 'brow-video' ? photo(browVideo.poster).ratio : photo(id).ratio, g.ratio, id);
   const page = [servicePhotos['powder-brows'].hero, servicePhotos['powder-brows'].detail];
-  const shown = [...ids, ...page];
+  const shown = [...ids, ...page, browVideo.poster];
   assert.equal(new Set(shown).size, shown.length);
   assert.deepEqual(photos.filter((p) => p.dir === 'brows').map((p) => p.id).sort(), [...shown].sort());
 });

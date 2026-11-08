@@ -23,7 +23,7 @@ const nail = (n: string, source: string, en: string, zh: string, extra: Extra = 
   ({ id: `nail-${n}`, dir: 'nails', source: source.startsWith('/') ? source : `nails/${source}`, ratio: '3:4', ...extra, alt: { en, zh } });
 
 const brow = (n: string, source: string, en: string, zh: string, extra: Extra = {}): Photo =>
-  ({ id: `brow-${n}`, dir: 'brows', source: `eyebrow/${source}`, ratio: '4:3', ...extra, alt: { en, zh } });
+  ({ id: `brow-${n}`, dir: 'brows', source: source.startsWith('/') ? source : `eyebrow/${source}`, ratio: '4:3', ...extra, alt: { en, zh } });
 
 // AI-generated style illustrations (not client work). Shown only in the labelled style guide, never as results.
 const aiLash = (id: string, source: string, en: string, zh: string): Photo =>
@@ -92,6 +92,8 @@ export const photos: Photo[] = [
   brow('8645', 'IMG_8645.JPG', 'Powder brows before and after on one face: faint brows on one side, defined soft brows on the other', '同一张脸的雾眉前后对比：一边眉色浅淡，一边眉形清晰柔和', { ratio: '3:4' }),
   brow('6863', 'IMG_6863.jpg', 'Client with fresh powder brows, soft arched shape with a natural shaded finish', '刚做完雾眉的客人，眉形柔和上扬，粉雾感自然', { ratio: '3:4' }),
   brow('3166', 'IMG_3166.JPG', 'Close-up of powder brows: a soft shaded brow above a brown eye', '雾眉特写：棕色眼睛上方柔和的粉雾眉'),
+  // Video still (ffmpeg -ss 3 from eyebrow/雾眉留色度3个月.MP4); once /tmp is cleared the photo script skips it and keeps the master.
+  brow('video-poster', '/tmp/abby-brow-video-poster.jpg', 'Powder brows touch-up at 3 months, video still', '雾眉 3 个月补色，视频封面', { ratio: '3:4' }),
   brow('6069', 'IMG_6069.JPG', 'Close-up of a freshly done powder brow with a clean, softly shaded shape', '刚做完的雾眉特写，眉形干净，粉雾过渡柔和'),
 ];
 
@@ -122,6 +124,14 @@ export const nailVideo = {
   poster: 'nail-video-poster',
   alt: { en: 'Video: yellow little-flower French nails', zh: '视频：黄色小花法式美甲' } as L10n,
 };
+// ffmpeg -i ~/Desktop/abby-eyelash/eyebrow/雾眉留色度3个月.MP4 -an -vf "scale=540:-2" -c:v libx264 -crf 30 -preset slow -movflags +faststart public/media/brows-touch-up.mp4
+export const browVideo = {
+  src: '/media/brows-touch-up.mp4',
+  poster: 'brow-video-poster',
+  alt: { en: 'Video: powder brows touch-up 3 months after the first session, colour still holding', zh: '视频：第一次做完 3 个月后来补色，雾眉留色依然明显' } as L10n,
+};
+/** Gallery items that are videos, by id (every other item id is a photo). */
+export const videos: Record<string, typeof nailVideo> = { 'nail-video': nailVideo, 'brow-video': browVideo };
 
 export const NAIL_VISIBLE = 3; // items shown per group before "show all"
 
@@ -131,7 +141,7 @@ export const nailGroups: { id: string; name: L10n; swatch: string; items: string
   { id: 'gold-mirror', name: { en: 'Gold · Mirror', zh: '金色 · 镜面' }, swatch: '#c9a24b',
     items: ['nail-fc1a', 'nail-4915', 'nail-2020', 'nail-9011'] },
   { id: 'warm-floral', name: { en: 'Warm yellow · Floral', zh: '暖黄 · 花朵' }, swatch: '#f0c33c',
-    items: ['video', 'nail-b029', 'nail-6e6c'] },
+    items: ['nail-video', 'nail-b029', 'nail-6e6c'] },
   { id: 'wine-navy', name: { en: 'Wine · Navy', zh: '酒红 · 深蓝' }, swatch: '#6b1e2e',
     items: ['nail-8353', 'nail-1848', 'nail-3029'] },
   { id: 'mono-art', name: { en: 'Black & white · Art', zh: '黑白 · 彩绘' }, swatch: '#2b2b2b',
@@ -163,7 +173,7 @@ export const LASH_VISIBLE = 4; // lash photos shown per group before "show all"
 /** Home portfolio, brows part. The brows page shows brow-9795 and brow-6863, so they aren't repeated here. */
 export const BROW_VISIBLE = 4;
 export const browGroups: { id: string; name: L10n; ratio: '3:4' | '4:3'; items: string[] }[] = [
-  { id: 'before-after', name: { en: 'Before and after', zh: '术前术后对比' }, ratio: '3:4', items: ['brow-8979', 'brow-8645'] },
+  { id: 'before-after', name: { en: 'Before and after', zh: '术前术后对比' }, ratio: '3:4', items: ['brow-video', 'brow-8979', 'brow-8645'] },
   { id: 'close-ups', name: { en: 'Close-ups', zh: '效果特写' }, ratio: '4:3', items: ['brow-3166', 'brow-6069'] },
 ];
 
