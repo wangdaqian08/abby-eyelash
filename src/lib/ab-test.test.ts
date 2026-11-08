@@ -66,3 +66,15 @@ test('only page requests map to a look-B file; assets keep their path', () => {
   assert.equal(lookBPath('/404.html'), '/look-b/404.html');
   for (const p of ['/_astro/a.css', '/images/x.webp', '/favicon.svg', '/robots.txt']) assert.equal(lookBPath(p), null);
 });
+
+// public/_routes.json: only pages and /api run Functions; static files skip them so they don't use the free Functions quota
+// (100k requests/day). Pages must stay included (the A/B split) and so must /look-b/ (the middleware 404s it).
+test('_routes.json: static files skip Functions; pages, /api and /look-b/ still run them', async () => {
+  const { readFileSync } = await import('node:fs');
+  const routes = JSON.parse(readFileSync(new URL('../../public/_routes.json', import.meta.url), 'utf8')) as { version: number; include: string[]; exclude: string[] };
+  const hit = (rules: string[], path: string) => rules.some((r) => (r.endsWith('/*') ? path.startsWith(r.slice(0, -1)) : path === r));
+  const runs = (path: string) => hit(routes.include, path) && !hit(routes.exclude, path);
+  assert.equal(routes.version, 1);
+  for (const p of ['/', '/zh/', '/book/', '/privacy/', '/lash-lift-burwood/', '/no-such-page/', '/api/book', '/api/availability', '/look-b/', '/look-b/zh/']) assert.ok(runs(p), p);
+  for (const p of ['/_astro/BaseLayout.abc.css', '/_astro/hero.abc.webp', '/media/brows-touch-up.mp4', '/favicon.svg', '/robots.txt', '/sitemap-0.xml']) assert.ok(!runs(p), p);
+});
