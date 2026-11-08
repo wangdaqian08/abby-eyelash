@@ -130,7 +130,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           h2: ['Before ', 'you come in'],
           list: [
             `Arrive with clean lashes: no mascara or eye makeup.`,
-            `If you wear contact lenses, bring your case so you can take them out.`, // OWNER-REVIEW
             `Skip the lash curler and oil-based eye products on the day.`,
             `Tell Abby about any eye condition or past reaction to lash glue in the booking notes.`,
           ],
@@ -206,7 +205,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           h2: ['到店前', '准备'],
           list: [
             `睫毛保持干净，不要涂睫毛膏或眼妆。`,
-            `戴隐形眼镜的话请带上镜盒，做之前需要摘下。`, // OWNER-REVIEW
             `当天不要夹睫毛，也不要用含油的眼部产品。`,
             `如有眼部问题或对睫毛胶有过反应，请在预约备注里写明。`,
           ],
