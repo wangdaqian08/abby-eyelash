@@ -120,8 +120,8 @@ test('busyQueryRange is null outside the bookable window', () => {
   assert.ok(busyQueryRange('2027-01', now, site));
 });
 
-test('validateDetails: AU phone, email, lengths', () => {
-  const ok = { name: 'Mia Chen', phone: '0412 345 678', email: 'mia@example.com', notes: '' };
+test('validateDetails: AU phone, lengths', () => {
+  const ok = { name: 'Mia Chen', phone: '0412 345 678', notes: '' };
   assert.deepEqual(validateDetails(ok), {});
   for (const phone of ['+61 412 345 678', '(02) 9744 1234', '61412345678']) {
     assert.deepEqual(validateDetails({ ...ok, phone }), {}, phone);
@@ -129,7 +129,6 @@ test('validateDetails: AU phone, email, lengths', () => {
   for (const phone of ['12345', '0512345678', '+1 415 555 0100']) {
     assert.equal(validateDetails({ ...ok, phone }).phone, 'invalid', phone);
   }
-  assert.equal(validateDetails({ ...ok, email: 'a@b' }).email, 'invalid');
   assert.equal(validateDetails({ ...ok, name: ' ' }).name, 'required');
   assert.equal(validateDetails({ ...ok, name: 'x'.repeat(81) }).name, 'tooLong');
   assert.equal(validateDetails({ ...ok, name: 'Mia\nChen' }).name, 'invalid');

@@ -71,12 +71,12 @@ Service cards on Home show price + duration and link to their service page.
 - Any event in Abby's calendar = busy; customers only ever see "unavailable", never event details.
 
 **Backend** (Cloudflare Pages Functions):
-- `GET /api/availability?items=<service>/<option>/<addon:n,…>;…&month=YYYY-MM` → free start times for the combined length, from Abby's Google Calendar (service account; calendar shared with it, "make changes to events").
-- `POST /api/book` → validate input server-side, verify **Cloudflare Turnstile**, re-check slot is still free, insert event `⏳ PENDING – <name> – <service>` (details in description), email Abby via **Web3Forms**.
-- Abby confirms manually (call/SMS) and renames the event.
-- **Demo mode** when Google credentials are absent: mocked availability, booking only emails (or logs).
+- `GET /api/availability?items=<service>/<option>/<addon:n,…>;…&month=YYYY-MM` → free start times for the combined length, from Abby's Google Calendar (service account; calendar shared with it as "see all event details"; only 💗 events count).
+- **Booking by message (2026-11-08):** the site takes no bookings. Step 5 hands the customer a pre-filled SMS / WhatsApp to Abby (`src/lib/booking-message.ts`), ending with a short `/c/<code>` link: `POST /api/request` stores the request in PostgreSQL (schema `abby`, kept 24 h, `src/lib/db.ts`), and `functions/c/[code].ts` redirects to Google Calendar's new-event page, filled in (`💗 ⏳ <name> – <service>`). Abby taps Save, then confirms with the customer. No database → the message goes out without the link.
+- **Busy times = 💗 events only (2026-11-09):** `events.list` (read-only), and only events whose title starts with 💗 block slots (`bookedIntervals`, `src/lib/google-calendar.ts`). Personal and all-day events like "rent" never block. The calendar is shared with "See all event details".
+- **Demo mode** when Google credentials are absent: mocked availability.
 - No customer confirmation email until a domain exists (then add Resend). No online payments: the deposit ($20 per service, $30 for powder brows, added up; no WeChat Pay) is paid by bank transfer after booking; Abby sends the bank details when she confirms. Returning-client "no deposit" by phone lookup is a post-launch idea (docs/REQUIREMENTS-2026-10.md §三).
-- Secrets only in Cloudflare env vars. `SETUP.md` gives Abby step-by-step Google Cloud + calendar sharing + Web3Forms + Turnstile setup.
+- Secrets only in Cloudflare env vars. `docs/SETUP-booking.md` gives Abby step-by-step Google Cloud + calendar sharing setup.
 
 ## 9. SEO / GEO / analytics
 **Governed by `docs/GEO-STRATEGY.md` (approved 2026-10-26, D1–D5 accepted).** That document is authoritative; summary:
@@ -94,4 +94,4 @@ Service cards on Home show price + duration and link to their service page.
 - Placeholder cancellation policy: "Please give at least 24 hours' notice to cancel or reschedule."
 
 ## 11. Placeholders the owner must replace before launch
-Street name (no house number — home studio), phone, email, socials, prices, photos, GA4/GSC IDs, Google Calendar credentials, Web3Forms key, Turnstile keys, domain, Google Business Profile link, real reviews, chosen theme.
+Street name (no house number — home studio), phone, email, socials, prices, photos, GA4/GSC IDs, Google Calendar credentials, domain, Google Business Profile link, real reviews, chosen theme.

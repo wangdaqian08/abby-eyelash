@@ -1,7 +1,7 @@
 ---
 // Cookie choice bar: "Necessary only" or "Accept all". Saved in localStorage `cookie-consent` (necessary | all) + `cookie-consent-at`; asked again after 12 months.
 // Google Analytics (./Analytics.astro) loads only after "all". The footer's [data-cookie-settings] button reopens the bar.
-// Necessary = the `style` look cookie (functions/_middleware.ts), Turnstile on /book, and this choice itself.
+// Necessary = the `style` look cookie (functions/_middleware.ts) and this choice itself.
 import type { Lang } from '../data/services';
 import { common } from '../i18n/common';
 import { localePath } from '../lib/i18n';
