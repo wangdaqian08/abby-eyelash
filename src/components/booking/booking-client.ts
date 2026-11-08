@@ -62,9 +62,10 @@ export function start(root: HTMLElement) {
     focus?: string; // keyboard focus within the calendar grid
     details: Details;
     started: boolean;
+    deposit: boolean; // ticks survive going back from step 5 to change details
     photos: boolean;
     link?: { key: string; code?: string }; // short calendar link for the current details (reused while they don't change)
-  } = { step: 1, items: [], month: localDate(Date.now(), TZ).slice(0, 7), details: { name: '', phone: '', notes: '' }, started: false, photos: false };
+  } = { step: 1, items: [], month: localDate(Date.now(), TZ).slice(0, 7), details: { name: '', phone: '', notes: '' }, started: false, deposit: false, photos: false };
 
   const cache = new Map<string, Month | 'loading' | 'error'>();
   const itemOf = (id: string) => st.items.find((i) => i.service.id === id);
@@ -333,7 +334,7 @@ export function start(root: HTMLElement) {
         ${control}<p id="bk-${k}-err" class="mt-1.5 flex items-start gap-1.5 text-sm text-danger" hidden></p></div>`;
     // Unticked by default. Deposit terms are required; photo consent stays optional (consent can't be a condition of booking).
     const agree = (k: string, text: string, required: boolean) =>
-      `<div><label class="flex cursor-pointer items-start gap-3"><input type="checkbox" id="bk-${k}" name="${k}" ${required ? 'required aria-describedby="bk-' + k + '-err"' : ''} class="mt-0.5 size-5 shrink-0 accent-[var(--color-primary)] aria-invalid:outline-2 aria-invalid:outline-danger">
+      `<div><label class="flex cursor-pointer items-start gap-3"><input type="checkbox" id="bk-${k}" name="${k}" ${st[k as 'deposit' | 'photos'] ? 'checked' : ''} ${required ? 'required aria-describedby="bk-' + k + '-err"' : ''} class="mt-0.5 size-5 shrink-0 accent-[var(--color-primary)] aria-invalid:outline-2 aria-invalid:outline-danger">
         <span class="${required ? '' : 'text-muted'}">${esc(text)}${required ? ' <span aria-hidden="true" class="text-danger">*</span>' : ''}</span></label>
         ${required ? `<p id="bk-${k}-err" class="mt-1.5 flex items-start gap-1.5 text-sm text-danger" hidden></p>` : ''}</div>`;
     const attrs = (k: Field) => `id="bk-${k}" name="${k}" aria-describedby="bk-${k}-err"`;
@@ -397,6 +398,7 @@ export function start(root: HTMLElement) {
           .join('')}</ul>`,
       );
     }
+    st.deposit = true;
     st.photos = ticked('photos');
     go(5);
     void fetchLink();
