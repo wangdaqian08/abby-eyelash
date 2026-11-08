@@ -29,6 +29,12 @@ const look = lookOf(Astro.url);
     <link rel="preload" href={playfair500i} as="font" type="font/woff2" crossorigin />
     <script is:inline>
       document.documentElement.classList.add('js');
+      // Arriving with a #section (e.g. /#gallery from another page): jump there instead of gliding down the whole page.
+      // Smooth scrolling (global.css) comes back once the page has loaded, for in-page links.
+      if (location.hash) {
+        document.documentElement.style.scrollBehavior = 'auto';
+        addEventListener('load', () => setTimeout(() => document.documentElement.style.removeProperty('scroll-behavior'), 100), { once: true });
+      }
     </script>
     <SeoHead {...props} />
     <Analytics />
