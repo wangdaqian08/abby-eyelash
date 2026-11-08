@@ -41,6 +41,14 @@ const tabs = [
     ))}
   </ul>
 </nav>
+<script is:inline>
+  // Before first paint: opened as /#services or /#gallery, light that tab instead of the server-rendered Home.
+  (() => {
+    const t = { services: 'services', gallery: 'gallery' }[location.hash.slice(1)];
+    if (!t) return;
+    document.querySelectorAll('[data-tab]').forEach((a) => (a.dataset.tab === t ? a.setAttribute('aria-current', 'location') : a.removeAttribute('aria-current')));
+  })();
+</script>
 
 <script>
   // Home page only: the tab for the section in view is highlighted, and tapping Services / Gallery glides there.
@@ -59,7 +67,10 @@ const tabs = [
       light(cur ? (owner[cur.id] ?? 'home') : 'home');
     };
     addEventListener('scroll', spy, { passive: true });
-    spy();
+    // Opened as /#services or /#gallery: light that tab right away, not Home while the browser jumps to the section.
+    const arrival = location.hash.slice(1);
+    if (owner[arrival] && document.getElementById(arrival)) light(owner[arrival]);
+    else spy();
     bar.addEventListener('click', (e) => {
       const a = (e.target as Element).closest<HTMLAnchorElement>('[data-tab]');
       const id = a?.dataset.tab;
