@@ -18,7 +18,7 @@ const { lang } = Astro.props;
 const t = common[lang].hero;
 const body = fill(t.body, { name: site.name, owner: site.owner, suburb: site.address.locality, region: site.address.region, postcode: site.address.postcode });
 ---
-{/* Look A: copy left, photo right (stacked on phones). Look B: full-bleed photo; the copy floats over it. Ink text in a light fade: from the foot on phones, from the left on desktop; the far side keeps a light veil. */}
+{/* Look A: copy left, photo right (stacked on phones). Look B: the photo fills the top 3/4 (phones) or right 70% (desktop) so the portrait isn't over-cropped, its open edge masked into the page; the copy floats over it. Ink text in a light fade: from the foot on phones, from the left on desktop; the far side keeps a light veil. */}
 {lookB ? (
 <section class="relative isolate flex min-h-svh flex-col justify-end overflow-hidden lg:justify-center">
   <div class="absolute inset-0 -z-10">
@@ -27,11 +27,11 @@ const body = fill(t.body, { name: site.name, owner: site.owner, suburb: site.add
       alt={photo(homeHero).alt[lang]}
       formats={['avif', 'webp']}
       widths={[480, 768, 1080, 1440, 1920]}
-      sizes="100vw"
+      sizes="(min-width: 1024px) 70vw, 100vw"
       loading="eager"
       fetchpriority="high"
       data-hero-img
-      class="size-full object-cover object-[50%_25%] lg:object-[65%_30%]"
+      class="absolute inset-x-0 top-0 h-3/4 w-full object-cover object-[50%_30%] [mask-image:linear-gradient(180deg,#000_70%,transparent)] lg:inset-y-0 lg:left-auto lg:right-0 lg:h-full lg:w-[70%] lg:object-[50%_40%] lg:[mask-image:linear-gradient(90deg,transparent,#000_30%)]"
     />
     <div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(0deg,var(--bg)_0%,color-mix(in_oklch,var(--bg)_75%,transparent)_45%,color-mix(in_oklch,var(--bg)_30%,transparent)_100%)] lg:bg-[linear-gradient(90deg,var(--bg)_0%,color-mix(in_oklch,var(--bg)_75%,transparent)_40%,color-mix(in_oklch,var(--bg)_30%,transparent)_100%)]"></div>
   </div>
