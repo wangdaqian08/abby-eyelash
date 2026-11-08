@@ -12,7 +12,7 @@ npm test        # unit tests
 
 More documents are in `docs/`: `SPEC.md`, `SETUP-booking.md`, `DEPLOY-CHECKLIST.md` and `PRICES.md`.
 
-## Booking by message (decided 2026-11-08, work in progress)
+## Booking by message (decided 2026-11-08)
 
 1. The website does not take bookings. The customer picks the services, a date and a time.
 2. The booking page writes an SMS or WhatsApp message to Abby. The customer sends it from their own phone.
@@ -20,7 +20,7 @@ More documents are in `docs/`: `SPEC.md`, `SETUP-booking.md`, `DEPLOY-CHECKLIST.
 4. The server keeps the booking details in the `abby` database schema. When Abby opens the link, the server sends her to a Google Calendar "new event" page with the details filled in.
 5. Abby saves the event and replies to the customer. Her reply makes the booking final.
 
-Not decided yet: which calendar events block booking times. Abby's calendar also holds personal events, for example an all-day "rent" reminder, and these must not block bookings. A fixed title marker is the proposal.
+Booking times (decided 2026-11-09): only events whose title starts with 💗 block a time. Personal events, for example an all-day "rent" reminder, never block. Abby writes `💗 休假` to close a day. The calendar link creates events that start with `💗 ⏳`.
 
 ## Hosting and data (decided 2026-11-09)
 
@@ -56,9 +56,11 @@ One plan covers the Abby Eyelashes website, broker-agent and, later, werewolf-si
 
 Prices come from the providers' pages on 2026-11-09. Promotional prices change, so check them again before you buy.
 
-### Not decided yet
+### Also decided (2026-11-09)
 
-- Before you buy: check that the BinaryLane plan includes a public IPv4 address.
 - Each application gets its own database user that can use only its own schema.
 - If the Abby website cannot reach the database, the booking message still goes out, without the calendar link.
-- The first database table holds only booking requests for the short calendar link. Tables for birthdays and referrals come later, through migrations.
+- The first database table holds only the booking requests behind the short calendar link. Each request is deleted 24 hours after it was created.
+- Tables for birthdays and referrals come later, through migrations.
+
+To do before you buy the VPS: check that the BinaryLane plan includes a public IPv4 address.
