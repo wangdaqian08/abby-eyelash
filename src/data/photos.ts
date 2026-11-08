@@ -55,7 +55,7 @@ export const photos: Photo[] = [
   lash('selfie', '造型款.HEIC', "Client's face close-up showing dark, wispy styled lash extensions", '客人面部近景，展示深色纤长的造型款嫁接睫毛', { ratio: '3:4' }),
   // Before/after two-panel: the card shows only the lower "after" panel.
   lash('lift-1', '角蛋白-翘睫1.JPG', 'Keratin lash lift result on a brown eye, natural lashes lifted and curled from the root, Burwood', '棕色眼睛上的角蛋白翘睫效果，自然睫毛从根部上翘卷翘，Burwood', { box: { left: 0, top: 0.53, width: 1, height: 0.47 } }),
-  lash('lift-2', '角蛋白-翘睫2.JPG', 'Keratin lash lift result on a dark brown eye, natural lashes curled upward, Burwood', '深棕色眼睛上的角蛋白翘睫效果，自然睫毛根根上翘，Burwood', { ratio: '4:3' }),
+  lash('lift-3', '角蛋白-翘睫3.JPG', 'Keratin lash lift before and after: the same eye with straight lashes, then lifted and curled from the root, Burwood', '角蛋白翘睫前后对比：同一只眼睛，做之前睫毛下垂，做之后从根部上翘卷翘，Burwood', { ratio: '3:4' }),
 
   nail('6920', 'IMG_6920.JPG', 'Long almond nude pink nails under a rainbow light', '彩虹光影下的长杏仁形裸粉色美甲'),
   nail('3406', 'IMG_3406.JPG', 'Nude pink French tip nails with small flower art', '裸粉色法式美甲，带小花彩绘'),
@@ -161,12 +161,11 @@ export interface ServiceSlots {
   hero?: string; heroPos?: string; heroAspect?: string;
   detail?: string; detailPos?: string; detailAspect?: string;
 }
-// Slots follow the master's ratio (4:3 lash, 3:4 nails shown 4:5) so no eye, nail or watermark is cropped. Literal classes so Tailwind sees them.
-const LASH = 'aspect-[4/3]';
+// Slots follow the master's ratio (3:4 masters shown 4:5) so no eye, nail or watermark is cropped. Literal classes so Tailwind sees them.
 const NAIL = 'aspect-[4/5]';
 export const servicePhotos: Record<string, ServiceSlots> = {
   'lash-extensions': { hero: 'styled-half-face', heroAspect: NAIL, heroPos: '50% 0%', detail: 'styled-mermaid-selfie', detailAspect: NAIL, detailPos: '50% 0%' },
-  'lash-lift': { hero: 'lift-2', heroAspect: LASH }, // no detail photo: the sidebar shows only the Book button
+  'lash-lift': { hero: 'lift-3', heroAspect: NAIL }, // no detail photo: the sidebar shows only the Book button
   'gel-nails': { hero: 'nail-3406', heroAspect: NAIL, detail: 'nail-2020', detailAspect: NAIL },
   'handcrafted-nails': { hero: 'nail-8351', heroAspect: NAIL, heroPos: '50% 100%', detail: 'nail-4630', detailAspect: NAIL },
   'nail-extensions': { hero: 'nail-2112', heroAspect: NAIL, heroPos: '50% 100%', detail: 'nail-6920', detailAspect: NAIL },
