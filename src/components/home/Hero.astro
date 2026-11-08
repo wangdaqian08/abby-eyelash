@@ -33,7 +33,7 @@ const body = fill(t.body, { name: site.name, owner: site.owner, suburb: site.add
       data-hero-img
       class="size-full object-cover object-[50%_25%] lg:object-[65%_30%]"
     />
-    <div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgb(30_18_21/0.18)_0%,transparent_30%,rgb(30_18_21/0.62)_100%)] lg:bg-[linear-gradient(90deg,var(--bg)_0%,color-mix(in_oklch,var(--bg)_70%,transparent)_40%,transparent_62%)]"></div>
+    <div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(180deg,rgb(30_18_21/0.18)_0%,transparent_30%,rgb(30_18_21/0.62)_100%)] lg:bg-[linear-gradient(90deg,var(--bg)_0%,color-mix(in_oklch,var(--bg)_75%,transparent)_40%,color-mix(in_oklch,var(--bg)_30%,transparent)_100%)]"></div>
   </div>
   <div class="mx-auto w-full max-w-6xl px-4 pb-[calc(var(--tabbar-h)+2.5rem)] pt-[calc(var(--header-h)+3rem)] text-on-primary sm:px-6 lg:max-w-none lg:pb-24 lg:pl-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))] lg:pr-16 lg:text-fg">
     <span class="glass inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium text-fg" data-hero-in style="--i:0"><Stars rating={reviewSummary.rating} label={`${reviewSummary.rating} / 5`} /> {reviewSummary.rating} · {t.eyebrow}</span>
