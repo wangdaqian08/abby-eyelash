@@ -315,17 +315,17 @@ const DAYS: Record<Lang, string[]> = {
 };
 const WEEK = [1, 2, 3, 4, 5, 6, 0]; // Monday first (AU)
 
-const time = (hhmm: string, lang: Lang) => {
+const time = (hhmm: string) => {
   const [h, m] = hhmm.split(':').map(Number);
   const mm = String(m).padStart(2, '0');
-  return lang === 'zh' ? `${h}:${mm}` : `${h % 12 || 12}:${mm} ${h < 12 ? 'am' : 'pm'}`;
+  return `${h % 12 || 12}:${mm} ${h < 12 ? 'AM' : 'PM'}`; // one format site-wide, both languages (owner, 2026-11-08)
 };
 
-/** "8:00 pm" / "20:00": the latest start time across the week (site.hours `close` is the last start). */
+/** "8:00 PM": the latest start time across the week (site.hours `close` is the last start). */
 export const lastStartLine = (hours: readonly { close: string }[], lang: Lang) =>
-  fill(common[lang].contact.lastStart, { time: time(hours.map((h) => h.close).sort().at(-1)!, lang) });
+  fill(common[lang].contact.lastStart, { time: time(hours.map((h) => h.close).sort().at(-1)!) });
 
-/** Group consecutive days with identical hours: [{ days: 'Monday – Friday', time: '9:00 am – 7:00 pm' }, …]. Missing days = closed. */
+/** Group consecutive days with identical hours: [{ days: 'Monday – Friday', time: '9:00 AM – 7:00 PM' }, …]. Missing days = closed. */
 export function hoursRows(hours: readonly { day: number; open: string; close: string; nth?: number }[], lang: Lang) {
   const groups: { from: number; to: number; key: string; h?: (typeof hours)[number] }[] = [];
   for (const d of WEEK) {
@@ -339,7 +339,7 @@ export function hoursRows(hours: readonly { day: number; open: string; close: st
     days:
       (g.from === g.to ? DAYS[lang][g.from] : `${DAYS[lang][g.from]}${lang === 'zh' ? '至' : ' – '}${DAYS[lang][g.to]}`) +
       (g.h?.nth ? (lang === 'zh' ? `（仅每月第 ${g.h.nth} 个）` : ` (${['1st', '2nd', '3rd', '4th', '5th'][g.h.nth - 1]} of the month only)`) : ''),
-    time: g.h ? `${time(g.h.open, lang)} – ${time(g.h.close, lang)}` : common[lang].closed,
+    time: g.h ? `${time(g.h.open)} – ${time(g.h.close)}` : common[lang].closed,
   }));
 }
 

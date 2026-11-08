@@ -33,7 +33,7 @@ export const site = {
     { day: 4, open: '10:00', close: '20:00' },
     { day: 5, open: '10:00', close: '20:00' },
     { day: 6, open: '10:00', close: '20:00' },
-    { day: 0, open: '09:00', close: '20:00', nth: 3 },
+    { day: 0, open: '10:00', close: '20:00', nth: 3 },
   ] as { day: number; open: string; close: string; nth?: number }[],
   social: {
     instagram: 'https://www.instagram.com/a.b_flora/',

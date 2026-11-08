@@ -44,7 +44,7 @@ const en = {
   callFallback: 'Prefer to book by message? Text or WhatsApp',
   demo: 'Demo mode — availability is simulated and bookings are not saved to a calendar.',
   detailsTitle: 'Appointment details',
-  detailsSubtitle: "Fill in your information and we'll confirm by SMS or WhatsApp, usually within a few hours (10am–8pm). A ${deposit} deposit by bank transfer secures the time.", // OWNER-REVIEW: reply window
+  detailsSubtitle: "Fill in your information and we'll confirm by SMS or WhatsApp, usually within a few hours (10:00 AM – 8:00 PM). A ${deposit} deposit by bank transfer secures the time.", // OWNER-REVIEW: reply window
   fName: 'Full name',
   fPhone: 'Phone',
   fEmail: 'Email',
@@ -81,7 +81,7 @@ const en = {
   successTitle: 'Request received',
   successThanks: 'Thank you, {name}.',
   pending: 'Status: pending — not yet confirmed',
-  successBody: "We'll confirm by SMS or WhatsApp, usually within a few hours (10am–8pm). To secure your time, please pay the ${deposit} deposit by bank transfer: Abby sends the bank details with her confirmation, and the exact address once it arrives. Cancelling or rescheduling within {hours} hours forfeits the deposit.",
+  successBody: "We'll confirm by SMS or WhatsApp, usually within a few hours (10:00 AM – 8:00 PM). To secure your time, please pay the ${deposit} deposit by bank transfer: Abby sends the bank details with her confirmation, and the exact address once it arrives. Cancelling or rescheduling within {hours} hours forfeits the deposit.",
   addGoogle: 'Add to Google Calendar',
   downloadIcs: 'Download .ics',
   home: 'Back to home',
@@ -127,7 +127,7 @@ const zh: Strings = {
   callFallback: '也可以发消息预约，请发短信或 WhatsApp 至',
   demo: '演示模式 — 可预约时间为模拟数据，预约不会写入日历。',
   detailsTitle: '预约信息',
-  detailsSubtitle: '请填写你的信息，我们会通过短信或 WhatsApp 确认，通常在几小时内（10:00–20:00）回复。预约需通过银行转账支付 ${deposit} 订金。', // OWNER-REVIEW
+  detailsSubtitle: '请填写你的信息，我们会通过短信或 WhatsApp 确认，通常在几小时内（10:00 AM – 8:00 PM）回复。预约需通过银行转账支付 ${deposit} 订金。', // OWNER-REVIEW
   fName: '姓名',
   fPhone: '电话',
   fEmail: '邮箱',
@@ -164,7 +164,7 @@ const zh: Strings = {
   successTitle: '预约申请已收到',
   successThanks: '谢谢你，{name}。',
   pending: '状态：待确认',
-  successBody: '我们会通过短信或 WhatsApp 与你确认，通常在几小时内（10:00–20:00）回复。请通过银行转账支付 ${deposit} 订金确认时间：Abby 确认时会发给你账户信息，收到订金后再发送详细地址。{hours} 小时以内取消或改期，订金不退。',
+  successBody: '我们会通过短信或 WhatsApp 与你确认，通常在几小时内（10:00 AM – 8:00 PM）回复。请通过银行转账支付 ${deposit} 订金确认时间：Abby 确认时会发给你账户信息，收到订金后再发送详细地址。{hours} 小时以内取消或改期，订金不退。',
   addGoogle: '添加到 Google 日历',
   downloadIcs: '下载 .ics 日历文件',
   home: '返回首页',
