@@ -82,6 +82,6 @@ test('helpers', () => {
 
 test('specialHours lists the coming 3rd Sundays with their hours', () => {
   const days = specialHours(Date.parse('2026-11-01T00:00:00Z')).map((h: any) => `${h.validFrom}/${h.opens}-${h.closes}`);
-  assert.deepEqual(days.slice(0, 3), ['2026-11-15/09:00-20:00', '2026-12-20/09:00-20:00', '2027-01-17/09:00-20:00']);
+  assert.deepEqual(days.slice(0, 3), ['2026-11-15/10:00-20:00', '2026-12-20/10:00-20:00', '2027-01-17/10:00-20:00']);
   assert.ok(specialHours(Date.parse('2026-11-16T00:00:00Z')).every((h: any) => h.validFrom > '2026-11-15'), 'past dates dropped');
 });

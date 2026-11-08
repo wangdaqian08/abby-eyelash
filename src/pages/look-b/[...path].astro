@@ -1,0 +1,36 @@
+---
+// Look B copy of every page (style A/B test, src/lib/ab-test.ts). Built under /look-b/ and served at the normal URLs by
+// functions/_middleware.ts; components read the look from the URL (lookOf), so each page file renders unchanged.
+// New page? Add it here too, or B visitors get look A on it.
+import Home from '../index.astro';
+import Book from '../book.astro';
+import Privacy from '../privacy.astro';
+import NotFound from '../404.astro';
+import Service from '../[slug].astro';
+import ZhHome from '../zh/index.astro';
+import ZhBook from '../zh/book.astro';
+import ZhPrivacy from '../zh/privacy.astro';
+import ZhService from '../zh/[slug].astro';
+import { services } from '../../data/services';
+
+const pages = { Home, Book, Privacy, NotFound, Service, ZhHome, ZhBook, ZhPrivacy, ZhService };
+type Page = keyof typeof pages;
+
+export function getStaticPaths() {
+  const one = (path: string | undefined, page: Page) => ({ params: { path }, props: { page } });
+  return [
+    one(undefined, 'Home'),
+    one('book', 'Book'),
+    one('privacy', 'Privacy'),
+    one('404', 'NotFound'),
+    one('zh', 'ZhHome'),
+    one('zh/book', 'ZhBook'),
+    one('zh/privacy', 'ZhPrivacy'),
+    ...services.map((service) => ({ params: { path: service.slug }, props: { page: 'Service' as Page, service } })),
+    ...services.map((service) => ({ params: { path: `zh/${service.slug}` }, props: { page: 'ZhService' as Page, service } })),
+  ];
+}
+const { page, ...props } = Astro.props;
+const Component = pages[page as Page];
+---
+<Component {...props} />

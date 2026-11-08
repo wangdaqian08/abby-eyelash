@@ -12,7 +12,7 @@ const BOTS = [
 ];
 
 // A crawler obeys only its most specific group, so every named group repeats the same rules.
-const group = (ua: string) => `User-agent: ${ua}\nAllow: /\nDisallow: /api/\n`;
+const group = (ua: string) => `User-agent: ${ua}\nAllow: /\nDisallow: /api/\nDisallow: /look-b/\n`; // look-B copies are served at the normal URLs
 
 export const GET: APIRoute = ({ site }) =>
   new Response([group('*'), ...BOTS.map(group), `Sitemap: ${new URL('/sitemap-index.xml', site)}\n`].join('\n'), {

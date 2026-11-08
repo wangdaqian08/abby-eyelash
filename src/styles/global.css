@@ -12,7 +12,7 @@
   --surface-2: #f4eee8;
   --surface-3: #ffffff;
   --fg: #1e1215;
-  --muted: #7a5566;
+  --muted: #684555; /* 7.6:1 on --bg (was #7a5566, 5.9:1: read as faded next to Chinese) */
   --primary: #7d3f5e;
   --on-primary: #faf7f4;
   --accent: #c4856a;
@@ -31,6 +31,15 @@
   --shadow-btn-press: inset 0 2px 5px color-mix(in oklch, var(--fg) 30%, transparent), 0 1px 1px color-mix(in oklch, var(--primary) 20%, transparent);
   --shadow-soft: 0 1px 2px color-mix(in oklch, var(--fg) 8%, transparent), 0 4px 10px -6px color-mix(in oklch, var(--fg) 18%, transparent);
   --shadow-soft-press: inset 0 2px 4px color-mix(in oklch, var(--fg) 14%, transparent);
+  /* Liquid glass (look B), Apple HIG rules: glass only on the floating navigation/control layer (header, tab bar,
+     controls over photos); content cards, sheets and lists stay opaque; never glass on glass. 'Regular' (frosty) glass. */
+  --glass-blur: 20px;
+  --glass-fill: rgb(255 255 255 / 0.62);
+  --glass-tint: color-mix(in oklch, var(--primary) 86%, transparent);
+  --glass-rim: inset 0 1.5px 0 rgb(255 255 255 / 0.7), inset 0 0 0 0.6px rgb(255 255 255 / 0.4), inset 0 -1px 1px rgb(255 255 255 / 0.2);
+  --glass-shadow: 0 10px 34px color-mix(in oklch, var(--fg) 16%, transparent), 0 1px 3px color-mix(in oklch, var(--fg) 10%, transparent);
+  --glass-shadow-press: 0 3px 10px color-mix(in oklch, var(--fg) 14%, transparent), 0 1px 2px color-mix(in oklch, var(--fg) 10%, transparent);
+  --tabbar-h: 66px;
   /* Motion (MASTER §4): strong ease-outs; entrances rise, nothing bounces. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -46,6 +55,8 @@
   --radius-sm: 0.625rem;
   --header-h: 65px;
 }
+/* Look B pages (<html data-look="B">, see src/lib/ab-test.ts): floating header pill = 12px gap + 56px pill. */
+html[data-look='B'] { --header-h: 72px; }
 
 /* Brand colours, only for the contact app icons (each platform's own mark colour; logos are brand assets). */
 @theme {
@@ -93,6 +104,7 @@
 
 @layer base {
   html {
+    scroll-behavior: smooth; /* in-page links glide (header menu, hero, tab bar); off with reduced motion, below */
     -webkit-tap-highlight-color: transparent; /* the browser's grey box is replaced by the press states below */
     background: var(--bg);
     color: var(--fg);
@@ -103,6 +115,8 @@
     font-size: 1rem;
     line-height: 1.65;
   }
+  /* DM Sans at 400 is much thinner than the CJK system fonts; 480 evens it out. English pages only: on Chinese pages it would bump PingFang to Medium. */
+  html:lang(en) body { font-weight: 480; } /* under 500 so font-medium still stands out */
   h1, h2, h3 {
     font-family: var(--font-serif);
     font-weight: 500;
@@ -146,23 +160,93 @@
 /* Buttons: depth at rest, lift on hover (pointer devices only), sink on press. translate/box-shadow only: no layout shift.
    btn-raise = filled buttons; btn-soft = outline/quiet buttons. Pair with Tailwind's `transition`. */
 @utility btn-raise {
-  box-shadow: var(--shadow-btn);
-  @media (hover: hover) { &:hover { translate: 0 -2px; box-shadow: var(--shadow-btn-hover); } }
-  &:active, &[data-pressed] { translate: 0 1px; scale: 0.97; box-shadow: var(--shadow-btn-press); filter: brightness(0.92); transition-duration: var(--t-press); }
-  &:disabled { translate: none; box-shadow: none; }
+  &:where(html:not([data-look='B']) *) { /* look A only (look B never had these) */
+    box-shadow: var(--shadow-btn);
+    @media (hover: hover) { &:hover { translate: 0 -2px; box-shadow: var(--shadow-btn-hover); } }
+    &:active, &[data-pressed] { translate: 0 1px; scale: 0.97; box-shadow: var(--shadow-btn-press); filter: brightness(0.92); transition-duration: var(--t-press); }
+    &:disabled { translate: none; box-shadow: none; }
+  }
 }
 @utility btn-soft {
-  box-shadow: var(--shadow-soft);
-  @media (hover: hover) { &:hover { translate: 0 -2px; box-shadow: var(--shadow-lift); } }
-  &:active, &[data-pressed] { translate: 0 1px; scale: 0.97; box-shadow: var(--shadow-soft-press); filter: brightness(0.96); transition-duration: var(--t-press); }
-  &:disabled { translate: none; box-shadow: none; }
+  &:where(html:not([data-look='B']) *) { /* look A only (look B never had these) */
+    box-shadow: var(--shadow-soft);
+    @media (hover: hover) { &:hover { translate: 0 -2px; box-shadow: var(--shadow-lift); } }
+    &:active, &[data-pressed] { translate: 0 1px; scale: 0.97; box-shadow: var(--shadow-soft-press); filter: brightness(0.96); transition-duration: var(--t-press); }
+    &:disabled { translate: none; box-shadow: none; 
+  }
 }
+}
+
+/* ---- Look B controls (only elements with these classes, which only look B markup uses) ---- */
+/* Glass panes. `glass` = frosty pane for the navigation layer, `glass-tint` = primary-coloured control over a photo.
+   Press: sinks 1px, scales .97 and loses most of its shadow; hover lifts on pointer devices only. */
+@utility glass {
+  position: relative;
+  isolation: isolate;
+  background: var(--glass-fill);
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  box-shadow: var(--glass-rim), var(--glass-shadow);
+  transition: transform var(--t-hover) var(--ease), box-shadow var(--t-hover) var(--ease), background-color var(--t-hover) var(--ease);
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: -1;
+    background: linear-gradient(155deg, rgb(255 255 255 / 0.5) 0%, rgb(255 255 255 / 0.08) 30%, transparent 55%, rgb(255 255 255 / 0.14) 100%);
+  }
+}
+@utility glass-tint {
+  background: var(--glass-tint);
+  color: var(--on-primary);
+  box-shadow: inset 0 1.5px 0 rgb(255 255 255 / 0.45), inset 0 0 0 0.6px rgb(255 255 255 / 0.25), 0 10px 28px color-mix(in oklch, var(--primary) 40%, transparent);
+}
+/* Shared control feedback (glass or solid): lift on pointer hover, sink on press, shadow follows. */
+@utility press {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(:active, [data-pressed], :disabled, [aria-disabled='true'], .no-hover) { transform: translateY(-2px); } /* .no-hover: press only (booking service cards) */
+  }
+  &:active, &[data-pressed] {
+    transform: translateY(1px) scale(0.97);
+    box-shadow: var(--glass-shadow-press);
+    transition-duration: var(--t-press);
+  }
+  &:disabled, &[aria-disabled='true'] { box-shadow: none; }
+}
+/* Opaque fallbacks: no backdrop-filter, or the user asked for less transparency. */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass { background: var(--surface-3); }
+  .glass-tint { background: var(--primary); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass { background: var(--surface-3); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .glass-tint { background: var(--primary); }
+}
+/* Solid controls: filled primary pill and a tinted/white secondary pill (Apple filled + tinted button styles). */
+@utility btn-solid {
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: 0 1px 2px color-mix(in oklch, var(--primary) 30%, transparent), 0 8px 20px -8px color-mix(in oklch, var(--primary) 55%, transparent);
+  transition: transform var(--t-hover) var(--ease), box-shadow var(--t-hover) var(--ease), filter var(--t-hover) var(--ease);
+  &:active, &[data-pressed] { filter: brightness(0.92); }
+}
+@utility btn-tinted {
+  background: var(--surface-3);
+  color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--border), 0 1px 2px color-mix(in oklch, var(--fg) 8%, transparent), 0 6px 16px -8px color-mix(in oklch, var(--fg) 30%, transparent);
+  transition: transform var(--t-hover) var(--ease), box-shadow var(--t-hover) var(--ease), background-color var(--t-hover) var(--ease);
+  &:active, &[data-pressed] { background: var(--surface-2); }
+}
+/* Look B: text links dim while pressed so every tap answers (buttons and glass controls have their own press). */
+:where([data-look='B']) :is(a, button, summary):not(.press, [class*='active:'], :has(.press, .app-icon)):is(:active, [data-pressed]) { opacity: 0.6; transition-duration: var(--t-press); }
 
 /* Press feedback on phones (unlayered, so it beats per-element durations):
    every press goes in at --t-press and comes back at the element's own pace; tappables without their own press state
    (text links, icon buttons, the video tile) dim while held, like native iOS links. */
 :is(a, button, label, summary):is(:active, [data-pressed]) { transition-duration: var(--t-press); }
-:is(a, button, summary):not(.btn-raise, .btn-soft, [class*='active:'], :has(.app-icon)):is(:active, [data-pressed]) { opacity: 0.6; }
+:where(html:not([data-look='B'])) :is(a, button, summary):not(.btn-raise, .btn-soft, [class*='active:'], :has(.app-icon)):is(:active, [data-pressed]) { opacity: 0.6; }
 
 /* Selection feedback (booking options, dates, times). JS sets [data-pop] on the one item just picked:
    it pops once, its tick springs in, and a soft plum halo spreads out a beat later. One-shot, transform/opacity
@@ -223,9 +307,11 @@ label[data-pop]:has([data-radio])::after { inset: 0 -0.25rem; border-radius: 0.8
 .js [data-hero-in] { animation-duration: 700ms; }
 .js [data-hero-img] { animation: settle 1400ms var(--ease-soft) both; }
 
-/* Header: flat at the top, a soft edge once the page scrolls under it. */
-[data-header] { transition: box-shadow var(--t-ui) var(--ease); }
-[data-header].is-scrolled { box-shadow: 0 1px 0 var(--border), 0 10px 30px -18px rgb(46 33 28 / 0.25); }
+/* Header, look A: flat at the top, a soft edge once the page scrolls under it. */
+:where(html:not([data-look='B'])) [data-header] { transition: box-shadow var(--t-ui) var(--ease); }
+:where(html:not([data-look='B'])) [data-header].is-scrolled { box-shadow: 0 1px 0 var(--border), 0 10px 30px -18px rgb(46 33 28 / 0.25); }
+/* Header, look B: the floating pill gets a touch more fill once the page scrolls under it. */
+[data-header].is-scrolled .glass:not(.glass-tint) { background: rgb(255 255 255 / 0.78); }
 
 /* Mobile menu items arrive one by one when the menu opens. */
 @keyframes fade-up { from { opacity: 0; transform: translateY(8px); } }

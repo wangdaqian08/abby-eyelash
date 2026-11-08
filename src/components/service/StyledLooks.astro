@@ -4,6 +4,8 @@ import type { Lang } from '../../data/services';
 import { photo, styledLooks } from '../../data/photos';
 import { serviceStrings } from '../../i18n/service';
 import { photoSrc } from '../../lib/photo-src';
+import { lookOf } from '../../lib/ab-test';
+const lookB = lookOf(Astro.url) === 'B'; // look B markup (lib/ab-test.ts)
 
 interface Props { lang: Lang; bookHref: string; btnClass: (string | false)[] }
 const { lang, bookHref, btnClass } = Astro.props;
@@ -27,5 +29,5 @@ const t = serviceStrings[lang];
       </figure>
     ))}
   </div>
-  <a href={bookHref} data-track="book_click" class:list={[btnClass, 'mt-10 btn-raise bg-primary text-on-primary hover:bg-primary/90']}>{t.book}</a>
+  <a href={bookHref} data-track="book_click" class:list={[btnClass, (lookB ? 'btn-solid press mt-10' : 'mt-10 btn-raise bg-primary text-on-primary hover:bg-primary/90')]}>{t.book}</a>
 </section>

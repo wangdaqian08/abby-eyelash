@@ -26,7 +26,8 @@ const fileFor = (pathname) =>
 if (!existsSync(dist)) { console.error(`dist dir not found: ${dist}`); process.exit(2); }
 
 // ---- collect pages
-const pages = walk(dist).filter((f) => f.endsWith('.html')).map((file) => {
+// dist/look-b/ = look-B copies served at the normal URLs (src/lib/ab-test.ts); robots-disallowed, never indexed as such.
+const pages = walk(dist).filter((f) => f.endsWith('.html') && !relative(dist, f).startsWith('look-b/')).map((file) => {
   const html = read(file);
   const rel = '/' + relative(dist, file).replace(/index\.html$/, '').replace(/\.html$/, '');
   const robots = tags(html, /<meta\s[^>]*name="(robots|googlebot|bingbot)"[^>]*>/gi).map((t) => attr(t, 'content') ?? '');
