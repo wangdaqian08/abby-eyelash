@@ -1,6 +1,7 @@
 // PostgreSQL for the short calendar links (schema `abby`). Production: Cloudflare Hyperdrive binding `HYPERDRIVE`
 // (phase 2, to the Sydney VPS). Local: DATABASE_URL to the Docker database (package.json). Neither set → no links.
-// The `postgres` driver needs the `nodejs_compat` compatibility flag.
+// The `postgres` driver needs Node APIs: compatibility date 2026-08-04 or later, or the `nodejs_compat` flag. Without them the
+// whole Functions bundle fails to start (every page), so a lazy import does not help (tested 2026-11-09).
 import postgres from 'postgres';
 import { newCode, type CalendarRequest } from './booking-message.ts';
 

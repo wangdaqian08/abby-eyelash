@@ -49,7 +49,7 @@ Docs: <https://developers.cloudflare.com/pages/configuration/build-configuration
 | `GOOGLE_PRIVATE_KEY` | see `docs/SETUP-booking.md` part D | **Secret** | Booking calendar (free/busy only) |
 | `BOOKING_DEMO` | `1` **only for a preview before Google Calendar is connected**. Delete it at launch | Text | Allows demo booking (fake times, nothing saved). Without it, a missing Google value makes the booking page show an error with your phone number instead of made-up free times |
 
-Compatibility flag: **Settings → Runtime → Compatibility flags** → add `nodejs_compat` for Production and Preview. The database driver behind the 📅 calendar link needs it.
+Compatibility date: **Settings → Runtime** → the compatibility date for Production and Preview must be **2026-08-04 or later**, or the `nodejs_compat` flag must be on. Otherwise the database driver behind the 📅 link stops the Functions runtime from starting, and the whole site fails.
 
 The `PUBLIC_…`, `SITE_URL`, `LAUNCH` and `INDEXNOW_KEY` values are read **while the site is built**. After you change one, go to **Deployments** → latest → **⋯** → **Retry deployment**.
 

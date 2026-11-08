@@ -58,7 +58,7 @@ Cloudflare dashboard → **Workers & Pages** → your `abby-eyelash` project →
 | `GOOGLE_PRIVATE_KEY` | from the JSON file: the value of `"private_key"`, starting with `-----BEGIN PRIVATE KEY-----` and ending with `-----END PRIVATE KEY-----\n` (paste it exactly as it appears, `\n` included) | **Secret** |
 | `GOOGLE_CALENDAR_ID` | the Calendar ID (C.5) — usually your Gmail address | Text |
 
-Also, under **Settings** → **Runtime** → **Compatibility flags**, add `nodejs_compat` for **both Production and Preview**. The database driver needs it. Without it the booking functions can fail.
+Also check **Settings** → **Runtime** → **Compatibility date** for **both Production and Preview**. It must be **2026-08-04 or later**. If it is older, add the compatibility flag `nodejs_compat` on the same page. Otherwise the database driver stops the Functions runtime from starting, and **every page of the site fails**, not only the booking page. (Tested locally on 2026-11-09: date 2026-08-03 fails, 2026-08-04 works.)
 
 Then open `/book` on the live site: the "Demo mode" note should be gone, and the days/times should match the free time in your calendar. Send yourself a test request from another phone and tap its 📅 link: Google Calendar should open with the event filled in.
 

@@ -39,7 +39,7 @@ const manual = [
   ['D', 'Domain: move DNS from GoDaddy to Cloudflare, bind www.abbyeyelashes.com, bare domain → www.'],
   ['C', 'Cloudflare production vars: SITE_URL, LAUNCH=1, Google Calendar keys set; BOOKING_DEMO deleted.'],
   ['C2', 'Rate-limit rule on /api/ (20 / min / IP).'],
-  ['C3', 'Cloudflare Pages: compatibility flag nodejs_compat on Production and Preview (database driver).'],
+  ['C3', 'Cloudflare Pages → Settings → Runtime: compatibility date 2026-08-04 or later on Production and Preview, or the nodejs_compat flag on. Older without the flag: the whole site fails to start.'],
   ['K', 'Abby: 💗 at the start of every client booking already in her calendar; calendar shared with the service account as "See all event details".'],
   ['E', 'Cloudflare does not block AI crawlers.'],
   ['J', 'A/B test: decision rule agreed (each look ≥ 50 booking_submitted and ≥ 4 weeks, 8 weeks max); content-only changes while it runs.'],
