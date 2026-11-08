@@ -12,7 +12,7 @@
   --surface-2: #f4eee8;
   --surface-3: #ffffff;
   --fg: #1e1215;
-  --muted: #7a5566;
+  --muted: #684555; /* 7.6:1 on --bg (was #7a5566, 5.9:1: read as faded next to Chinese) */
   --primary: #7d3f5e;
   --on-primary: #faf7f4;
   --accent: #c4856a;
@@ -115,6 +115,8 @@ html[data-look='B'] { --header-h: 72px; }
     font-size: 1rem;
     line-height: 1.65;
   }
+  /* DM Sans at 400 is much thinner than the CJK system fonts; 480 evens it out. English pages only: on Chinese pages it would bump PingFang to Medium. */
+  html:lang(en) body { font-weight: 480; } /* under 500 so font-medium still stands out */
   h1, h2, h3 {
     font-family: var(--font-serif);
     font-weight: 500;
