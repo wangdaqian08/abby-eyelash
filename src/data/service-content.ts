@@ -94,7 +94,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           h2: ['Classic, hybrid or styled: ', 'which suits you?'],
           list: [
             `<strong>Japanese classic</strong>: one extension on each natural lash. A defined, mascara-like look that suits you if you have plenty of healthy natural lashes.`,
-            `<strong>Hybrid</strong>: a mix of classic lashes and light, airy fans, for more texture and a little more fullness.`,
+            `<strong>Hybrid</strong>: ultra-fine 0.07 mm lashes, hand-made into fans for a fluffy, airy look.`,
             `<strong>Natural or full</strong>: both styles come in a natural or a fuller density.`,
             `<strong>Styled set</strong> (from ${$(L, 'styled')}): a custom shape designed with you. <strong>Bottom lashes</strong> can be added (${$(L, 'bottom-natural')} natural, ${$(L, 'bottom-full')} full).`,
           ],
@@ -138,8 +138,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         {
           h2: ['Aftercare: ', 'Abby’s steps'],
           list: [
-            `Keep your lashes dry for the first 24 hours while the adhesive fully sets.`, // OWNER-REVIEW
-            `Cleanse them gently every day or two with an oil-free lash cleanser, and brush through with a clean spoolie each morning.`, // OWNER-REVIEW
+            `Keep your lashes dry for the first 4 hours.`,
             `Avoid oil-based makeup removers, waterproof mascara and lash curlers.`,
             `Don’t rub, tug or pull extensions off: the American Academy of Ophthalmology notes that ${cite(AAO, 'rubbing or pulling can break natural lashes and damage follicles')}. Ask Abby to remove them.`,
           ],
@@ -173,7 +172,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
           h2: ['日式单根、开花还是造型款？', '怎么选'],
           list: [
             `<strong>日式单根</strong>：每根真睫毛接一根。效果清晰自然，像刷了睫毛膏，适合自身睫毛多且健康的人。`,
-            `<strong>开花 / 轻盈</strong>：单根和轻盈的开花睫毛混搭，更有层次，也更浓一点。`,
+            `<strong>开花 / 轻盈</strong>：用 0.07 的细睫毛手工开花，蓬松轻盈，有空气感。`,
             `<strong>自然或浓密</strong>：两种款式都可以选自然或浓密。`,
             `<strong>造型款</strong>（${$(L, 'styled')} 起）：和你一起设计的定制款式。也可以加做<strong>下睫毛</strong>（自然 ${$(L, 'bottom-natural')}，浓密 ${$(L, 'bottom-full')}）。`,
           ],
@@ -215,8 +214,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         {
           h2: ['术后护理：', 'Abby 的建议'],
           list: [
-            `做完 24 小时内不要碰水，让胶水完全固化。`, // OWNER-REVIEW
-            `之后每一两天用无油的睫毛清洁液轻轻清洗，每天早上用干净的睫毛刷梳一下。`, // OWNER-REVIEW
+            `做完 4 小时内不要碰水。`,
             `避免含油卸妆产品、防水睫毛膏和睫毛夹。`,
             `不要揉、扯或自己拔：美国眼科学会指出${cite(AAO, '揉搓或拉扯可能弄断真睫毛、损伤毛囊')}。需要卸睫毛请找 Abby。`,
           ],
