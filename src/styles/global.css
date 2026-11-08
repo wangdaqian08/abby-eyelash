@@ -104,6 +104,7 @@ html[data-look='B'] { --header-h: 72px; }
 
 @layer base {
   html {
+    scroll-behavior: smooth; /* in-page links glide (header menu, hero, tab bar); off with reduced motion, below */
     -webkit-tap-highlight-color: transparent; /* the browser's grey box is replaced by the press states below */
     background: var(--bg);
     color: var(--fg);
