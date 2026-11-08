@@ -61,7 +61,7 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
           <a href={wa} data-track="message_click" target="_blank" rel="noopener" class:list={[btn, (lookB ? 'btn-tinted' : 'btn-soft border border-primary/30 text-primary hover:bg-surface-2')]}>{t.call}</a>
         </div>
       </div>
-      <ServiceImage photo={sp?.hero} lang={lang} alt={c.alt?.hero} eager position={sp?.heroPos} class:list={[sp?.heroAspect ?? 'aspect-[4/3] lg:aspect-[4/5]', 'w-full']} />
+      <ServiceImage photo={sp?.hero} lang={lang} eager position={sp?.heroPos} class:list={[sp?.heroAspect ?? 'aspect-[4/3] lg:aspect-[4/5]', 'w-full']} />
     </div></section>
 
     {service.id === 'lash-extensions' && <LashStyleGuide lang={lang} />}
@@ -146,10 +146,10 @@ const container = 'mx-auto max-w-6xl px-4 sm:px-6';
         ))}
       </div>
       <div class="lg:sticky lg:top-[calc(var(--header-h)+32px)] lg:self-start">
-        {(sp?.detail || c.alt?.detail) && (
-          <ServiceImage photo={sp?.detail} lang={lang} alt={c.alt?.detail} position={sp?.detailPos} class:list={[sp?.detailAspect ?? 'aspect-[3/2] lg:aspect-[4/5]', 'w-full']} />
+        {sp?.detail && (
+          <ServiceImage photo={sp?.detail} lang={lang} position={sp?.detailPos} class:list={[sp?.detailAspect ?? 'aspect-[3/2] lg:aspect-[4/5]', 'w-full']} />
         )}
-        <a href={bookHref} data-track="book_click" class:list={[btn, (lookB ? 'w-full btn-solid' : 'btn-raise w-full bg-primary text-on-primary hover:bg-primary/90'), (sp?.detail || c.alt?.detail) && 'mt-6']}>{t.bookShort}</a>
+        <a href={bookHref} data-track="book_click" class:list={[btn, (lookB ? 'w-full btn-solid' : 'btn-raise w-full bg-primary text-on-primary hover:bg-primary/90'), sp?.detail && 'mt-6']}>{t.bookShort}</a>
       </div>
     </section>
 

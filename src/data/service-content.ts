@@ -19,7 +19,6 @@ export interface ServiceContent {
   intro: string;
   sections: Section[];
   faq: { q: string; a: string }[];
-  alt?: { hero: string; detail: string }; // placeholder slots only (powder brows); photos use their manifest alt
 }
 
 const opt = (s: string, o: string) => {
@@ -446,10 +445,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: 'Powder brows or microblading?', a: 'Microblading draws hair-like strokes; powder brows build a soft shaded finish with tiny dots. Abby offers powder brows.' },
         CANCEL_BROWS.en,
       ],
-      alt: {
-        hero: 'Soft, shaded powder brows after a semi-permanent brow appointment at Abby Eyelashes, Burwood',
-        detail: 'Abby mapping a brow shape before a powder brows treatment',
-      },
     },
     zh: {
       title: '宝活 Burwood 半永久雾眉 | Abby Eyelashes',
@@ -507,10 +502,6 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: '雾眉和线条眉有什么区别？', a: '线条眉是画出一根根仿真眉毛；雾眉是用细小的点做出柔和的粉雾效果。Abby 做的是雾眉。' },
         CANCEL_BROWS.zh,
       ],
-      alt: {
-        hero: 'Abby Eyelashes（Burwood）完成的柔和半永久雾眉',
-        detail: 'Abby 在做雾眉前为客人设计眉形',
-      },
     },
   },
 

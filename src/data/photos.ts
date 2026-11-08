@@ -7,7 +7,7 @@ export type Ratio = '4:3' | '3:4' | 'original';
 export interface Box { left: number; top: number; width: number; height: number }
 export interface Photo {
   id: string; // ASCII; master = src/assets/photos/<dir>/<id>.jpg
-  dir: 'lash' | 'nails';
+  dir: 'lash' | 'nails' | 'brows';
   source: string; // relative to the source dir; a leading '/' means an absolute path
   ratio: Ratio;
   box?: Box; // pre-crop (top-half splits, $180 removal)
@@ -21,6 +21,9 @@ const lash = (id: string, source: string, en: string, zh: string, extra: Extra =
   ({ id, dir: 'lash', source, ratio: '4:3', ...extra, alt: { en, zh } });
 const nail = (n: string, source: string, en: string, zh: string, extra: Extra = {}): Photo =>
   ({ id: `nail-${n}`, dir: 'nails', source: source.startsWith('/') ? source : `nails/${source}`, ratio: '3:4', ...extra, alt: { en, zh } });
+
+const brow = (n: string, source: string, en: string, zh: string, extra: Extra = {}): Photo =>
+  ({ id: `brow-${n}`, dir: 'brows', source: `eyebrow/${source}`, ratio: '4:3', ...extra, alt: { en, zh } });
 
 // AI-generated style illustrations (not client work). Shown only in the labelled style guide, never as results.
 const aiLash = (id: string, source: string, en: string, zh: string): Photo =>
@@ -83,6 +86,13 @@ export const photos: Photo[] = [
   nail('video-poster', '/tmp/abby-video-poster.jpg', 'Yellow little-flower French nails, video still', '黄色小花法式美甲，视频封面'),
   aiLash('ai-classic-natural', 'geneation/download (1).png', 'face and both eyes with light, separated natural lash extensions', '整脸与双眼，轻盈根根分明的自然款嫁接睫毛'),
   aiLash('ai-classic-full', 'geneation/download.png', 'face and both eyes with fuller, darker lash extensions', '整脸与双眼，更浓更黑的浓密款嫁接睫毛'),
+  // Powder brows (eyebrow/), all real client work by Abby.
+  brow('9795', 'IMG_9795.JPG', 'Powder brows before and after, side by side: sparse natural brows, then soft, even shaded brows', '雾眉前后并排对比：左边眉毛稀疏，右边是柔和均匀的粉雾眉'),
+  brow('8979', 'IMG_8979.JPG', 'Powder brows before and after on one face: the left half before, the right half with soft shaded brows', '同一张脸的雾眉前后对比：左半边是做之前，右半边是柔和的粉雾眉', { ratio: '3:4' }),
+  brow('8645', 'IMG_8645.JPG', 'Powder brows before and after on one face: faint brows on one side, defined soft brows on the other', '同一张脸的雾眉前后对比：一边眉色浅淡，一边眉形清晰柔和', { ratio: '3:4' }),
+  brow('6863', 'IMG_6863.jpg', 'Client with fresh powder brows, soft arched shape with a natural shaded finish', '刚做完雾眉的客人，眉形柔和上扬，粉雾感自然', { ratio: '3:4' }),
+  brow('3166', 'IMG_3166.JPG', 'Close-up of powder brows: a soft shaded brow above a brown eye', '雾眉特写：棕色眼睛上方柔和的粉雾眉'),
+  brow('6069', 'IMG_6069.JPG', 'Close-up of a freshly done powder brow with a clean, softly shaded shape', '刚做完的雾眉特写，眉形干净，粉雾过渡柔和'),
 ];
 
 const byId = new Map(photos.map((p) => [p.id, p]));
@@ -150,6 +160,13 @@ export const styledLooks: { photo: string; name: L10n }[] = [
 
 export const LASH_VISIBLE = 4; // lash photos shown per group before "show all"
 /** Home portfolio, lash part: grouped by look; one ratio per group so each grid is uniform. The six "lash looks" cards and the hero aren't repeated. */
+/** Home portfolio, brows part. The brows page shows brow-9795 and brow-6863, so they aren't repeated here. */
+export const BROW_VISIBLE = 4;
+export const browGroups: { id: string; name: L10n; ratio: '3:4' | '4:3'; items: string[] }[] = [
+  { id: 'before-after', name: { en: 'Before and after', zh: '术前术后对比' }, ratio: '3:4', items: ['brow-8979', 'brow-8645'] },
+  { id: 'close-ups', name: { en: 'Close-ups', zh: '效果特写' }, ratio: '4:3', items: ['brow-3166', 'brow-6069'] },
+];
+
 export const lashGroups: { id: string; name: L10n; ratio: '3:4' | '4:3'; items: string[] }[] = [
   { id: 'face', name: { en: 'Full-face looks', zh: '整脸效果' }, ratio: '3:4', items: ['face-natural', 'face-smile', 'styled-half-face', 'styled-mermaid-selfie', 'selfie'] },
   { id: 'natural-full', name: { en: 'Natural and full sets', zh: '自然款 · 浓密款' }, ratio: '4:3',
@@ -162,11 +179,13 @@ export interface ServiceSlots {
   hero?: string; heroPos?: string; heroAspect?: string;
   detail?: string; detailPos?: string; detailAspect?: string;
 }
-// Slots follow the master's ratio (3:4 masters shown 4:5) so no eye, nail or watermark is cropped. Literal classes so Tailwind sees them.
+// Slots follow the master's ratio (4:3 shown 4:3, 3:4 shown 4:5) so no eye, nail or watermark is cropped. Literal classes so Tailwind sees them.
 const NAIL = 'aspect-[4/5]';
+const WIDE = 'aspect-[4/3]';
 export const servicePhotos: Record<string, ServiceSlots> = {
   'lash-extensions': { hero: 'styled-half-face', heroAspect: NAIL, heroPos: '50% 0%', detail: 'styled-mermaid-selfie', detailAspect: NAIL, detailPos: '50% 0%' },
   'lash-lift': { hero: 'lift-3', heroAspect: NAIL }, // no detail photo: the sidebar shows only the Book button
+  'powder-brows': { hero: 'brow-9795', heroAspect: WIDE, detail: 'brow-6863', detailAspect: NAIL },
   'gel-nails': { hero: 'nail-3406', heroAspect: NAIL, detail: 'nail-2020', detailAspect: NAIL },
   'handcrafted-nails': { hero: 'nail-8351', heroAspect: NAIL, heroPos: '50% 100%', detail: 'nail-4630', detailAspect: NAIL },
   'nail-extensions': { hero: 'nail-2112', heroAspect: NAIL, heroPos: '50% 100%', detail: 'nail-6920', detailAspect: NAIL },

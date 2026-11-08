@@ -1,10 +1,10 @@
 ---
-// Home portfolio: a lash part (grouped by look) and a nail part (grouped by colour). Every photo is in the HTML;
+// Home portfolio: a lash part (grouped by look), a nail part (grouped by colour) and a brows part. Every photo is in the HTML;
 // photos past the first row of a group sit in a grid-collapse opened by that part's "Show all" button.
 import { Picture, getImage } from 'astro:assets';
 import type { Lang } from '../../data/services';
 import { site } from '../../data/site';
-import { LASH_VISIBLE, NAIL_VISIBLE, lashGroups, nailGroups, nailVideo, photo } from '../../data/photos';
+import { BROW_VISIBLE, LASH_VISIBLE, NAIL_VISIBLE, browGroups, lashGroups, nailGroups, nailVideo, photo } from '../../data/photos';
 import { common, fill } from '../../i18n/common';
 import { localePath } from '../../lib/i18n';
 import { photoSrc } from '../../lib/photo-src';
@@ -21,8 +21,9 @@ type Group = { id: string; name: { en: string; zh: string }; swatch?: string; ra
 const parts: { id: string; title: string; groups: Group[]; visible: number; book: string; bookLabel: string }[] = [
   { id: 'lashes', title: t.lashes, groups: lashGroups, visible: LASH_VISIBLE, book: `${localePath(lang, '/book')}?service=lash-extensions`, bookLabel: t.bookLashes },
   { id: 'nails', title: t.nails, groups: nailGroups.map((g) => ({ ...g, ratio: '3:4' as const })), visible: NAIL_VISIBLE, book: `${localePath(lang, '/book')}?service=gel-nails`, bookLabel: t.bookNails },
+  { id: 'brows', title: t.brows, groups: browGroups, visible: BROW_VISIBLE, book: `${localePath(lang, '/book')}?service=powder-brows`, bookLabel: t.bookBrows },
 ];
-// Nails: three portrait tiles per row (as before). Lashes: two per row on phones, four on desktop.
+// Nails: three portrait tiles per row (as before). Lashes and brows: two per row on phones, four on desktop.
 const grid = (p: string) => (p === 'nails' ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-2 gap-2 lg:grid-cols-4');
 const sizes = (p: string) => (p === 'nails' ? '(min-width: 1152px) 360px, 31vw' : '(min-width: 1024px) 270px, 47vw');
 const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };

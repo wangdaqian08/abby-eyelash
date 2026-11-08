@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { bookableWith, findOption, mainOptions, priceText, services } from './services.ts';
-import { homeHero, lashCards, lashGroups, lashLooks, nailGroups, nailVideo, NAIL_VISIBLE, photo, photos, servicePhotos, styleGuide, styledLooks } from './photos.ts';
+import { browGroups, homeHero, lashCards, lashGroups, lashLooks, nailGroups, nailVideo, NAIL_VISIBLE, photo, photos, servicePhotos, styleGuide, styledLooks } from './photos.ts';
 
 test('every lash card points at a bookable main option', () => {
   assert.equal(lashCards.length, 6);
@@ -77,4 +77,13 @@ test('lash portfolio: uniform ratio per group, real work only, no repeats of the
   const shown = new Set([...ids, ...lashCards.map((c) => c.photo), homeHero, ...styledLooks.map((l) => l.photo), ...Object.values(servicePhotos).flatMap((s) => [s.hero, s.detail])]);
   const unused = photos.filter((p) => p.dir === 'lash' && p.ratio !== 'original' && !shown.has(p.id)).map((p) => p.id);
   assert.deepEqual(unused, []);
+});
+
+test('brows portfolio: uniform ratio per group, every brow photo shown once (gallery or brows page)', () => {
+  const ids = browGroups.flatMap((g) => g.items);
+  for (const g of browGroups) for (const id of g.items) assert.equal(photo(id).ratio, g.ratio, id);
+  const page = [servicePhotos['powder-brows'].hero, servicePhotos['powder-brows'].detail];
+  const shown = [...ids, ...page];
+  assert.equal(new Set(shown).size, shown.length);
+  assert.deepEqual(photos.filter((p) => p.dir === 'brows').map((p) => p.id).sort(), [...shown].sort());
 });

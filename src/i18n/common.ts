@@ -92,10 +92,12 @@ const en = {
     more: 'See more on Instagram',
     lashes: 'Lashes',
     nails: 'Nails',
+    brows: 'Brows',
     showAll: 'Show all {n}', // {n} = photos in that part
     showLess: 'Show fewer',
     bookLashes: 'Book lashes →',
     bookNails: 'Book nails →',
+    bookBrows: 'Book brows →',
     playVideo: 'Play video',
   },
   reviews: {
@@ -231,10 +233,12 @@ const zh: Strings = {
     more: '在 Instagram 查看更多',
     lashes: '睫毛作品',
     nails: '指甲作品',
+    brows: '眉毛作品',
     showAll: '看全部 {n} 款',
     showLess: '收起',
     bookLashes: '约睫毛 →',
     bookNails: '约美甲 →',
+    bookBrows: '约雾眉 →',
     playVideo: '播放视频',
   },
   reviews: {
