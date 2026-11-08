@@ -11,11 +11,11 @@ const { lang } = Astro.props;
 const t = common[lang].services;
 // Demo colour-fill hover + lift; focus-visible gets the same state (MASTER §4).
 // Look B: opaque white card on the grey band (Apple grouped cards); lifts on hover, sinks on press.
-// Both: hover is slow (600ms, ease-in-out) and grows 3% on mouse/trackpad (owner, 2026-11-08); press stays quick.
+// Both: hover is slow (400ms, ease-in-out) and grows 3% on mouse/trackpad (owner, 2026-11-08); press stays quick.
 const card = lookB
-  ? 'group press relative flex flex-col rounded-[1.6rem] bg-surface-3 p-6 shadow-[0_1px_2px_rgb(30_18_21/0.05),0_10px_30px_-14px_rgb(30_18_21/0.25)] transition-[transform,scale,box-shadow] duration-600 ease-in-out hover:z-10 pointer-fine:hover:scale-[1.03] active:scale-100 sm:p-8 focus-visible:z-10'
-  : 'group relative flex flex-col rounded-card bg-surface p-6 transition duration-600 ease-in-out hover:z-10 hover:-translate-y-1.5 pointer-fine:hover:scale-[1.03] hover:bg-primary hover:shadow-lift active:scale-[.98] active:duration-100 sm:p-8 focus-visible:z-10 focus-visible:-translate-y-1 focus-visible:bg-primary focus-visible:shadow-lift';
-const onFill = lookB ? '' : 'transition-colors duration-600 ease-in-out group-hover:text-on-primary group-focus-visible:text-on-primary';
+  ? 'group press relative flex flex-col rounded-[1.6rem] bg-surface-3 p-6 shadow-[0_1px_2px_rgb(30_18_21/0.05),0_10px_30px_-14px_rgb(30_18_21/0.25)] transition-[transform,scale,box-shadow] duration-200 ease-in-out hover:z-10 pointer-fine:hover:scale-[1.03] active:scale-100 sm:p-8 focus-visible:z-10'
+  : 'group relative flex flex-col rounded-card bg-surface p-6 transition duration-200 ease-in-out hover:z-10 hover:-translate-y-1.5 pointer-fine:hover:scale-[1.03] hover:bg-primary hover:shadow-lift active:scale-[.98] active:duration-100 sm:p-8 focus-visible:z-10 focus-visible:-translate-y-1 focus-visible:bg-primary focus-visible:shadow-lift';
+const onFill = lookB ? '' : 'transition-colors duration-200 ease-in-out group-hover:text-on-primary group-focus-visible:text-on-primary';
 const small = lang === 'en' ? 'text-[0.8125rem] uppercase tracking-[0.2em]' : 'text-sm';
 ---
 <section id="services" class="bg-surface-2 py-16 md:py-24">
