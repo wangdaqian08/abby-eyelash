@@ -4,6 +4,7 @@ import type { Lang } from '../../data/services';
 import { site } from '../../data/site';
 import { localePath } from '../../lib/i18n';
 import { abs, buildGraph, LOCALE, pagePath } from '../../lib/schema';
+import { publicPath } from '../../lib/ab-test';
 
 export interface Props {
   lang: Lang;
@@ -19,14 +20,15 @@ export interface Props {
 }
 const { lang, title, description, schema, image = '/og-default.jpg', updated, noindex } = Astro.props;
 const base = Astro.site!;
-const path = pagePath(Astro.url.pathname);
+const pathname = publicPath(Astro.url.pathname); // look-B pages describe the public URL
+const path = pagePath(pathname);
 const canonical = abs(base, localePath(lang, path));
 const ogImage = abs(base, image);
 const other: Lang = lang === 'zh' ? 'en' : 'zh';
 const ogLocale = { en: 'en_AU', zh: 'zh_CN' };
 // Escape "<" so content can never close the script element.
 const jsonLd = JSON.stringify(
-  buildGraph({ site: base, lang, pathname: Astro.url.pathname, title, image: ogImage, updated, extra: schema }),
+  buildGraph({ site: base, lang, pathname, title, image: ogImage, updated, extra: schema }),
 ).replace(/</g, '\\u003c');
 ---
 {/* Never add nosnippet / max-snippet / noarchive / nocache (GEO-STRATEGY #5). */}

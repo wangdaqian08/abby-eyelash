@@ -9,3 +9,6 @@ dist/
 src/data/prices.generated.ts
 .superpowers/
 .taste-skill/
+
+# npm run check:looks output
+looks/

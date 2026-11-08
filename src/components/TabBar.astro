@@ -1,0 +1,81 @@
+---
+// Phone-only floating tab bar (glass pill): Home · Services · Gallery · Book. Desktop keeps the header nav.
+// Plain links (no JS), so it is one more set of internal links for crawlers, not a replacement for the header nav.
+import type { Lang } from '../data/services';
+import { common } from '../i18n/common';
+import { localePath } from '../lib/i18n';
+import { publicPath } from '../lib/ab-test';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = common[lang].nav;
+const home = localePath(lang, '/');
+const book = localePath(lang, '/book');
+const here = publicPath(Astro.url.pathname);
+const onBook = here.startsWith(book);
+const tabs = [
+  { id: 'home', href: home, label: lang === 'zh' ? '首页' : 'Home', on: !onBook && here === home, d: 'M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z' },
+  { id: 'services', href: `${home}#services`, label: t.services, on: false, d: 'M12 3c2 3.5 6 5 6 10a6 6 0 0 1-12 0c0-5 4-6.5 6-10z' },
+  { id: 'gallery', href: `${home}#gallery`, label: t.gallery, on: false, d: 'M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4' },
+  { id: 'book', href: book, label: t.bookShort, on: onBook, track: 'book_click', d: 'M5 6h14v14H5zM5 10h14M9 3v4M15 3v4' },
+];
+---
+<nav aria-label={lang === 'zh' ? '快捷导航' : 'Quick links'} class="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 lg:hidden">
+  <ul class="glass [--glass-fill:rgb(255_255_255/0.88)] flex h-[var(--tabbar-h)] items-center justify-around rounded-full px-1.5">
+    {tabs.map((tab) => (
+      <li class="flex-1">
+        <a
+          href={tab.href}
+          data-tab={tab.id}
+          data-track={tab.track}
+          aria-current={tab.on ? 'page' : undefined}
+          class:list={[
+            'mx-auto flex min-h-11 w-fit min-w-16 flex-col items-center justify-center gap-0.5 rounded-full px-3 py-1.5 text-[0.6875rem] font-medium transition duration-200 ease-brand active:scale-[.92]',
+            'text-fg [&[aria-current]]:bg-primary/10 [&[aria-current]]:text-primary', // aria-current is moved by the script below
+          ]}
+        >
+          <svg viewBox="0 0 24 24" class="size-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d={tab.d} /></svg>
+          {tab.label}
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<script>
+  // Home page only: the tab for the section in view is highlighted, and tapping Services / Gallery glides there.
+  const bar = document.querySelector('[data-tab]')?.closest('nav');
+  const tabs = new Map([...document.querySelectorAll<HTMLAnchorElement>('[data-tab]')].map((a) => [a.dataset.tab!, a]));
+  // Which tab each home section belongs to; any other section counts as Home.
+  const owner: Record<string, string> = { services: 'services', 'lash-looks': 'services', offers: 'services', gallery: 'gallery' };
+  const sections = [...document.querySelectorAll<HTMLElement>('main section[id]')];
+  if (bar && sections.some((s) => s.id === 'services')) {
+    let locked = false; // during a tap's smooth scroll, keep the tapped tab lit instead of flickering through sections
+    const light = (id: string) => tabs.forEach((a, k) => (k === id ? a.setAttribute('aria-current', 'location') : a.removeAttribute('aria-current')));
+    const spy = () => {
+      if (locked) return;
+      const line = innerHeight * 0.35; // the section crossing this line is "in view"
+      const cur = sections.findLast((s) => s.getBoundingClientRect().top <= line);
+      light(cur ? (owner[cur.id] ?? 'home') : 'home');
+    };
+    addEventListener('scroll', spy, { passive: true });
+    spy();
+    bar.addEventListener('click', (e) => {
+      const a = (e.target as Element).closest<HTMLAnchorElement>('[data-tab]');
+      const id = a?.dataset.tab;
+      if (!a || id === 'book') return;
+      const target = id === 'home' ? null : document.getElementById(id!);
+      if (id !== 'home' && !target) return;
+      e.preventDefault();
+      light(id!);
+      locked = true;
+      const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+      if (target) target.scrollIntoView({ behavior, block: 'start' }); // block start honours scroll-margin-top under the header
+      else scrollTo({ top: 0, behavior });
+      history.replaceState(null, '', id === 'home' ? location.pathname : `#${id}`);
+      const unlock = () => { locked = false; spy(); };
+      addEventListener('scrollend', unlock, { once: true });
+      setTimeout(unlock, 1200); // shortcut: Safari < 18 has no scrollend; the timeout covers it
+    });
+  }
+</script>

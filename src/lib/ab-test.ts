@@ -16,3 +16,12 @@ export const neverSplit = (pathname: string) => pathname.startsWith('/api/');
 
 export const cookieHeader = (name: string, v: Variant, maxAgeDays: number, secure: boolean) =>
   `${name}=${v}; Path=/; Max-Age=${maxAgeDays * 86400}; SameSite=Lax${secure ? '; Secure' : ''}`;
+
+// One build, two looks: look B pages are built under /look-b/ (src/pages/look-b/) and served at the normal URLs by
+// functions/_middleware.ts. Links, canonicals and hreflang never carry the prefix.
+export const LOOK_B_PREFIX = '/look-b';
+export const lookOf = (url: URL): Variant => (url.pathname === LOOK_B_PREFIX || url.pathname.startsWith(`${LOOK_B_PREFIX}/`) ? 'B' : 'A');
+/** The public URL path of a page, whichever look built it. */
+export const publicPath = (pathname: string) => pathname.replace(/^\/look-b(?=\/|$)/, '') || '/';
+/** A page request (not an asset, the API or a look-B path itself) → the built look-B file for it. */
+export const lookBPath = (pathname: string) => (/\.[a-z0-9]+$/i.test(pathname) && !pathname.endsWith('.html') ? null : `${LOOK_B_PREFIX}${pathname}`);

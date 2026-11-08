@@ -3,13 +3,18 @@ import { services, type Lang } from '../../data/services';
 import { common, priceLine } from '../../i18n/common';
 import { localePath } from '../../lib/i18n';
 import SectionHeading from '../ui/SectionHeading.astro';
+import { lookOf } from '../../lib/ab-test';
+const lookB = lookOf(Astro.url) === 'B'; // look B markup (lib/ab-test.ts)
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const t = common[lang].services;
 // Demo colour-fill hover + lift; focus-visible gets the same state (MASTER §4).
-const card = 'group relative flex flex-col rounded-card bg-surface p-6 transition duration-300 ease-brand hover:z-10 hover:-translate-y-1 hover:bg-primary hover:shadow-lift active:scale-[.98] sm:p-8 focus-visible:z-10 focus-visible:-translate-y-1 focus-visible:bg-primary focus-visible:shadow-lift';
-const onFill = 'transition-colors duration-300 group-hover:text-on-primary group-focus-visible:text-on-primary';
+// Look B: opaque white card on the grey band (Apple grouped cards); lifts on hover, sinks on press.
+const card = lookB
+  ? 'group press relative flex flex-col rounded-[1.6rem] bg-surface-3 p-6 shadow-[0_1px_2px_rgb(30_18_21/0.05),0_10px_30px_-14px_rgb(30_18_21/0.25)] sm:p-8 focus-visible:z-10'
+  : 'group relative flex flex-col rounded-card bg-surface p-6 transition duration-300 ease-brand hover:z-10 hover:-translate-y-1 hover:bg-primary hover:shadow-lift active:scale-[.98] sm:p-8 focus-visible:z-10 focus-visible:-translate-y-1 focus-visible:bg-primary focus-visible:shadow-lift';
+const onFill = lookB ? '' : 'transition-colors duration-300 group-hover:text-on-primary group-focus-visible:text-on-primary';
 const small = lang === 'en' ? 'text-[0.8125rem] uppercase tracking-[0.2em]' : 'text-sm';
 ---
 <section id="services" class="bg-surface-2 py-16 md:py-24">
@@ -24,7 +29,11 @@ const small = lang === 'en' ? 'text-[0.8125rem] uppercase tracking-[0.2em]' : 't
         <li class="flex">
           <a href={localePath(lang, s.slug)} class:list={[card, 'w-full']}>
             <h3 class:list={['text-xl', onFill]}>{s.name[lang]}</h3>
-            <p class:list={['mt-3 flex-1 text-muted', onFill, 'group-hover:text-on-primary/90 group-focus-visible:text-on-primary/90']}>{s.summary[lang]}</p>
+            {lookB ? (
+<p class="mt-3 flex-1 text-muted">{s.summary[lang]}</p>
+) : (
+<p class:list={['mt-3 flex-1 text-muted', onFill, 'group-hover:text-on-primary/90 group-focus-visible:text-on-primary/90']}>{s.summary[lang]}</p>
+)}
             <p class:list={['mt-6 font-medium tabular-nums', onFill]}>{priceLine(s, lang)}</p>
             <span class:list={['mt-4 inline-flex items-center gap-2 text-accent-ink', small, onFill]}>
               {t.details}
@@ -34,10 +43,14 @@ const small = lang === 'en' ? 'text-[0.8125rem] uppercase tracking-[0.2em]' : 't
         </li>
       ))}
       <li class="flex">
-        <a href={localePath(lang, '/book')} data-track="book_click" class:list={[card, 'w-full bg-surface-2/60']}>
-          <h3 class:list={['text-xl', onFill]}><em class="group-hover:text-on-primary group-focus-visible:text-on-primary">{t.ctaTitle}</em></h3>
-          <p class:list={['mt-3 flex-1 text-muted', onFill]}>{t.ctaBody}</p>
-          <span class:list={['mt-6 inline-flex items-center gap-2 text-accent-ink', small, onFill]}>
+        <a href={localePath(lang, '/book')} data-track="book_click" class:list={[card, (lookB ? 'w-full bg-primary! text-on-primary' : 'w-full bg-surface-2/60')]}>
+          <h3 class:list={['text-xl', onFill]}><em class={lookB ? "text-on-primary" : "group-hover:text-on-primary group-focus-visible:text-on-primary"}>{t.ctaTitle}</em></h3>
+          {lookB ? (
+<p class="mt-3 flex-1 text-on-primary/85">{t.ctaBody}</p>
+) : (
+<p class:list={['mt-3 flex-1 text-muted', onFill]}>{t.ctaBody}</p>
+)}
+          <span class:list={lookB ? ['mt-6 inline-flex items-center gap-2 text-on-primary', small] : ['mt-6 inline-flex items-center gap-2 text-accent-ink', small, onFill]}>
             {t.ctaLink}
             <span aria-hidden="true" class="transition-transform duration-200 group-hover:translate-x-1">→</span>
           </span>

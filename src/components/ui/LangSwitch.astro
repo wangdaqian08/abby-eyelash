@@ -2,9 +2,10 @@
 // EN | 中文 — links to the same page in the other language. On phones only the other language shows (header width).
 import type { Lang } from '../../data/services';
 import { localePath, neutralPath } from '../../lib/i18n';
+import { publicPath } from '../../lib/ab-test';
 interface Props { lang: Lang; class?: string }
 const { lang, class: cls } = Astro.props;
-const path = neutralPath(Astro.url.pathname);
+const path = neutralPath(publicPath(Astro.url.pathname));
 const items = [
   { l: 'en' as const, label: 'EN', hreflang: 'en-AU', name: 'English' },
   { l: 'zh' as const, label: '中文', hreflang: 'zh-Hans', name: '简体中文' },

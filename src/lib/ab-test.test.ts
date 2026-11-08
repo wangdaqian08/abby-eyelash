@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pickVariant, neverSplit, cookieHeader } from './ab-test.ts';
+import { pickVariant, neverSplit, cookieHeader, lookOf, publicPath, lookBPath } from './ab-test.ts';
 
 const q = (s = '') => new URLSearchParams(s);
 
@@ -45,4 +45,24 @@ test('the booking API never splits; pages and assets do', () => {
 test('cookie: 30 days, Lax, Secure only on https', () => {
   assert.equal(cookieHeader('style', 'B', 30, true), 'style=B; Path=/; Max-Age=2592000; SameSite=Lax; Secure');
   assert.ok(!cookieHeader('style', 'A', 30, false).includes('Secure'));
+});
+
+test('look from the URL: only /look-b/ pages are look B', () => {
+  for (const p of ['/look-b/', '/look-b', '/look-b/zh/book/']) assert.equal(lookOf(new URL(`https://x.test${p}`)), 'B');
+  for (const p of ['/', '/book/', '/look-better/', '/zh/look-b/']) assert.equal(lookOf(new URL(`https://x.test${p}`)), 'A');
+});
+
+test('public path drops the look-B prefix, nothing else', () => {
+  assert.equal(publicPath('/look-b/'), '/');
+  assert.equal(publicPath('/look-b'), '/');
+  assert.equal(publicPath('/look-b/zh/lash-lift-burwood/'), '/zh/lash-lift-burwood/');
+  assert.equal(publicPath('/zh/book/'), '/zh/book/');
+  assert.equal(publicPath('/look-better/'), '/look-better/');
+});
+
+test('only page requests map to a look-B file; assets keep their path', () => {
+  assert.equal(lookBPath('/'), '/look-b/');
+  assert.equal(lookBPath('/zh/book/'), '/look-b/zh/book/');
+  assert.equal(lookBPath('/404.html'), '/look-b/404.html');
+  for (const p of ['/_astro/a.css', '/images/x.webp', '/favicon.svg', '/robots.txt']) assert.equal(lookBPath(p), null);
 });
