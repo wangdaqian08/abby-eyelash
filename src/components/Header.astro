@@ -16,9 +16,9 @@ const home = localePath(lang, '/');
 // "/#services" works both as an in-page anchor on home and as a link from other pages.
 const links = [
   ['services', t.services],
-  ['about', t.about],
   ['gallery', t.gallery],
   ['reviews', t.reviews],
+  ['about', t.about],
   ['contact', t.contact],
 ].map(([id, label]) => ({ href: `${home}#${id}`, label }));
 const book = localePath(lang, '/book');
