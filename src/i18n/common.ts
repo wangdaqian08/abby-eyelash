@@ -306,8 +306,8 @@ export const napAddress = (site: Pick<Site, 'address'>) =>
 export const smsHref = (phone: string) => `sms:${phone.replace(/\s/g, '')}`;
 export const waHref = (phone: string) => `https://wa.me/${phone.replace(/\D/g, '')}`;
 
-export const mapsUrl = (site: Pick<Site, 'name' | 'address'>) =>
-  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${site.name}, ${napAddress(site)}`)}`;
+// Address only: the studio isn't on Google Maps yet, and adding the name sends Google to a business search instead of the street.
+export const mapsUrl = (site: Pick<Site, 'address'>) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(napAddress(site))}`;
 
 const DAYS: Record<Lang, string[]> = {
   en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
