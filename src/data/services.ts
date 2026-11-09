@@ -18,7 +18,8 @@ export interface ServiceOption {
   group?: L10n; // consecutive options with the same group are listed under one heading
   addon?: boolean; // only bookable on top of a main option; add-ons sharing a group are either/or
   max?: number; // add-on charged per unit (e.g. per nail), up to max units
-  noAddons?: boolean; // main option that takes no add-ons (e.g. removal on its own)
+  noRemoval?: boolean; // infill: the lashes were done here, so removal (charged only for lashes done elsewhere) isn't offered
+  alone?: boolean; // add-on that can also be booked on its own, then with no other add-ons (lash removal)
   unit?: L10n; // per-unit price label, e.g. "nail" → "$6 / nail"
   wasPrice?: number; // original price shown struck through (sale)
   onRequest?: boolean; // custom price quoted by Abby; `price` is 0
@@ -39,7 +40,7 @@ export interface Service {
 }
 
 type Draft = Omit<Service, 'updated' | 'options'> & {
-  options: Pick<ServiceOption, 'id' | 'name' | 'extra' | 'group' | 'addon' | 'max' | 'noAddons' | 'unit' | 'priceKey'>[];
+  options: Pick<ServiceOption, 'id' | 'name' | 'extra' | 'group' | 'addon' | 'max' | 'alone' | 'noRemoval' | 'unit' | 'priceKey'>[];
 };
 
 const FULL_SET = { en: 'Full sets', zh: '全套' };
@@ -71,10 +72,10 @@ const drafts: Draft[] = [
       { id: 'styled', name: { en: 'Styled set', zh: '造型款' }, group: FULL_SET },
       { id: 'bottom-natural', name: { en: 'Bottom lashes – natural', zh: '下睫毛 · 自然' }, extra: true, group: BOTTOM, addon: true },
       { id: 'bottom-full', name: { en: 'Bottom lashes – full', zh: '下睫毛 · 浓密' }, extra: true, group: BOTTOM, addon: true },
-      { id: 'infill-2w', name: { en: 'Infill – within 2 weeks', zh: '回补 · 2 周内' }, extra: true, group: INFILL },
-      { id: 'infill-3w', name: { en: 'Infill – within 3 weeks', zh: '回补 · 3 周内' }, extra: true, group: INFILL },
-      { id: 'infill-4w', name: { en: 'Infill – within 4 weeks', zh: '回补 · 4 周内' }, extra: true, group: INFILL },
-      { id: 'removal', name: { en: 'Lash removal', zh: '卸睫毛' }, extra: true, group: REMOVAL, noAddons: true },
+      { id: 'infill-2w', name: { en: 'Infill – within 2 weeks', zh: '回补 · 2 周内' }, extra: true, group: INFILL, noRemoval: true },
+      { id: 'infill-3w', name: { en: 'Infill – within 3 weeks', zh: '回补 · 3 周内' }, extra: true, group: INFILL, noRemoval: true },
+      { id: 'infill-4w', name: { en: 'Infill – within 4 weeks', zh: '回补 · 4 周内' }, extra: true, group: INFILL, noRemoval: true },
+      { id: 'removal', name: { en: 'Lash removal (lashes done elsewhere)', zh: '卸睫毛（非本店嫁接）' }, extra: true, group: REMOVAL, addon: true, alone: true },
     ],
   },
   {
@@ -162,11 +163,12 @@ export function headline(s: Service) {
   };
 }
 
-type Priced = Pick<ServiceOption, 'price' | 'from' | 'unit' | 'onRequest' | 'pct'>;
-/** "$80" · "from $130" · "$6 / nail" · "Price on request" · "50% of your last price" (zh: "$130 起" · "$6 / 只" · "定制价，需咨询" · "上次价格的 50%"). */
+type Priced = Pick<ServiceOption, 'price' | 'from' | 'unit' | 'onRequest' | 'pct' | 'maxPrice'>;
+/** "$10–$20" · "$80" · "from $130" · "$6 / nail" · "Price on request" · "50% of your last price" (zh: "$10 起至 $20" · "$130 起" · "$6 / 只" · "定制价，需咨询" · "上次价格的 50%"). */
 export const priceText = (o: Priced, lang: Lang) => {
   if (o.onRequest) return lang === 'zh' ? '定制价，需咨询' : 'Price on request';
   if (o.pct) return lang === 'zh' ? `上次价格的 ${o.pct}%` : `${o.pct}% of your last price`;
+  if (o.maxPrice) return lang === 'zh' ? `$${o.price} 起至 $${o.maxPrice}` : `$${o.price}–$${o.maxPrice}`;
   const p = o.from ? (lang === 'zh' ? `$${o.price} 起` : `from $${o.price}`) : `$${o.price}`;
   return o.unit ? `${p} / ${o.unit[lang]}` : p;
 };
@@ -182,7 +184,7 @@ export const groupAt = (options: ServiceOption[], i: number) =>
   options[i].group && options[i].group !== options[i - 1]?.group ? options[i].group : undefined;
 
 export const findOption = (serviceId: string, optionId: string) =>
-  services.find((s) => s.id === serviceId)?.options.find((o) => o.id === optionId && !o.addon);
+  services.find((s) => s.id === serviceId)?.options.find((o) => o.id === optionId && (!o.addon || o.alone));
 
 export type Addons = Record<string, number>; // add-on id → units
 export const mainOptions = (s: Service) => s.options.filter((o) => !o.addon);
@@ -213,10 +215,11 @@ export function quote(serviceId: string, optionId: string, addons: Addons) {
   const extras: { option: ServiceOption; units: number }[] = [];
   for (const [id, units] of Object.entries(addons)) {
     const o = s.options.find((x) => x.id === id && x.addon);
-    if (!o || option.noAddons || !Number.isInteger(units) || units < 1 || units > (o.max ?? 1)) return null;
+    if (!o || option.addon || (option.noRemoval && o.id === 'removal') || !Number.isInteger(units) || units < 1 || units > (o.max ?? 1)) return null;
     if (o.group && extras.some((e) => e.option.group === o.group)) return null;
     extras.push({ option: o, units });
   }
+  extras.sort((a, b) => s.options.indexOf(a.option) - s.options.indexOf(b.option)); // menu order, whatever order they were ticked in
   return {
     service: s,
     option,

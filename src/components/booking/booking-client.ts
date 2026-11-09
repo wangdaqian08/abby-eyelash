@@ -24,6 +24,7 @@ const ICON = {
   date: svg('<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'),
   time: svg('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'),
   details: svg('<circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/>'),
+  send: svg('<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>'),
   prev: svg('<path d="m15 18-6-6 6-6"/>'),
   next: svg('<path d="m9 18 6-6-6-6"/>'),
   alert: svg('<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>', 'size-[1em] shrink-0 translate-y-[0.125em]'),
@@ -31,7 +32,7 @@ const ICON = {
   chevron: svg('<path d="m6 9 6 6 6-6"/>', 'pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-muted'),
   tick: svg('<path d="M20 6 9 17l-5-5"/>', 'size-3.5'),
 };
-const STEP_ICONS = [ICON.service, ICON.date, ICON.time, ICON.details];
+const STEP_ICONS = [ICON.service, ICON.date, ICON.time, ICON.details, ICON.send];
 
 const LB = document.documentElement.dataset.look === 'B'; // look B markup (lib/ab-test.ts); the page sets data-look on <html>
 const BTN = LB
@@ -69,8 +70,11 @@ export function start(root: HTMLElement) {
 
   const cache = new Map<string, Month | 'loading' | 'error'>();
   const itemOf = (id: string) => st.items.find((i) => i.service.id === id);
-  const ready = () => st.items.length > 0 && st.items.every((i) => i.option);
-  const asItems = () => st.items.map((i) => ({ service: i.service.id, option: i.option!.id, addons: i.addons }));
+  // An add-on that can be booked on its own (lash removal), ticked while no main option is chosen.
+  const alone = (i: Chosen) => addonOptions(i.service).find((o) => o.alone && i.addons[o.id]);
+  const ready = () => st.items.length > 0 && st.items.every((i) => i.option || alone(i));
+  const asItems = () =>
+    st.items.map((i) => (i.option ? { service: i.service.id, option: i.option.id, addons: i.addons } : { service: i.service.id, option: alone(i)!.id, addons: {} }));
   const key = (m = st.month) => `${itemsParam(asItems())}/${m}`;
   const total = () => quoteAll(asItems())!; // the UI only offers valid combinations
   let gridFocusPending = false;
@@ -207,8 +211,9 @@ export function start(root: HTMLElement) {
   // Add-ons for one ticked service: either/or groups as radios (with "none"), per-unit add-ons as a 0..max select.
   function addonsView(it: Chosen, legend: string) {
     const s = it.service;
-    const list = addonOptions(s);
-    if (!it.option || it.option.noAddons || !list.length) return '';
+    // no main option yet: only what can be booked alone; infill: no removal
+    const list = addonOptions(s).filter((o) => (it.option ? !(it.option.noRemoval && o.id === 'removal') : o.alone));
+    if (!list.length) return '';
     const row = 'flex min-h-14 items-center justify-between gap-4 px-1 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring';
     const meta = (o: ServiceOption, p: string) =>
       `<span class="shrink-0 text-right text-sm text-muted"><span class="block whitespace-nowrap text-fg">${p}</span><span class="whitespace-nowrap">+${mins(o.minutes)}${o.unit ? ` / ${o.unit[lang]}` : ''}</span></span>`;
@@ -472,7 +477,7 @@ export function start(root: HTMLElement) {
   }
 
   const emitSent = (via: string) =>
-    emit('booking_submitted', { via, service: st.items.map((i) => i.service.id).join('+'), option: st.items.map((i) => i.option!.id).join('+'), value: total().price, currency: 'AUD' });
+    emit('booking_submitted', { via, service: st.items.map((i) => i.service.id).join('+'), option: asItems().map((i) => i.option).join('+'), value: total().price, currency: 'AUD' });
 
   // --- render + navigation ---
   function render() {
@@ -559,7 +564,7 @@ export function start(root: HTMLElement) {
     } else if (el.name.startsWith('bk-option-')) {
       const it = itemOf(el.name.slice('bk-option-'.length))!;
       it.option = mainOptions(it.service).find((o) => o.id === el.value);
-      if (it.option?.noAddons) it.addons = {};
+      if (it.option?.noRemoval) delete it.addons.removal;
     } else if (el.name.startsWith('bk-addon-')) {
       // either/or: drop whichever option of this radio group was chosen before
       const it = itemOf(el.dataset.service!)!;
@@ -689,7 +694,8 @@ export function start(root: HTMLElement) {
   const pre = found && bookableWith(found);
   if (pre) {
     const main = mainOptions(pre);
-    st.items = [{ service: pre, option: main.find((o) => o.id === q.get('option')) ?? (main.length === 1 ? main[0] : undefined), addons: {} }];
+    const solo = addonOptions(pre).find((o) => o.alone && o.id === q.get('option')); // e.g. &option=removal
+    st.items = [{ service: pre, option: main.find((o) => o.id === q.get('option')) ?? (main.length === 1 ? main[0] : undefined), addons: solo ? { [solo.id]: 1 } : {} }];
   }
   go(1, false);
 }
