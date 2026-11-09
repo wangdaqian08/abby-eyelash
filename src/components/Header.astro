@@ -6,6 +6,7 @@ import { common } from '../i18n/common';
 import { localePath } from '../lib/i18n';
 import LangSwitch from './ui/LangSwitch.astro';
 import Button from './ui/Button.astro';
+import { reviews } from '../data/reviews';
 import { lookOf } from '../lib/ab-test';
 const lookB = lookOf(Astro.url) === 'B'; // look B markup (lib/ab-test.ts)
 
@@ -17,7 +18,7 @@ const home = localePath(lang, '/');
 const links = [
   ['services', t.services],
   ['gallery', t.gallery],
-  ['reviews', t.reviews],
+  ...(reviews.length ? [['reviews', t.reviews]] : []),
   ['about', t.about],
   ['contact', t.contact],
 ].map(([id, label]) => ({ href: `${home}#${id}`, label }));

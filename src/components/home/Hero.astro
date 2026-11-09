@@ -36,7 +36,7 @@ const body = fill(t.body, { name: site.name, owner: site.owner, suburb: site.add
     <div aria-hidden="true" class="absolute inset-0 bg-[linear-gradient(0deg,var(--bg)_0%,color-mix(in_oklch,var(--bg)_75%,transparent)_45%,color-mix(in_oklch,var(--bg)_30%,transparent)_100%)] lg:bg-[linear-gradient(90deg,var(--bg)_0%,color-mix(in_oklch,var(--bg)_75%,transparent)_40%,color-mix(in_oklch,var(--bg)_30%,transparent)_100%)]"></div>
   </div>
   <div class="mx-auto w-full max-w-6xl px-4 pb-[calc(var(--tabbar-h)+2.5rem)] pt-[calc(var(--header-h)+3rem)] text-fg sm:px-6 lg:max-w-none lg:pb-24 lg:pl-[max(1.5rem,calc((100vw-72rem)/2+1.5rem))] lg:pr-16">
-    <span class="glass inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium text-fg" data-hero-in style="--i:0"><Stars rating={reviewSummary.rating} label={`${reviewSummary.rating} / 5`} /> {reviewSummary.rating} · {t.eyebrow}</span>
+    <span class="glass inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-medium text-fg" data-hero-in style="--i:0">{reviewSummary && <><Stars rating={reviewSummary.rating} label={`${reviewSummary.rating} / 5`} /> {reviewSummary.rating} · </>}{t.eyebrow}</span>
     <h1 class="mt-5 text-4xl leading-[1.08] sm:text-5xl md:text-6xl 2xl:text-7xl">
       <span class="block" data-hero-line style="--i:0">{t.titleA}</span>
       <em class="block" data-hero-line style="--i:1">{t.accent}</em>
@@ -50,7 +50,7 @@ const body = fill(t.body, { name: site.name, owner: site.owner, suburb: site.add
         <svg viewBox="0 0 24 24" class="size-[1.15em] translate-y-[0.125em] transition-transform duration-200 group-hover:translate-y-[0.25em]" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
       </a>
     </div>
-    <p class="mt-6 text-sm text-muted" data-hero-in style="--i:5">{t.rating}</p>
+    {reviewSummary && <p class="mt-6 text-sm text-muted" data-hero-in style="--i:5">{t.rating}</p>}
   </div>
 </section>
 ) : (
@@ -70,10 +70,12 @@ const body = fill(t.body, { name: site.name, owner: site.owner, suburb: site.add
         <svg viewBox="0 0 24 24" class="size-[1.15em] translate-y-[0.125em] transition-transform duration-200 group-hover:translate-y-[0.25em]" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
       </a>
     </div>
-    <p class="mt-10 flex items-center gap-3 text-sm text-muted" data-hero-in style="--i:5">
-      <Stars rating={reviewSummary.rating} label={`${reviewSummary.rating} / 5`} />
-      <span><span class="font-medium text-fg">{reviewSummary.rating}</span> · {t.rating}</span>
-    </p>
+    {reviewSummary && (
+      <p class="mt-10 flex items-center gap-3 text-sm text-muted" data-hero-in style="--i:5">
+        <Stars rating={reviewSummary.rating} label={`${reviewSummary.rating} / 5`} />
+        <span><span class="font-medium text-fg">{reviewSummary.rating}</span> · {t.rating}</span>
+      </p>
+    )}
   </div>
   <div class="relative aspect-[4/5] overflow-hidden sm:aspect-[16/10] lg:aspect-auto">
     <Picture

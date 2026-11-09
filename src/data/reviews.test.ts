@@ -10,7 +10,7 @@ test('launch guard throws only when LAUNCH=1 and dummy data remains', () => {
   assert.doesNotThrow(() => assertNoDummyAtLaunch([{ dummy: true }], undefined));
   assert.doesNotThrow(() => assertNoDummyAtLaunch([{ dummy: true }], '0'));
   assert.doesNotThrow(() => assertNoDummyAtLaunch([{ dummy: false }], '1'));
-  assert.equal(reviews.length, 6);
+  assert.ok(reviews.every((r) => !r.dummy), 'no made-up reviews on the live site');
 });
 
 test('hoursRows groups consecutive days, Monday first, and formats per locale', () => {
