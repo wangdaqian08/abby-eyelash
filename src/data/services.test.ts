@@ -119,6 +119,10 @@ test('lash extensions: all main × bottom × removal permutations', () => {
           continue;
         }
         const q = quote(L, main.id, addons);
+        if (main.noRemoval && rem) {
+          assert.equal(q, null, id); // infill means the lashes were done here: no removal
+          continue;
+        }
         assert.ok(q, id);
         const extras = s.options.filter((o) => o.id in addons);
         assert.equal(q.minutes, main.minutes + extras.reduce((n, o) => n + o.minutes, 0), id);
@@ -127,7 +131,9 @@ test('lash extensions: all main × bottom × removal permutations', () => {
         assert.deepEqual(parseItems(itemsParam([{ service: L, option: main.id, addons }])), [{ service: L, option: main.id, addons }], id);
         valid++;
       }
-  assert.equal(valid, mains.length * 3 * 2 + 1); // 8 mains × 3 × 2 + removal alone = 49
+  const infills = mains.filter((o) => o.noRemoval).length;
+  assert.equal(infills, 3);
+  assert.equal(valid, mains.length * 3 * 2 - infills * 3 + 1); // 8 mains × 3 × 2, minus infill + removal, + removal alone = 40
 });
 
 test('per-nail extensions: 0..max units valid, max+1 rejected, for every design', () => {

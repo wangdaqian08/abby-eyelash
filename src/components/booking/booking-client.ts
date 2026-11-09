@@ -211,7 +211,8 @@ export function start(root: HTMLElement) {
   // Add-ons for one ticked service: either/or groups as radios (with "none"), per-unit add-ons as a 0..max select.
   function addonsView(it: Chosen, legend: string) {
     const s = it.service;
-    const list = addonOptions(s).filter((o) => it.option || o.alone); // no main option yet: only what can be booked alone
+    // no main option yet: only what can be booked alone; infill: no removal
+    const list = addonOptions(s).filter((o) => (it.option ? !(it.option.noRemoval && o.id === 'removal') : o.alone));
     if (!list.length) return '';
     const row = 'flex min-h-14 items-center justify-between gap-4 px-1 py-3 has-focus-visible:outline-2 has-focus-visible:outline-ring';
     const meta = (o: ServiceOption, p: string) =>
@@ -563,6 +564,7 @@ export function start(root: HTMLElement) {
     } else if (el.name.startsWith('bk-option-')) {
       const it = itemOf(el.name.slice('bk-option-'.length))!;
       it.option = mainOptions(it.service).find((o) => o.id === el.value);
+      if (it.option?.noRemoval) delete it.addons.removal;
     } else if (el.name.startsWith('bk-addon-')) {
       // either/or: drop whichever option of this radio group was chosen before
       const it = itemOf(el.dataset.service!)!;

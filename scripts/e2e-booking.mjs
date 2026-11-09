@@ -75,6 +75,25 @@ for (const main of [undefined, ...mains])
         check((await page.$$(`input[data-service="${L}"][value^="bottom"]`)).length === 0, `bottom lashes shown without a set (removal=${rem})`);
         continue;
       }
+      if (main?.noRemoval && rem) {
+        // infill: removal is hidden once it is picked, and a removal ticked before is dropped
+        const ctx = `${main.id} / ${bottom ?? 'no-bottom'} / removal`;
+        cases++;
+        await open();
+        await tick(L);
+        await act.main(main.id);
+        check((await page.$$(`input[data-service="${L}"][value="removal"]`)).length === 0, `${ctx}: removal shown with infill`);
+        await open();
+        await tick(L);
+        await act.removal();
+        await act.main(main.id);
+        if (bottom) await act.bottom(bottom);
+        check((await page.$$(`input[data-service="${L}"][value="removal"]`)).length === 0, `${ctx}: removal still shown after picking infill`);
+        check(await continueOn(), `${ctx}: infill should continue`);
+        const addons = bottom ? { [bottom]: 1 } : {};
+        await finish(`${ctx} [removal→infill]`, [{ service: L, option: main.id, addons }], `${lash.name.en} · ${[main.id, bottom].filter(Boolean).map((id) => name(id)).join(' + ')}`);
+        continue;
+      }
       for (const order of orders(main?.id, bottom, rem).length ? orders(main?.id, bottom, rem) : [[]]) {
         const ctx = `${main?.id ?? 'no-set'} / ${bottom ?? 'no-bottom'} / ${rem ? 'removal' : 'no-removal'} [${order.join('→') || 'nothing'}]`;
         cases++;
@@ -83,7 +102,7 @@ for (const main of [undefined, ...mains])
         for (const step of order) await act[step](step === 'main' ? main.id : bottom);
         if (main) check(await isChecked(`input[name="bk-option-${L}"][value="${main.id}"]`), `${ctx}: set lost`);
         if (bottom) check(await isChecked(`input[data-service="${L}"][value="${bottom}"]`), `${ctx}: bottom lashes lost`);
-        check((await isChecked(`input[data-service="${L}"][value="removal"]`)) === rem, `${ctx}: removal tick wrong`);
+        check(!!(await isChecked(`input[data-service="${L}"][value="removal"]`)) === rem, `${ctx}: removal tick wrong`); // missing (infill) = not ticked
         const valid = !!main || rem;
         check((await continueOn()) === valid, `${ctx}: Continue should be ${valid ? 'enabled' : 'disabled'}`);
         await noJunk(ctx);
