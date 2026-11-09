@@ -25,11 +25,11 @@ test('codes: 8 characters, no look-alikes, all different', () => {
   assert.doesNotMatch('0o1il', /[2-9a-hj-km-np-zA]/);
 });
 
-test('Google Calendar event: 💗 ⏳ title, Sydney time, service length, consent, no HTML', () => {
+test('Google Calendar event: ❤️ ⏳ title, Sydney time, service length, consent, no HTML', () => {
   const u = new URL(googleCalendarUrl({ ...r, name: 'Lily <b>' }, site.timezone));
   assert.equal(u.hostname, 'calendar.google.com');
   assert.match(u.searchParams.get('dates')!, /^20261121T030000Z\/20261121T\d{6}Z$/); // 2 pm AEDT = 03:00 UTC
-  assert.match(u.searchParams.get('text')!, /^💗 ⏳ Lily /);
+  assert.match(u.searchParams.get('text')!, /^❤️ ⏳ Lily /);
   assert.doesNotMatch(u.searchParams.get('text')!, /[<>]/);
   assert.match(u.searchParams.get('details')!, /Phone: 0412345678[\s\S]*Photo consent: YES/);
 });
@@ -57,7 +57,7 @@ test('with the database: request → code → /c redirects to Google; after 24 h
   assert.match(code, CODE_RE);
   const go = await open(code, env);
   assert.equal(go.status, 302);
-  assert.match(new URL(go.headers.get('location')!).searchParams.get('text')!, /^💗 ⏳ 李 Lily – Lash Lift/);
+  assert.match(new URL(go.headers.get('location')!).searchParams.get('text')!, /^❤️ ⏳ 李 Lily – Lash Lift/);
 
   const sql = postgres(DATABASE_URL, { max: 1 });
   await sql`UPDATE abby.booking_request SET created_at = now() - interval '25 hours' WHERE code = ${code}`;

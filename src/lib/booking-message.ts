@@ -50,11 +50,11 @@ export function googleCalendarUrl(r: CalendarRequest, tz: string, deposit: (n: n
     `Deposit: ${deposit(q.deposit)} by bank transfer`,
     `Photo consent: ${r.photos ? 'YES, may use photos for promotion' : 'NO, do not post photos'}`,
     '',
-    'Requested by message from the website. Confirm with the customer, collect the deposit, then remove "⏳" (keep 💗: it blocks this time on the website).',
+    'Requested by message from the website. Confirm with the customer, collect the deposit, then remove "⏳" (keep ❤️: it blocks this time on the website).',
   ].join('\n');
   return `https://calendar.google.com/calendar/render?${new URLSearchParams({
     action: 'TEMPLATE',
-    text: `💗 ⏳ ${plain(r.name)} – ${label}`,
+    text: `❤️ ⏳ ${plain(r.name)} – ${label}`,
     dates: `${stamp(start)}/${stamp(end)}`,
     details,
     ctz: tz,

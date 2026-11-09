@@ -2,9 +2,9 @@
 
 The booking page (`/book`, `/zh/book`) works like this:
 
-1. A customer picks a service, a date and a time. The times shown come from **your Google Calendar**: only events whose title **starts with 💗** make that time unavailable (see "The 💗 rule" below). Customers never see your events.
+1. A customer picks a service, a date and a time. The times shown come from **your Google Calendar**: only events whose title **starts with ❤️** make that time unavailable (see "The ❤️ rule" below). Customers never see your events.
 2. They fill in their name and phone, then tap **Send by WhatsApp** or **Send by SMS**. Their phone opens a message to you, already written: it starts with `【预约 Booking】` and lists the service, date and time, price, name, phone, notes, the deposit terms and their photo answer. **The website books nothing.**
-3. The message ends with a short **📅 Add to calendar** link, for example `…/c/k7hq2x9p`. The link shows nothing about the booking. Tap it on your iPhone within **24 hours**: Google Calendar opens a new event, already filled in (`💗 ⏳ <name> – <service>`, the right time and length, and the details). Check the time is still free, then tap **Save**. After 24 hours the link expires: add the event by hand from the message.
+3. The message ends with a short **📅 Add to calendar** link, for example `…/c/k7hq2x9p`. The link shows nothing about the booking. Tap it on your iPhone within **24 hours**: Google Calendar opens a new event, already filled in (`❤️ ⏳ <name> – <service>`, the right time and length, and the details). Check the time is still free, then tap **Save**. After 24 hours the link expires: add the event by hand from the message.
 4. Reply to the customer to confirm and send the bank details for the deposit.
 
 Until steps A–D are done, the booking page can run in **Demo mode**: times are made up, and a small "Demo mode" note appears on the booking page. Demo mode is automatic on your own computer; on the live site it only runs if the environment variable `BOOKING_DEMO=1` is set (for previews). Without it, a missing setting makes the booking page show an error with your phone number, so a typo can never show made-up free times.
@@ -34,19 +34,20 @@ You need about 30 minutes. Do the steps on a computer, signed in to the Gmail ac
 1. Open Google Calendar on a computer: <https://calendar.google.com/>.
 2. On the left, under **My calendars**, hover over your calendar (usually your name) → ⋮ → **Settings and sharing**.
 3. Under **Share with specific people or groups** → **Add people and groups** → paste the service account email from B.3.
-4. Set permission to **See all event details** → **Send**. The website needs the titles to find the 💗 events. It only reads: it never changes your calendar, never shows your events to customers and never records their titles.
+4. Set permission to **See all event details** → **Send**. The website needs the titles to find the ❤️ events. It only reads: it never changes your calendar, never shows your events to customers and never records their titles.
 5. On the same settings page, scroll to **Integrate calendar** and copy the **Calendar ID**. For your main calendar this is simply your Gmail address.
 
-## The 💗 rule (which events block booking times)
+## The ❤️ rule (which events block booking times)
 
-- An event blocks booking times **only if its title starts with 💗**, for example `💗 Mia – Hybrid full set`.
+- An event blocks booking times **only if its title starts with ❤️**, for example `❤️ Mia – Hybrid full set`.
 - Everything else never blocks: personal events, reminders, all-day events such as `rent`, birthdays.
-- Closed for a holiday or an appointment of your own? Add `💗 休假` (all day) or `💗 Doctor` (with times). That time is then closed on the website.
-- A 💗 later in the title doesn't count (`给妈妈买花💗` stays free time). Only the first character counts.
-- There is always a 15-minute gap before and after each 💗 event.
-- **Before going live:** put 💗 at the start of every client booking that is already in your calendar. Without it, the website shows that time as free.
+- Closed for a holiday or an appointment of your own? Add `❤️ 休假` (all day) or `❤️ Doctor` (with times). That time is then closed on the website.
+- A ❤️ later in the title doesn't count (`给妈妈买花❤️` stays free time). Only the first character counts.
+- Only the red heart â¤ï¸ counts. Look-alikes such as ð, ð or ð©· do not block anything.
+- There is always a 15-minute gap before and after each ❤️ event.
+- **Before going live:** put ❤️ at the start of every client booking that is already in your calendar. Without it, the website shows that time as free.
 
-Typing 💗 fast on iPhone: **Settings → General → Keyboard → Text Replacement → +**. Phrase: `💗`, Shortcut: `yy`. Typing `yy` then gives 💗.
+Typing ❤️ fast on iPhone: **Settings → General → Keyboard → Text Replacement → +**. Phrase: `❤️`, Shortcut: `yy`. Typing `yy` then gives ❤️.
 
 ## D. Put the keys into Cloudflare Pages
 
@@ -69,7 +70,7 @@ Then open `/book` on the live site: the "Demo mode" note should be gone, and the
 1. A `【预约 Booking】` message arrives by SMS or WhatsApp.
 2. Tap **📅 Add to calendar**, check the time, tap **Save**: the time is now taken on the website too.
 3. Reply to the customer to confirm and send the bank details.
-4. Deposit received → edit the event title and remove "⏳". **Keep the 💗.** Not going ahead → delete the event. The time becomes bookable again within about a minute.
+4. Deposit received → edit the event title and remove "⏳". **Keep the ❤️.** Not going ahead → delete the event. The time becomes bookable again within about a minute.
 5. Need to move it? Drag the event to the new time in Google Calendar.
 
 Until you save the event, the time still looks free on the website, so two people can ask for the same time. Whoever you save first gets it; offer the other one a new time.
