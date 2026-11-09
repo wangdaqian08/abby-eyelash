@@ -95,3 +95,31 @@ const lines = rows.map((r, i) => [i + 1, r.area, r.en, r.zh, r.hant, r.zh === r.
 mkdirSync(join(root, 'docs/review'), { recursive: true });
 writeFileSync(out, '﻿' + [header.map(csv).join(','), ...lines].join('\n') + '\n');
 console.log(`zh-hant-review: ${rows.length} rows → ${out.replace(root, '')}`);
+
+// 5. The same rows as Markdown, readable on GitHub (also on a phone). Throwaway: delete it after Abby's review.
+const cell = (v) => String(v).replace(/\|/g, '\\|') || ' ';
+const areas = [...new Set(rows.map((r) => r.area.split(' · ')[0]))];
+const md = [
+  '# 繁體中文用詞審核（臨時文件）',
+  '',
+  '> 給 Abby：請只看 **繁體** 一欄。用詞不對的，在最後一欄寫出正確的寫法（或把編號和正確寫法發給我們）；沒問題的不用寫。',
+  '> 簡體和英文只是對照。`{phone}` 這類括號是網站自動填入的內容（電話、價格等），不用改。',
+  '> 審核完成、修改寫進 `src/i18n/zh-hant-fixes.json` 後，這個文件會刪除，不會合併到網站。',
+  '',
+  `共 ${rows.length} 條，按頁面分組：`,
+  '',
+  ...areas.map((a) => `- [${a}](#${a.toLowerCase().replace(/[^\p{L}\p{N} -]/gu, '').trim().replace(/ /g, '-')})（${rows.filter((r) => r.area.split(' · ')[0] === a).length} 條）`),
+  '',
+  ...areas.flatMap((a) => [
+    `## ${a}`,
+    '',
+    '| 編號 | 繁體（自動轉換） | 简体（现在的网站） | English | 位置 | Abby 的修改 |',
+    '|---:|---|---|---|---|---|',
+    ...rows.map((r, i) => ({ ...r, n: i + 1 })).filter((r) => r.area.split(' · ')[0] === a)
+      .map((r) => `| ${r.n} | ${cell(r.hant)} | ${cell(r.zh)} | ${cell(r.en)} | ${cell(r.area.split(' · ').slice(1).join(' · '))} | |`),
+    '',
+  ]),
+].join('\n');
+const mdOut = out.replace(/\.csv$/, '.md');
+writeFileSync(mdOut, md);
+console.log(`zh-hant-review: → ${mdOut.replace(root, '')} (throwaway, for Abby's review)`);
