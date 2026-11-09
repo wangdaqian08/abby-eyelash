@@ -9,6 +9,7 @@ npm install
 npm run start   # build, then http://localhost:8788 with the mock booking API (BOOKING_DEMO=1)
 npm test        # unit tests
 npm run test:e2e  # browser test of the booking flow, against a running `npm run start` (BASE=… for another port)
+npm run check:layout  # text over text, cut-off text, sideways scroll: every page + booking step, 360–1280px
 ```
 
 More documents are in `docs/`: `SPEC.md`, `SETUP-booking.md`, `DEPLOY-CHECKLIST.md` and `PRICES.md`.

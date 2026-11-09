@@ -301,8 +301,8 @@ export function start(root: HTMLElement) {
     if (!st.date) return `<p class="text-sm text-muted lg:pt-3">${t.pickDateHint}</p>`;
     const list = daysFor(st.date.slice(0, 7))?.[st.date] ?? [];
     const rec = recommendedFor(st.date);
-    // The badge sits at the right edge, out of the flow, so a recommended time stays centred in line with the others.
-    const badge = `<span class="${LB ? `absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-accent-ink` : `absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-accent-ink`}">${t.recommended}</span>`;
+    // Three columns (empty · time · badge): the time stays centred, and in a narrow column the badge pushes it left instead of covering it.
+    const badge = `<span class="${LB ? `justify-self-end whitespace-nowrap rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-accent-ink` : `justify-self-end whitespace-nowrap rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-accent-ink`}">${t.recommended}</span>`;
     const items = list
       .map((time) => {
         const label = fmtTime(st.date!, time);
@@ -310,7 +310,7 @@ export function start(root: HTMLElement) {
         return time === st.time
           ? `<li class="grid grid-cols-2 gap-2"><span${LB ? ' data-pop' : ''} class="${LB ? `relative flex h-12 items-center justify-center rounded-full bg-primary/8 font-medium text-primary ring-2 ring-inset ring-primary/60` : `flex h-12 items-center justify-center rounded-field bg-muted tabular-nums text-on-primary`}">${label}${tag && `<span class="sr-only">, ${t.recommended}</span>`}</span>
               <button type="button" data-action="to-details" aria-label="${t.next}: ${label}" class="${LB ? `btn-solid press h-12 rounded-full font-medium` : `btn-raise h-12 rounded-field bg-primary font-medium text-on-primary transition duration-200 hover:bg-primary/90 active:scale-[.97]`}">${t.next}</button></li>`
-          : `<li><button type="button" data-time="${time}" class="${LB ? `press relative h-12 w-full rounded-full bg-surface-2 text-fg tabular-nums` : `relative h-12 w-full rounded-field bg-surface-2/70 tabular-nums text-muted transition duration-200 hover:bg-surface-2 hover:text-fg active:scale-[.97]`}">${label}${tag}</button></li>`;
+          : `<li><button type="button" data-time="${time}" class="${LB ? `press grid h-12 w-full grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-full bg-surface-2 px-3 text-fg tabular-nums` : `grid h-12 w-full grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-field bg-surface-2/70 px-3 tabular-nums text-muted transition duration-200 hover:bg-surface-2 hover:text-fg active:scale-[.97]`}"><span></span><span class="whitespace-nowrap">${label}</span>${tag}</button></li>`;
       })
       .join('');
     return `<h3 data-slots-heading tabindex="-1" class="font-sans text-base font-normal outline-none">${fmtDate(st.date, { weekday: 'long', day: 'numeric', month: 'long' })}</h3>
