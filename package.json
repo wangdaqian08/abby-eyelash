@@ -7,7 +7,10 @@
     "prebuild": "node scripts/prices.mjs",
     "build": "astro build",
     "start": "npm run build && npm run preview",
-    "preview": "wrangler pages dev ./dist --port 8788 --ip 0.0.0.0 --binding BOOKING_DEMO=1",
+    "prepreview": "node scripts/db.mjs up",
+    "preview": "wrangler pages dev ./dist --port 8788 --ip 0.0.0.0 --compatibility-flags nodejs_compat --binding BOOKING_DEMO=1 --binding DATABASE_URL=postgres://abby_app:abby_dev@127.0.0.1:5434/postgres",
+    "db": "node scripts/db.mjs up",
+    "db:migrate": "node scripts/db.mjs migrate",
     "pretest": "node scripts/prices.mjs",
     "test": "node --test",
     "check:seo": "node scripts/check-seo.mjs dist",
@@ -21,6 +24,7 @@
     "@fontsource/playfair-display": "^5.3.0",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.4.2",
+    "postgres": "^3.4.9",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {

@@ -75,6 +75,6 @@ test('_routes.json: static files skip Functions; pages, /api and /look-b/ still 
   const hit = (rules: string[], path: string) => rules.some((r) => (r.endsWith('/*') ? path.startsWith(r.slice(0, -1)) : path === r));
   const runs = (path: string) => hit(routes.include, path) && !hit(routes.exclude, path);
   assert.equal(routes.version, 1);
-  for (const p of ['/', '/zh/', '/book/', '/privacy/', '/lash-lift-burwood/', '/no-such-page/', '/api/book', '/api/availability', '/look-b/', '/look-b/zh/']) assert.ok(runs(p), p);
+  for (const p of ['/', '/zh/', '/book/', '/privacy/', '/lash-lift-burwood/', '/no-such-page/', '/api/availability', '/c', '/look-b/', '/look-b/zh/']) assert.ok(runs(p), p);
   for (const p of ['/_astro/BaseLayout.abc.css', '/_astro/hero.abc.webp', '/media/brows-touch-up.mp4', '/favicon.svg', '/robots.txt', '/sitemap-0.xml']) assert.ok(!runs(p), p);
 });

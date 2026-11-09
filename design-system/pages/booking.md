@@ -23,7 +23,7 @@ References: `reference/customer-booking-UI.png` (stepper + month calendar + slot
 - Validate on blur; errors under field in `--danger` with icon; on submit failure focus an error summary (`role="alert"`).
 - Inputs: `--surface-2` fill, no border, 0 radius, 48px tall, focus ring `--ring`.
 - Submit button full width "Book appointment" → loading state (spinner + disabled) → success view.
-- Turnstile widget above the submit button (managed mode).
+- Button "Continue" → step 5 (send). No email field: the message itself comes from the customer's phone.
 
-## Success view
-- Heading "Request received" + summary + "We'll confirm by phone or SMS shortly." + buttons: "Add to Google Calendar", "Download .ics", "Back to home". Pending status clearly stated.
+## Send view (step 5, since 2026-11-08)
+- Heading "Send your request to Abby" + "not booked until Abby replies". Buttons: "Send by WhatsApp" (primary, wa.me with text), "Send by SMS" (sms:?&body=). Read-only message preview, "Copy message", "Change details".
