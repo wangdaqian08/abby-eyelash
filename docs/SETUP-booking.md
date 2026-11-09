@@ -43,7 +43,7 @@ You need about 30 minutes. Do the steps on a computer, signed in to the Gmail ac
 - Everything else never blocks: personal events, reminders, all-day events such as `rent`, birthdays.
 - Closed for a holiday or an appointment of your own? Add `❤️ 休假` (all day) or `❤️ Doctor` (with times). That time is then closed on the website.
 - A ❤️ later in the title doesn't count (`给妈妈买花❤️` stays free time). Only the first character counts.
-- Only the red heart â¤ï¸ counts. Look-alikes such as ð, ð or ð©· do not block anything.
+- Only the red heart ❤️ counts. Look-alikes such as 💗, 💓 or 🩷 do not block anything.
 - There is always a 15-minute gap before and after each ❤️ event.
 - **Before going live:** put ❤️ at the start of every client booking that is already in your calendar. Without it, the website shows that time as free.
 
