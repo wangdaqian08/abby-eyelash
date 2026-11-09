@@ -8,6 +8,7 @@ import Offers from './Offers.astro';
 import About from './About.astro';
 import Gallery from './Gallery.astro';
 import Reviews from './Reviews.astro';
+import { reviews } from '../../data/reviews';
 import Faq from './Faq.astro';
 import Contact from './Contact.astro';
 interface Props { lang: Lang }
@@ -19,6 +20,6 @@ const { lang } = Astro.props;
 <Offers lang={lang} />
 <About lang={lang} />
 <Gallery lang={lang} />
-<Reviews lang={lang} />
+{reviews.length > 0 && <Reviews lang={lang} />}
 <Faq lang={lang} />
 <Contact lang={lang} />
