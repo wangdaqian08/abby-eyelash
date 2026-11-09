@@ -308,6 +308,8 @@ export const waHref = (phone: string) => `https://wa.me/${phone.replace(/\D/g, '
 
 // Address only: the studio isn't on Google Maps yet, and adding the name sends Google to a business search instead of the street.
 export const mapsUrl = (site: Pick<Site, 'address'>) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(napAddress(site))}`;
+/** Embedded map of the same address (no API key needed). Replace with site.google.mapsEmbed once the studio has a Google Business Profile. */
+export const mapsEmbedUrl = (site: Pick<Site, 'address'>) => `https://maps.google.com/maps?q=${encodeURIComponent(napAddress(site))}&z=15&output=embed`;
 
 const DAYS: Record<Lang, string[]> = {
   en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
