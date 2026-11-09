@@ -93,5 +93,5 @@ const csv = (v) => `"${String(v).replace(/"/g, '""')}"`;
 const header = ['编号', '位置', 'English', '简体中文（现在的网站）', '繁體中文（自動轉換）', '和简体一样？', 'Abby 的修改（不需要改就留空）'];
 const lines = rows.map((r, i) => [i + 1, r.area, r.en, r.zh, r.hant, r.zh === r.hant ? '一样' : '', ''].map(csv).join(','));
 mkdirSync(join(root, 'docs/review'), { recursive: true });
-writeFileSync(out, '﻿' + [header.map(csv).join(','), ...lines].join('\r\n') + '\r\n');
+writeFileSync(out, '﻿' + [header.map(csv).join(','), ...lines].join('\n') + '\n');
 console.log(`zh-hant-review: ${rows.length} rows → ${out.replace(root, '')}`);
