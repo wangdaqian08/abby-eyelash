@@ -30,6 +30,12 @@ test('quote: rejects either/or clashes, units out of range, unknown ids and add-
   assert.equal(quote('nope', 'classic-natural', {}), null);
 });
 
+test('price range: removal reads "$10–$20" / "$10 起至 $20"', () => {
+  const o = findOption(L, 'removal')!;
+  assert.equal(priceText(o, 'en'), '$10–$20');
+  assert.equal(priceText(o, 'zh'), '$10 起至 $20');
+});
+
 test('parseAddons / addonsParam round-trip and reject junk', () => {
   assert.deepEqual(parseAddons(''), {});
   assert.deepEqual(parseAddons('bottom-full:1'), { 'bottom-full': 1 });

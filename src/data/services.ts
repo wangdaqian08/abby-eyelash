@@ -163,11 +163,12 @@ export function headline(s: Service) {
   };
 }
 
-type Priced = Pick<ServiceOption, 'price' | 'from' | 'unit' | 'onRequest' | 'pct'>;
-/** "$80" · "from $130" · "$6 / nail" · "Price on request" · "50% of your last price" (zh: "$130 起" · "$6 / 只" · "定制价，需咨询" · "上次价格的 50%"). */
+type Priced = Pick<ServiceOption, 'price' | 'from' | 'unit' | 'onRequest' | 'pct' | 'maxPrice'>;
+/** "$10–$20" · "$80" · "from $130" · "$6 / nail" · "Price on request" · "50% of your last price" (zh: "$10 起至 $20" · "$130 起" · "$6 / 只" · "定制价，需咨询" · "上次价格的 50%"). */
 export const priceText = (o: Priced, lang: Lang) => {
   if (o.onRequest) return lang === 'zh' ? '定制价，需咨询' : 'Price on request';
   if (o.pct) return lang === 'zh' ? `上次价格的 ${o.pct}%` : `${o.pct}% of your last price`;
+  if (o.maxPrice) return lang === 'zh' ? `$${o.price} 起至 $${o.maxPrice}` : `$${o.price}–$${o.maxPrice}`;
   const p = o.from ? (lang === 'zh' ? `$${o.price} 起` : `from $${o.price}`) : `$${o.price}`;
   return o.unit ? `${p} / ${o.unit[lang]}` : p;
 };

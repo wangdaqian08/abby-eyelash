@@ -2,7 +2,7 @@
 // Prices/durations are interpolated from services.ts so the visible copy always matches the price table and JSON-LD.
 // Body strings are trusted HTML (rendered with set:html) so they can carry citation links.
 // Every `// OWNER-REVIEW` marks a claim Abby must confirm before launch (products, aftercare, policies).
-import { depositFor, services, type Lang } from './services';
+import { depositFor, priceText, services, type Lang } from './services';
 import { site } from './site';
 
 export interface Section {
@@ -36,7 +36,7 @@ const span = (s: string, ...os: string[]) => {
 };
 // Options priced as a share of the full set (lash infill tiers), and "$X–$Y" for ranged prices — both from prices.csv.
 const shares = (s: string) => services.find((v) => v.id === s)!.options.filter((o) => o.pct);
-const range = (s: string, o: string) => (opt(s, o).maxPrice ? `$${opt(s, o).price}–$${opt(s, o).maxPrice}` : $(s, o));
+const range = (s: string, o: string, lang: Lang = 'en') => (opt(s, o).maxPrice ? priceText(opt(s, o), lang) : $(s, o));
 
 const { cancelHours: h } = site.booking;
 // One cancellation answer per service page, built from site.ts/services.ts so the rule can't drift between pages.
@@ -197,7 +197,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
             `超过 4 周：原价`,
           ],
           after: [
-            `卸睫毛 ${range(L, 'removal')}，只对非本店嫁接的睫毛收费；在 Abby 这里做的免费卸。`,
+            `卸睫毛 ${range(L, 'removal', 'zh')}，只对非本店嫁接的睫毛收费；在 Abby 这里做的免费卸。`,
           ],
         },
         {
@@ -230,7 +230,7 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
         { q: '做嫁接睫毛会痛吗？', a: '不会。全程闭眼躺着，胶水和睫毛都不碰到眼睛，很多客人会直接睡着。如果有刺痛感请马上告诉 Abby。' }, // OWNER-REVIEW
         { q: '嫁接后还能涂睫毛膏吗？', a: '一般不需要。如果要涂，只在睫毛尾端用水性睫毛膏，不要用防水款，并用无油清洁产品卸掉。' }, // OWNER-REVIEW
         { q: '嫁接睫毛会伤真睫毛吗？', a: '睫毛脱落确实是已知风险，多数来自睫毛过重、经常揉或自己拔。按你的真睫毛选合适的款式，并由专业人员卸除，风险就能降到很低。' },
-        { q: '想卸掉怎么办？', a: `预约 Abby 帮你卸：非本店嫁接的 ${range(L, 'removal')}，在这里做的免费；可以单独卸，也可以卸完接着做新睫毛。她会用专业卸睫膏溶解胶水，不会扯掉真睫毛。请不要自己拔。` }, // OWNER-REVIEW: removal time
+        { q: '想卸掉怎么办？', a: `预约 Abby 帮你卸：非本店嫁接的 ${range(L, 'removal', 'zh')}，在这里做的免费；可以单独卸，也可以卸完接着做新睫毛。她会用专业卸睫膏溶解胶水，不会扯掉真睫毛。请不要自己拔。` }, // OWNER-REVIEW: removal time
         { q: '以前对睫毛胶过敏，还能做吗？', a: '请在预约前告诉 Abby，她会给你建议。Abby 不提供皮试；如果以前反应比较严重，嫁接睫毛可能不适合你。' }, // OWNER-REVIEW
         CANCEL.zh,
       ],
