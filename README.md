@@ -20,7 +20,7 @@ More documents are in `docs/`: `SPEC.md`, `SETUP-booking.md`, `DEPLOY-CHECKLIST.
 4. The server keeps the booking details in the `abby` database schema. When Abby opens the link, the server sends her to a Google Calendar "new event" page with the details filled in.
 5. Abby saves the event and replies to the customer. Her reply makes the booking final.
 
-Booking times (decided 2026-11-09): only events whose title starts with 💗 block a time. Personal events, for example an all-day "rent" reminder, never block. Abby writes `💗 休假` to close a day. The calendar link creates events that start with `💗 ⏳`.
+Booking times (decided 2026-11-09): only events whose title starts with ❤️ block a time. Personal events, for example an all-day "rent" reminder, never block. Abby writes `❤️ 休假` to close a day. The calendar link creates events that start with `❤️ ⏳`.
 
 ## Hosting and data (decided 2026-11-09)
 

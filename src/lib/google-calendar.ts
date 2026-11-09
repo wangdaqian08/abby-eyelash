@@ -21,7 +21,7 @@ export const availabilityCacheKey = (origin: string, month: string) =>
   new Request(`${origin}/api/availability?${new URLSearchParams({ busy: '1', month })}`);
 
 const API = 'https://www.googleapis.com/calendar/v3';
-// Read-only: event titles are needed to tell client bookings (💗) from Abby's personal events. The site never writes.
+// Read-only: event titles are needed to tell client bookings (❤️) from Abby's personal events. The site never writes.
 const SCOPE = 'https://www.googleapis.com/auth/calendar.events.readonly';
 
 const b64url = (bytes: Uint8Array) =>
@@ -65,11 +65,12 @@ async function accessToken(env: GoogleEnv): Promise<string> {
 }
 
 /** Marks a client booking (or time Abby closed): the event title starts with this. Other events never block booking times. */
-export const BOOKED_MARK = '💗';
+// Matched without U+FE0F: phones and Google store the red heart with or without it.
+export const BOOKED_MARK = '❤';
 
 type CalEvent = { summary?: string; status?: string; start?: { date?: string; dateTime?: string }; end?: { date?: string; dateTime?: string } };
 
-/** Busy intervals from calendar events: only 💗 events count (all-day ones block whole days). Titles stay on the server. */
+/** Busy intervals from calendar events: only ❤️ events count (all-day ones block whole days). Titles stay on the server. */
 export function bookedIntervals(events: CalEvent[], tz: string): Interval[] {
   const at = (t: { date?: string; dateTime?: string }) => (t.dateTime ? Date.parse(t.dateTime) : zonedTimeToUtc(t.date!, '00:00', tz));
   return events
@@ -84,7 +85,7 @@ async function get<T>(env: GoogleEnv, path: string, query: Record<string, string
   return res.json() as Promise<T>;
 }
 
-/** Busy intervals in the calendar (💗 events only). Demo mode (no credentials) returns deterministic mock blocks. */
+/** Busy intervals in the calendar (❤️ events only). Demo mode (no credentials) returns deterministic mock blocks. */
 export async function busyBetween(env: GoogleEnv, range: Interval, tz: string): Promise<Interval[]> {
   if (!isConfigured(env)) return mockBusy(range, tz);
   const path = `/calendars/${encodeURIComponent(env.GOOGLE_CALENDAR_ID!)}/events`;
