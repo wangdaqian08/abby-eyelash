@@ -4,7 +4,7 @@ import type { Lang } from '../data/services';
 const en = {
   metaTitle: 'Book an appointment | Abby Eyelashes, Burwood',
   metaDescription:
-    'Book eyelash extensions, lash lifts, powder brows or gel nails with Abby in Burwood NSW. Pick a service and time online, then send it to Abby by SMS or WhatsApp; she replies to confirm.',
+    'Book lash extensions, lash lifts, powder brows or gel nails with Abby in Burwood NSW. Pick a time online, then send it to Abby by SMS or WhatsApp.',
   eyebrow: 'Online booking',
   titleA: 'Book your ',
   titleB: 'appointment.',
