@@ -21,6 +21,12 @@ test('quote: rejects either/or clashes, units out of range, unknown ids and add-
   assert.equal(quote(L, 'classic-natural', { nope: 1 }), null);
   assert.equal(quote(L, 'removal', { 'bottom-full': 1 }), null);
   assert.ok(quote(L, 'removal', {}));
+  const set = findOption(L, 'classic-natural')!;
+  const both = quote(L, 'classic-natural', { removal: 1, 'bottom-full': 1 })!; // removal adds onto a full set, add-ons kept
+  assert.equal(both.extras.length, 2);
+  assert.equal(both.minutes, set.minutes + 15 + 15);
+  assert.equal(quote(L, 'classic-natural', { removal: 2 }), null);
+  assert.deepEqual(quote(L, 'classic-natural', { removal: 1, 'bottom-full': 1 })!.extras.map((e) => e.option.id), ['bottom-full', 'removal']); // menu order, not tick order
   assert.equal(quote('nope', 'classic-natural', {}), null);
 });
 
@@ -86,4 +92,65 @@ test('items param round-trips and rejects malformed input', () => {
   assert.equal(itemsParam(items), 'lash-extensions/classic-natural/bottom-full:1;gel-nails/solid/');
   assert.deepEqual(parseItems(itemsParam(items)), items);
   for (const bad of ['', 'lash-extensions', 'a/b', 'a/b/x:1,x:2', 'A/b/', 'a/b/;', 'a/b/;'.repeat(7)]) assert.equal(parseItems(bad), null, bad);
+});
+
+// Every lash-extension choice the booking form can make: main option (or none) × bottom lashes × removal.
+test('lash extensions: all main × bottom × removal permutations', () => {
+  const s = services.find((x) => x.id === L)!;
+  const mains = s.options.filter((o) => !o.addon);
+  const removal = s.options.find((o) => o.id === 'removal')!;
+  let valid = 0;
+  for (const main of [undefined, ...mains])
+    for (const bottom of [undefined, 'bottom-natural', 'bottom-full'])
+      for (const rem of [false, true]) {
+        const addons: Record<string, number> = { ...(bottom && { [bottom]: 1 }), ...(rem && { removal: 1 }) };
+        const id = `${main?.id ?? '-'}/${bottom ?? '-'}/${rem}`;
+        if (!main) {
+          // no main option: only removal on its own is bookable (the form sends it as the option)
+          if (bottom) {
+            // bottom lashes need a set: rejected with or without removal
+            assert.equal(quote(L, 'removal', { [bottom]: 1 }), null, id);
+            assert.equal(quote(L, bottom, rem ? { removal: 1 } : {}), null, id);
+          } else if (rem) {
+            const q = quote(L, 'removal', {})!;
+            assert.deepEqual([q.minutes, q.price, q.from, q.extras.length], [removal.minutes, removal.price, true, 0], id);
+            valid++;
+          }
+          continue;
+        }
+        const q = quote(L, main.id, addons);
+        assert.ok(q, id);
+        const extras = s.options.filter((o) => o.id in addons);
+        assert.equal(q.minutes, main.minutes + extras.reduce((n, o) => n + o.minutes, 0), id);
+        assert.equal(q.price, main.price + extras.reduce((n, o) => n + o.price, 0), id);
+        assert.equal(q.from, !!main.from || rem, id); // removal is "$10–20", so a total with it is "from"
+        assert.deepEqual(parseItems(itemsParam([{ service: L, option: main.id, addons }])), [{ service: L, option: main.id, addons }], id);
+        valid++;
+      }
+  assert.equal(valid, mains.length * 3 * 2 + 1); // 8 mains × 3 × 2 + removal alone = 49
+});
+
+test('per-nail extensions: 0..max units valid, max+1 rejected, for every design', () => {
+  for (const s of services.filter((x) => x.id === 'gel-nails' || x.id === 'handcrafted-nails'))
+    for (const o of s.options.filter((x) => !x.addon)) {
+      for (let n = 0; n <= 10; n++) assert.ok(quote(s.id, o.id, n ? { extension: n } : {}), `${s.id}/${o.id}/${n}`);
+      assert.equal(quote(s.id, o.id, { extension: 11 }), null);
+    }
+});
+
+test('every subset of bookable services adds up (minutes, dollars, deposit)', () => {
+  const list = bookable();
+  for (let mask = 1; mask < 1 << list.length; mask++) {
+    const pick = list.filter((_, i) => mask & (1 << i));
+    const items = pick.map((s) => ({ service: s.id, option: s.options.find((o) => !o.addon)!.id, addons: {} }));
+    const all = quoteAll(items)!;
+    const one = items.map((i) => quote(i.service, i.option, i.addons)!);
+    assert.ok(all, String(mask));
+    assert.equal(all.minutes, one.reduce((n, q) => n + q.minutes, 0));
+    assert.equal(all.price, one.reduce((n, q) => n + q.price, 0));
+    assert.equal(all.deposit, depositFor(pick));
+    assert.deepEqual(parseItems(itemsParam(items)), items);
+  }
+  // removal alone combines with other services too
+  assert.ok(quoteAll([{ service: L, option: 'removal', addons: {} }, { service: 'gel-nails', option: 'solid', addons: { extension: 3 } }]));
 });
