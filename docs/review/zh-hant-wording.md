@@ -31,9 +31,9 @@
 | 1 | Abby Eyelashes｜悉尼寶活 Burwood 美睫 · 霧眉 · 美甲工作室 | Abby Eyelashes｜悉尼宝活 Burwood 美睫 · 雾眉 · 美甲工作室 | Abby Eyelashes \| Lash, Brow & Nail Studio in Burwood NSW | 网页标题 | |
 | 2 | Abby 在悉尼寶活（Burwood NSW 2134）主理的美睫美甲工作室：嫁接睫毛、角蛋白翹睫、半永久霧眉、凝膠美甲與手繪造型。查看價格與營業時間，在線預約。 | Abby 在悉尼宝活（Burwood NSW 2134）主理的美睫美甲工作室：嫁接睫毛、角蛋白翘睫、半永久雾眉、凝胶美甲与手绘造型。查看价格与营业时间，在线预约。 | Eyelash extensions, keratin lash lifts, powder brows and gel nails by Abby in Burwood NSW 2134. See prices and opening hours, and book online. | 搜索结果描述 | |
 | 125 | 怎麼預約？取消政策是什麼？ | 怎么预约？取消政策是什么？ | How do I book, and what is the cancellation policy? | 常见问题 | |
-| 126 | 可以隨時在線預約，也可以發短信或 WhatsApp 至 {phone}，一次可以預約多個項目。預約後請通過銀行轉賬支付訂金確認時間：每個項目 ${deposit}（霧眉 ${browDeposit}），確認預約時 Abby 會發給你賬戶信息。如需取消或改期，請至少提前 {hours} 小時告知；{hours} 小時以內取消或改期，訂金不退，也不能更改時間。 | 可以随时在线预约，也可以发短信或 WhatsApp 至 {phone}，一次可以预约多个项目。预约后请通过银行转账支付订金确认时间：每个项目 ${deposit}（雾眉 ${browDeposit}），确认预约时 Abby 会发给你账户信息。如需取消或改期，请至少提前 {hours} 小时告知；{hours} 小时以内取消或改期，订金不退，也不能更改时间。 | Book online at any time, or text or WhatsApp {phone}; you can book several services for the same visit. After you book, a deposit of ${deposit} per service (${browDeposit} for powder brows) by bank transfer secures your time; Abby sends the bank details when she confirms. Please give at least {hours} hours’ notice to cancel or reschedule; within {hours} hours the deposit is not refunded and the time can’t be changed. | 常见问题 | |
+| 126 | 可以隨時在線預約，也可以發短信或 WhatsApp 至 {phone}，一次可以預約多個項目。預約後請通過銀行轉帳支付訂金確認時間：每個項目 ${deposit}（霧眉 ${browDeposit}），確認預約時 Abby 會發給你帳戶信息。如需取消或改期，請至少提前 {hours} 小時告知；{hours} 小時以內取消或改期，訂金不退，也不能更改時間。 | 可以随时在线预约，也可以发短信或 WhatsApp 至 {phone}，一次可以预约多个项目。预约后请通过银行转账支付订金确认时间：每个项目 ${deposit}（雾眉 ${browDeposit}），确认预约时 Abby 会发给你账户信息。如需取消或改期，请至少提前 {hours} 小时告知；{hours} 小时以内取消或改期，订金不退，也不能更改时间。 | Book online at any time, or text or WhatsApp {phone}; you can book several services for the same visit. After you book, a deposit of ${deposit} per service (${browDeposit} for powder brows) by bank transfer secures your time; Abby sends the bank details when she confirms. Please give at least {hours} hours’ notice to cancel or reschedule; within {hours} hours the deposit is not refunded and the time can’t be changed. | 常见问题 | |
 | 127 | 可以用哪些方式付款？ | 可以用哪些方式付款？ | What payment methods do you accept? | 常见问题 | |
-| 128 | 預約後通過銀行轉賬支付訂金（每個項目 ${deposit}，霧眉 ${browDeposit}），其餘費用在服務結束後以現金支付。 | 预约后通过银行转账支付订金（每个项目 ${deposit}，雾眉 ${browDeposit}），其余费用在服务结束后以现金支付。 | The deposit (${deposit} per service, ${browDeposit} for powder brows) is paid by bank transfer after you book. The rest is paid in cash at the end of your appointment. | 常见问题 | |
+| 128 | 預約後通過銀行轉帳支付訂金（每個項目 ${deposit}，霧眉 ${browDeposit}），其餘費用在服務結束後以現金支付。 | 预约后通过银行转账支付订金（每个项目 ${deposit}，雾眉 ${browDeposit}），其余费用在服务结束后以现金支付。 | The deposit (${deposit} per service, ${browDeposit} for powder brows) is paid by bank transfer after you book. The rest is paid in cash at the end of your appointment. | 常见问题 | |
 | 129 | 有什麼優惠嗎？ | 有什么优惠吗？ | Do you have any offers? | 常见问题 | |
 | 130 | 有。生日當月做嫁接睫毛或翹睫享 8 折。介紹朋友來做，新朋友首次到店減 $5，朋友做完服務後，介紹人可獲得一張刮刮卡。 | 有。生日当月做嫁接睫毛或翘睫享 8 折。介绍朋友来做，新朋友首次到店减 $5，朋友做完服务后，介绍人可获得一张刮刮卡。 | Yes. Eyelash extensions and lash lifts are 20% off during your birthday month. If you refer a friend, they get $5 off their first visit and you get a scratch card once they’ve had their appointment. | 常见问题 | |
 | 131 | 工作室在哪裡？ | 工作室在哪里？ | Where is the studio? | 常见问题 | |
@@ -69,7 +69,7 @@
 |---:|---|---|---|---|---|
 | 7 | 寶活 Burwood 嫁接睫毛 \| Abby Eyelashes 美睫 | 宝活 Burwood 嫁接睫毛 \| Abby Eyelashes 美睫 | Eyelash Extensions in Burwood \| Abby Eyelashes | 网页标题 | |
 | 8 | 悉尼寶活 Burwood 嫁接睫毛：日式單根 $80 起，回補為上次價格的 50% 起。Abby 親手逐根嫁接，附術後護理、回補價格和過敏說明。 | 悉尼宝活 Burwood 嫁接睫毛：日式单根 $80 起，回补为上次价格的 50% 起。Abby 亲手逐根嫁接，附术后护理、回补价格和过敏说明。 | Japanese classic and hybrid eyelash extensions by Abby in Burwood NSW. Full sets from $80, infills from 50% of your last price. Aftercare and allergy advice. | 搜索结果描述 | |
-| 286 | 嫁接睫毛（也叫種睫毛、接睫毛）是用專用睫毛膠，把一根根合成睫毛逐根粘在你的真睫毛上。在 Burwood NSW 2134 的 Abby Eyelashes，日式單根自然款 $80、濃密款 $110（約 50–60 分鐘），開花 / 輕盈自然款 $110、濃密款 $140。嫁接的睫毛會隨真睫毛自然脫落，大多數客人每 2–3 週迴補一次，越早回補越便宜。 | 嫁接睫毛（也叫种睫毛、接睫毛）是用专用睫毛胶，把一根根合成睫毛逐根粘在你的真睫毛上。在 Burwood NSW 2134 的 Abby Eyelashes，日式单根自然款 $80、浓密款 $110（约 50–60 分钟），开花 / 轻盈自然款 $110、浓密款 $140。嫁接的睫毛会随真睫毛自然脱落，大多数客人每 2–3 周回补一次，越早回补越便宜。 | Eyelash extensions are single synthetic lashes bonded one at a time to your natural lashes with a cosmetic adhesive. At Abby Eyelashes in Burwood NSW 2134, a Japanese classic set is $80 natural or $110 full (about 50–60 minutes), and a hybrid set is $110 natural or $140 full. Each extension lasts as long as the natural lash it sits on, so most clients book an infill every 2–3 weeks; the price depends on how soon you come back. | 正文 | |
+| 286 | 嫁接睫毛（也叫種睫毛、接睫毛）是用專用睫毛膠，把一根根合成睫毛逐根黏在你的真睫毛上。在 Burwood NSW 2134 的 Abby Eyelashes，日式單根自然款 $80、濃密款 $110（約 50–60 分鐘），開花 / 輕盈自然款 $110、濃密款 $140。嫁接的睫毛會隨真睫毛自然脫落，大多數客人每 2–3 週回補一次，越早回補越便宜。 | 嫁接睫毛（也叫种睫毛、接睫毛）是用专用睫毛胶，把一根根合成睫毛逐根粘在你的真睫毛上。在 Burwood NSW 2134 的 Abby Eyelashes，日式单根自然款 $80、浓密款 $110（约 50–60 分钟），开花 / 轻盈自然款 $110、浓密款 $140。嫁接的睫毛会随真睫毛自然脱落，大多数客人每 2–3 周回补一次，越早回补越便宜。 | Eyelash extensions are single synthetic lashes bonded one at a time to your natural lashes with a cosmetic adhesive. At Abby Eyelashes in Burwood NSW 2134, a Japanese classic set is $80 natural or $110 full (about 50–60 minutes), and a hybrid set is $110 natural or $140 full. Each extension lasts as long as the natural lash it sits on, so most clients book an infill every 2–3 weeks; the price depends on how soon you come back. | 正文 | |
 | 287 | 日式單根、開花還是造型款？ | 日式单根、开花还是造型款？ | Classic, hybrid or styled: | 正文 | |
 | 288 | 怎麼選 | 怎么选 | which suits you? | 正文 | |
 | 289 | 日式單根：每根真睫毛接一根。效果清晰自然，像刷了睫毛膏，適合自身睫毛多且健康的人。 | 日式单根：每根真睫毛接一根。效果清晰自然，像刷了睫毛膏，适合自身睫毛多且健康的人。 | Japanese classic: one extension on each natural lash. A defined, mascara-like look that suits you if you have plenty of healthy natural lashes. | 正文 | |
@@ -81,13 +81,13 @@
 | 295 | 流程 | 流程 | during your appointment | 正文 | |
 | 296 | 簡單溝通：想要的效果、眼型、是否戴隱形眼鏡、有沒有過敏或過往不適。 | 简单沟通：想要的效果、眼型、是否戴隐形眼镜、有没有过敏或过往不适。 | A short consultation: the look you want, your eye shape, contact lenses, and any allergies or past reactions. | 正文 | |
 | 297 | 你閉眼平躺，Abby 用眼貼把下睫毛隔開。 | 你闭眼平躺，Abby 用眼贴把下睫毛隔开。 | You lie back with your eyes closed while Abby covers your lower lashes with gel pads. | 正文 | |
-| 298 | 清潔並處理真睫毛，讓膠水粘得更牢。 | 清洁并处理真睫毛，让胶水粘得更牢。 | Your natural lashes are cleansed and primed so the adhesive bonds well. | 正文 | |
+| 298 | 清潔並處理真睫毛，讓膠水黏得更牢。 | 清洁并处理真睫毛，让胶水粘得更牢。 | Your natural lashes are cleansed and primed so the adhesive bonds well. | 正文 | |
 | 299 | 逐根分離真睫毛再嫁接，接點離開皮膚，不會碰到眼皮。 | 逐根分离真睫毛再嫁接，接点离开皮肤，不会碰到眼皮。 | Each extension is isolated onto a single natural lash, placed just off the skin so it never touches your eyelid. | 正文 | |
-| 300 | 梳理檢查，確保沒有粘連，再給你看效果。 | 梳理检查，确保没有粘连，再给你看效果。 | Abby brushes through, checks that no lashes are stuck together, and shows you the result. | 正文 | |
+| 300 | 梳理檢查，確保沒有黏連，再給你看效果。 | 梳理检查，确保没有粘连，再给你看效果。 | Abby brushes through, checks that no lashes are stuck together, and shows you the result. | 正文 | |
 | 301 | 全套預留約 50–75 分鐘。很多客人會直接睡一覺。 | 全套预留约 50–75 分钟。很多客人会直接睡一觉。 | Allow about 50–75 minutes for a full set. Many clients nap. | 正文 | |
 | 302 | 能維持多久， | 能维持多久， | How long they last | 正文 | |
 | 303 | 多久回補一次 | 多久回补一次 | and when to infill | 正文 | |
-| 304 | 真睫毛每天都會自然掉幾根，嫁接的睫毛也跟著一起掉。想保持濃密，大多數客人每 2–3 週迴補一次，會取下長出來的舊睫毛並補滿空位。 | 真睫毛每天都会自然掉几根，嫁接的睫毛也跟着一起掉。想保持浓密，大多数客人每 2–3 周回补一次，会取下长出来的旧睫毛并补满空位。 | You shed a few natural lashes every day, and each extension falls out with its lash. To keep the set looking full, most clients book an infill every 2–3 weeks. An infill removes grown-out extensions and fills the gaps. | 正文 | |
+| 304 | 真睫毛每天都會自然掉幾根，嫁接的睫毛也跟著一起掉。想保持濃密，大多數客人每 2–3 週回補一次，會取下長出來的舊睫毛並補滿空位。 | 真睫毛每天都会自然掉几根，嫁接的睫毛也跟着一起掉。想保持浓密，大多数客人每 2–3 周回补一次，会取下长出来的旧睫毛并补满空位。 | You shed a few natural lashes every day, and each extension falls out with its lash. To keep the set looking full, most clients book an infill every 2–3 weeks. An infill removes grown-out extensions and fills the gaps. | 正文 | |
 | 305 | 回補 · 2 周內：上次支付價格的 50% | 回补 · 2 周内：上次支付价格的 50% | Infill – within 2 weeks: 50% of the price you paid last time | 正文 | |
 | 306 | 回補 · 3 周內：上次支付價格的 70% | 回补 · 3 周内：上次支付价格的 70% | Infill – within 3 weeks: 70% of the price you paid last time | 正文 | |
 | 307 | 回補 · 4 周內：上次支付價格的 85% | 回补 · 4 周内：上次支付价格的 85% | Infill – within 4 weeks: 85% of the price you paid last time | 正文 | |
@@ -121,7 +121,7 @@
 | 335 | 以前對睫毛膠過敏，還能做嗎？ | 以前对睫毛胶过敏，还能做吗？ | I reacted to lash glue before. Can I still have extensions? | 正文 | |
 | 336 | 請在預約前告訴 Abby，她會給你建議。Abby 不提供皮試；如果以前反應比較嚴重，嫁接睫毛可能不適合你。 | 请在预约前告诉 Abby，她会给你建议。Abby 不提供皮试；如果以前反应比较严重，嫁接睫毛可能不适合你。 | Tell Abby before booking so she can advise you. Abby doesn’t offer patch tests; after a significant reaction, extensions may not be right for you. | 正文 | |
 | 337 | 取消預約有什麼規定？ | 取消预约有什么规定？ | What is your cancellation policy? | 正文 | |
-| 338 | 預約需通過銀行轉賬支付 $20 訂金（確認預約時 Abby 會發給你賬戶信息）。如需取消或改期，請至少提前 48 小時告知；48 小時以內取消或改期，訂金不退，也不能更改時間。 | 预约需通过银行转账支付 $20 订金（确认预约时 Abby 会发给你账户信息）。如需取消或改期，请至少提前 48 小时告知；48 小时以内取消或改期，订金不退，也不能更改时间。 | A $20 deposit by bank transfer secures your booking (Abby sends the bank details when she confirms). Please give at least 48 hours’ notice to cancel or reschedule; within 48 hours the deposit is not refunded and the time can’t be changed. | 正文 | |
+| 338 | 預約需通過銀行轉帳支付 $20 訂金（確認預約時 Abby 會發給你帳戶信息）。如需取消或改期，請至少提前 48 小時告知；48 小時以內取消或改期，訂金不退，也不能更改時間。 | 预约需通过银行转账支付 $20 订金（确认预约时 Abby 会发给你账户信息）。如需取消或改期，请至少提前 48 小时告知；48 小时以内取消或改期，订金不退，也不能更改时间。 | A $20 deposit by bank transfer secures your booking (Abby sends the bank details when she confirms). Please give at least 48 hours’ notice to cancel or reschedule; within 48 hours the deposit is not refunded and the time can’t be changed. | 正文 | |
 
 ## 服务页 睫毛翘睫
 
@@ -136,7 +136,7 @@
 | 343 | 為什麼大家 | 为什么大家 | Why clients | 正文 | |
 | 344 | 喜歡翹睫 | 喜欢翘睫 | love a lift | 正文 | |
 | 345 | 用自己的睫毛，不會厚重。 | 用自己的睫毛，不会厚重。 | Your own lashes, so it never feels heavy. | 正文 | |
-| 346 | 不會有異物感，睫毛根部沒有粘任何東西。 | 不会有异物感，睫毛根部没有粘任何东西。 | No foreign-body feeling: nothing is glued to the lash line. | 正文 | |
+| 346 | 不會有異物感，睫毛根部沒有黏任何東西。 | 不会有异物感，睫毛根部没有粘任何东西。 | No foreign-body feeling: nothing is glued to the lash line. | 正文 | |
 | 347 | 容易打理，方便：不用回補，也不用睫毛夾。 | 容易打理，方便：不用回补，也不用睫毛夹。 | Easy to look after: no refills and no lash curler. | 正文 | |
 | 348 | 可正常化妝、卸妝：24 小時後照常即可。 | 可正常化妆、卸妆：24 小时后照常即可。 | Make-up as normal: wear and remove it as usual after the first 24 hours. | 正文 | |
 | 349 | 效果可維持 1–2 個月（視個人睫毛生長速度而定）。 | 效果可维持 1–2 个月（视个人睫毛生长速度而定）。 | Results last 1–2 months, depending on how fast your lashes grow. | 正文 | |
@@ -206,7 +206,7 @@
 | 406 | 包含。做完後 3 個月內免費補色一次，請直接聯繫 Abby 預約，不開放在線預約。 | 包含。做完后 3 个月内免费补色一次，请直接联系 Abby 预约，不开放在线预约。 | Yes. One touch-up within 3 months of your appointment is free. Message Abby to book it; it isn’t available online. | 雾眉 · 正文 | |
 | 407 | 霧眉和線條眉有什麼區別？ | 雾眉和线条眉有什么区别？ | Powder brows or microblading? | 雾眉 · 正文 | |
 | 408 | 線條眉是畫出一根根仿真眉毛；霧眉是用細小的點做出柔和的粉霧效果。Abby 做的是霧眉。 | 线条眉是画出一根根仿真眉毛；雾眉是用细小的点做出柔和的粉雾效果。Abby 做的是雾眉。 | Microblading draws hair-like strokes; powder brows build a soft shaded finish with tiny dots. Abby offers powder brows. | 雾眉 · 正文 | |
-| 409 | 預約需通過銀行轉賬支付 $30 訂金（確認預約時 Abby 會發給你賬戶信息）。如需取消或改期，請至少提前 48 小時告知；48 小時以內取消或改期，訂金不退，也不能更改時間。 | 预约需通过银行转账支付 $30 订金（确认预约时 Abby 会发给你账户信息）。如需取消或改期，请至少提前 48 小时告知；48 小时以内取消或改期，订金不退，也不能更改时间。 | A $30 deposit by bank transfer secures your booking (Abby sends the bank details when she confirms). Please give at least 48 hours’ notice to cancel or reschedule; within 48 hours the deposit is not refunded and the time can’t be changed. | 雾眉 · 正文 | |
+| 409 | 預約需通過銀行轉帳支付 $30 訂金（確認預約時 Abby 會發給你帳戶信息）。如需取消或改期，請至少提前 48 小時告知；48 小時以內取消或改期，訂金不退，也不能更改時間。 | 预约需通过银行转账支付 $30 订金（确认预约时 Abby 会发给你账户信息）。如需取消或改期，请至少提前 48 小时告知；48 小时以内取消或改期，订金不退，也不能更改时间。 | A $30 deposit by bank transfer secures your booking (Abby sends the bank details when she confirms). Please give at least 48 hours’ notice to cancel or reschedule; within 48 hours the deposit is not refunded and the time can’t be changed. | 雾眉 · 正文 | |
 
 ## 服务页 凝胶美甲
 
@@ -236,7 +236,7 @@
 | 429 | 不要摳或撕凝膠，會把甲面一層層撕薄，請預約專業卸甲。 | 不要抠或撕凝胶，会把甲面一层层撕薄，请预约专业卸甲。 | Don’t pick or peel gel: it strips layers of the nail plate. Book a soak-off instead. | 正文 | |
 | 430 | 凝膠過敏與 | 凝胶过敏与 | Gel allergy | 正文 | |
 | 431 | 美甲燈 | 美甲灯 | and UV lamps | 正文 | |
-| 432 | 凝膠、建構膠和粘貼甲片用的凝膠都含有（甲基）丙烯酸酯類成分。英國皮膚科醫師協會曾就（甲基）丙烯酸酯過敏病例增多發出提醒：未固化的膠接觸皮膚就可能致敏，自己在家用套裝、美甲師培訓不足、或燈與膠不匹配時風險更高。Abby 操作時會避免膠碰到皮膚和甲緣，每一層都用與所用膠系統配套的燈照幹。 | 凝胶、建构胶和粘贴甲片用的凝胶都含有（甲基）丙烯酸酯类成分。英国皮肤科医师协会曾就（甲基）丙烯酸酯过敏病例增多发出提醒：未固化的胶接触皮肤就可能致敏，自己在家用套装、美甲师培训不足、或灯与胶不匹配时风险更高。Abby 操作时会避免胶碰到皮肤和甲缘，每一层都用与所用胶系统配套的灯照干。 | Gel colour, builder gel and the gel used with nail tips all contain (meth)acrylates. The British Association of Dermatologists has warned about a rise in (meth)acrylate allergy: it can develop when uncured product touches the skin, and the risk is higher with home kits, insufficient technician training, or a lamp that doesn’t match the gel. Abby keeps product off your skin and cuticles and cures each layer with the lamp made for the gel system she uses. | 正文 | |
+| 432 | 凝膠、建構膠和黏貼甲片用的凝膠都含有（甲基）丙烯酸酯類成分。英國皮膚科醫師協會曾就（甲基）丙烯酸酯過敏病例增多發出提醒：未固化的膠接觸皮膚就可能致敏，自己在家用套裝、美甲師培訓不足、或燈與膠不匹配時風險更高。Abby 操作時會避免膠碰到皮膚和甲緣，每一層都用與所用膠系統配套的燈照幹。 | 凝胶、建构胶和粘贴甲片用的凝胶都含有（甲基）丙烯酸酯类成分。英国皮肤科医师协会曾就（甲基）丙烯酸酯过敏病例增多发出提醒：未固化的胶接触皮肤就可能致敏，自己在家用套装、美甲师培训不足、或灯与胶不匹配时风险更高。Abby 操作时会避免胶碰到皮肤和甲缘，每一层都用与所用胶系统配套的灯照干。 | Gel colour, builder gel and the gel used with nail tips all contain (meth)acrylates. The British Association of Dermatologists has warned about a rise in (meth)acrylate allergy: it can develop when uncured product touches the skin, and the risk is higher with home kits, insufficient technician training, or a lamp that doesn’t match the gel. Abby keeps product off your skin and cuticles and cures each layer with the lamp made for the gel system she uses. | 正文 | |
 | 433 | 美甲燈會發出紫外線。澳洲癌症協會（Cancer Council Australia）表示美甲燈的輻射量低、照射時間短；如果你仍有顧慮，可以提前 20 分鐘在手上塗 SPF50 或 SPF50+ 防曬霜，或戴露指手套，歡迎自帶。 | 美甲灯会发出紫外线。澳洲癌症协会（Cancer Council Australia）表示美甲灯的辐射量低、照射时间短；如果你仍有顾虑，可以提前 20 分钟在手上涂 SPF50 或 SPF50+ 防晒霜，或戴露指手套，欢迎自带。 | Nail lamps give off UV. Cancer Council Australia says nail lamps emit low levels of radiation for short exposure times, and suggests SPF50 or SPF50+ sunscreen on your hands 20 minutes beforehand, or fingerless gloves, if you’re concerned. You’re welcome to bring either. | 正文 | |
 | 434 | 如果你以前做完凝膠甲出現過發癢、發紅、腫脹或甲面翹起，請在預約前告訴 Abby，她可能建議你先找家庭醫生（GP）做過敏原測試，再決定是否繼續做凝膠。 | 如果你以前做完凝胶甲出现过发痒、发红、肿胀或甲面翘起，请在预约前告诉 Abby，她可能建议你先找家庭医生（GP）做过敏原测试，再决定是否继续做凝胶。 | If you’ve had itching, redness, swelling or nails lifting after gel before, tell Abby before you book; she may suggest seeing your GP about patch testing before having gel again. | 正文 | |
 | 435 | 做一套凝膠美甲要多久？ | 做一套凝胶美甲要多久？ | How long does a gel set take? | 正文 | |
@@ -295,7 +295,7 @@
 | 474 | 做延長甲時的 | 做延长甲时的 | What happens | 正文 | |
 | 475 | 確定長度和甲型（圓形、杏仁、方形等）。 | 确定长度和甲型（圆形、杏仁、方形等）。 | Length and shape agreed (round, almond, square and more). | 正文 | |
 | 476 | 修型、甲緣護理、輕磨甲面。 | 修型、甲缘护理、轻磨甲面。 | Prep: shaping, cuticle care and a light buff. | 正文 | |
-| 477 | 每根手指選合適的甲片，粘貼並塑形。 | 每根手指选合适的甲片，粘贴并塑形。 | A tip sized to each nail is bonded and shaped. | 正文 | |
+| 477 | 每根手指選合適的甲片，黏貼並塑形。 | 每根手指选合适的甲片，粘贴并塑形。 | A tip sized to each nail is bonded and shaped. | 正文 | |
 | 478 | 上建構膠、顏色或圖案，再上封層，每層照燈固化。 | 上建构胶、颜色或图案，再上封层，每层照灯固化。 | Builder gel, your colour or design, and a gel top coat, each cured under the lamp. | 正文 | |
 | 479 | 延長甲一般能戴 4 周左右。指甲長長後受力點會往前移，拖太久更容易翹邊或斷裂。 | 延长甲一般能戴 4 周左右。指甲长长后受力点会往前移，拖太久更容易翘边或断裂。 | Extensions usually wear well for about 4 weeks. As your nail grows the balance point moves forward, so leaving them much longer makes lifting and breaks more likely. | 正文 | |
 | 480 | 請專業泡卸，硬拔會撕傷真指甲。 | 请专业泡卸，硬拔会撕伤真指甲。 | Have extensions soaked off professionally; pulling them off tears the natural nail. | 正文 | |
@@ -517,7 +517,7 @@
 | 220 | 也可以發消息預約，請發短信或 WhatsApp 至 | 也可以发消息预约，请发短信或 WhatsApp 至 | Prefer to book by message? Text or WhatsApp |   | |
 | 221 | 演示模式 — 可預約時間為模擬數據。 | 演示模式 — 可预约时间为模拟数据。 | Demo mode — availability is simulated. |   | |
 | 222 | 預約信息 | 预约信息 | Appointment details |   | |
-| 223 | 下一步通過短信或 WhatsApp 發給 Abby，她會回覆確認，通常在幾小時內（10:00 AM – 8:00 PM）。預約需通過銀行轉賬支付 ${deposit} 訂金。 | 下一步通过短信或 WhatsApp 发给 Abby，她会回复确认，通常在几小时内（10:00 AM – 8:00 PM）。预约需通过银行转账支付 ${deposit} 订金。 | Next you send this to Abby by SMS or WhatsApp. She replies to confirm, usually within a few hours (10:00 AM – 8:00 PM). A ${deposit} deposit by bank transfer secures the time. |   | |
+| 223 | 下一步通過短信或 WhatsApp 發給 Abby，她會回覆確認，通常在幾小時內（10:00 AM – 8:00 PM）。預約需通過銀行轉帳支付 ${deposit} 訂金。 | 下一步通过短信或 WhatsApp 发给 Abby，她会回复确认，通常在几小时内（10:00 AM – 8:00 PM）。预约需通过银行转账支付 ${deposit} 订金。 | Next you send this to Abby by SMS or WhatsApp. She replies to confirm, usually within a few hours (10:00 AM – 8:00 PM). A ${deposit} deposit by bank transfer secures the time. |   | |
 | 224 | 姓名 | 姓名 | Full name |   | |
 | 225 | 電話 | 电话 | Phone |   | |
 | 226 | 備註 | 备注 | Notes |   | |
@@ -527,7 +527,7 @@
 | 230 | 價格 | 价格 | Price |   | |
 | 231 | 訂金 | 订金 | Deposit |   | |
 | 232 | 我同意訂金條款：如我在預約前 {hours} 小時以內取消或改期，或未到店，${deposit} 訂金不予退還；提前 {hours} 小時以上取消，訂金可順延到新的預約，或全額退還；如 Abby 取消預約，訂金全額退還。 | 我同意订金条款：如我在预约前 {hours} 小时以内取消或改期，或未到店，${deposit} 订金不予退还；提前 {hours} 小时以上取消，订金可顺延到新的预约，或全额退还；如 Abby 取消预约，订金全额退还。 | I agree to the deposit terms: if I cancel or reschedule within {hours} hours of my appointment, or don’t turn up, the ${deposit} deposit is not refunded. If I cancel earlier, it moves to my new booking or is refunded in full. If Abby has to cancel, it is refunded in full. |   | |
-| 233 | （選填）我已滿 18 歲，同意 Abby 在本次預約中拍攝我的睫毛、眉毛或美甲照片，包括術前術後對比照（照片可能包含部分面部），並用於 Abby Eyelashes 的網站、社交媒體和廣告宣傳。這些照片的版權及由此產生的任何收益均歸 Abby 所有，我不會因此獲得報酬。不同意不影響預約。我可隨時發消息撤回同意：Abby 會在合理時間內刪除她網站和社交賬號上的相關照片，並停止在新的帖子和廣告中使用（已印刷的物料及他人轉發的內容無法收回）。 | （选填）我已满 18 岁，同意 Abby 在本次预约中拍摄我的睫毛、眉毛或美甲照片，包括术前术后对比照（照片可能包含部分面部），并用于 Abby Eyelashes 的网站、社交媒体和广告宣传。这些照片的版权及由此产生的任何收益均归 Abby 所有，我不会因此获得报酬。不同意不影响预约。我可随时发消息撤回同意：Abby 会在合理时间内删除她网站和社交账号上的相关照片，并停止在新的帖子和广告中使用（已印刷的物料及他人转发的内容无法收回）。 | Optional: I am 18 or over, and Abby may photograph my lashes, brows or nails at my appointment, including before-and-after photos (part of my face may show), and use them to promote Abby Eyelashes on her website, social media and ads. Abby owns the copyright in these photos and any income from them, and I won’t be paid. Saying no doesn’t affect my booking. I can withdraw by message at any time: Abby then removes the photos from her website and social accounts within a reasonable time and stops using them in new posts and ads (printed materials and other people’s shares can’t be recalled). |   | |
+| 233 | （選填）我已滿 18 歲，同意 Abby 在本次預約中拍攝我的睫毛、眉毛或美甲照片，包括術前術後對比照（照片可能包含部分面部），並用於 Abby Eyelashes 的網站、社交媒體和廣告宣傳。這些照片的版權及由此產生的任何收益均歸 Abby 所有，我不會因此獲得報酬。不同意不影響預約。我可隨時發消息撤回同意：Abby 會在合理時間內刪除她網站和社交帳號上的相關照片，並停止在新的帖子和廣告中使用（已印刷的物料及他人轉發的內容無法收回）。 | （选填）我已满 18 岁，同意 Abby 在本次预约中拍摄我的睫毛、眉毛或美甲照片，包括术前术后对比照（照片可能包含部分面部），并用于 Abby Eyelashes 的网站、社交媒体和广告宣传。这些照片的版权及由此产生的任何收益均归 Abby 所有，我不会因此获得报酬。不同意不影响预约。我可随时发消息撤回同意：Abby 会在合理时间内删除她网站和社交账号上的相关照片，并停止在新的帖子和广告中使用（已印刷的物料及他人转发的内容无法收回）。 | Optional: I am 18 or over, and Abby may photograph my lashes, brows or nails at my appointment, including before-and-after photos (part of my face may show), and use them to promote Abby Eyelashes on her website, social media and ads. Abby owns the copyright in these photos and any income from them, and I won’t be paid. Saying no doesn’t affect my booking. I can withdraw by message at any time: Abby then removes the photos from her website and social accounts within a reasonable time and stops using them in new posts and ads (printed materials and other people’s shares can’t be recalled). |   | |
 | 234 | 發送預約即表示你已閱讀我們的{link}。 | 发送预约即表示你已阅读我们的{link}。 | By sending a request you confirm you have read our {link}. |   | |
 | 235 | 請檢查以下內容： | 请检查以下内容： | Please check the following: |   | |
 | 236 | 請輸入你的姓名。 | 请输入你的姓名。 | Please enter your full name. |   | |
@@ -541,11 +541,11 @@
 | 244 | 請選擇時間。 | 请选择时间。 | Please choose a time. |   | |
 | 245 | 請勾選同意訂金條款。 | 请勾选同意订金条款。 | Please tick to agree to the deposit terms. |   | |
 | 246 | 把預約發給 Abby | 把预约发给 Abby | Send your request to Abby |   | |
-| 247 | 點 WhatsApp 或短信：下面的消息已經寫好，直接發送即可。Abby 回覆確認後才算預約成功（通常在幾小時內，10:00 AM – 8:00 PM）。她回覆時會附上 ${deposit} 訂金的轉賬信息。 | 点 WhatsApp 或短信：下面的消息已经写好，直接发送即可。Abby 回复确认后才算预约成功（通常在几小时内，10:00 AM – 8:00 PM）。她回复时会附上 ${deposit} 订金的转账信息。 | Tap WhatsApp or SMS: the message below is already written, just press send. Your time isn’t booked until Abby replies to confirm (usually within a few hours, 10:00 AM – 8:00 PM). She sends the bank details for the ${deposit} deposit with her reply. |   | |
+| 247 | 點 WhatsApp 或短信：下面的消息已經寫好，直接發送即可。Abby 回覆確認後才算預約成功（通常在幾小時內，10:00 AM – 8:00 PM）。她回覆時會附上 ${deposit} 訂金的轉帳信息。 | 点 WhatsApp 或短信：下面的消息已经写好，直接发送即可。Abby 回复确认后才算预约成功（通常在几小时内，10:00 AM – 8:00 PM）。她回复时会附上 ${deposit} 订金的转账信息。 | Tap WhatsApp or SMS: the message below is already written, just press send. Your time isn’t booked until Abby replies to confirm (usually within a few hours, 10:00 AM – 8:00 PM). She sends the bank details for the ${deposit} deposit with her reply. |   | |
 | 248 | 用 WhatsApp 發送 | 用 WhatsApp 发送 | Send by WhatsApp |   | |
 | 249 | 用短信發送 | 用短信发送 | Send by SMS |   | |
 | 250 | 複製消息 | 复制消息 | Copy message |   | |
-| 251 | 已複製，請粘貼到發給 {phone} 的消息裡。 | 已复制，请粘贴到发给 {phone} 的消息里。 | Copied. Paste it into a message to {phone}. |   | |
+| 251 | 已複製，請黏貼到發給 {phone} 的消息裡。 | 已复制，请粘贴到发给 {phone} 的消息里。 | Copied. Paste it into a message to {phone}. |   | |
 | 252 | 你的消息 | 你的消息 | Your message |   | |
 | 253 | 修改信息 | 修改信息 | Change details |   | |
 | 254 | 【預約 Booking】Abby Eyelashes | 【预约 Booking】Abby Eyelashes | 【预约 Booking】Abby Eyelashes |   | |
@@ -688,7 +688,7 @@
 | 編號 | 繁體（自動轉換） | 简体（现在的网站） | English | 位置 | Abby 的修改 |
 |---:|---|---|---|---|---|
 | 580 | 跳到主要內容 | 跳到主要内容 |   | 首页 | |
-| 581 | $6 / 只 | $6 / 只 |   | 首页 | |
+| 581 | $6 / 隻 | $6 / 只 |   | 首页 | |
 | 582 | 約這款 → | 约这款 → |   | 首页 | |
 | 583 | 週一至週六 | 周一至周六 |   | 首页 | |
 | 584 | 週日（僅每月第 3 個） | 周日（仅每月第 3 个） |   | 首页 | |
@@ -717,12 +717,12 @@
 | 607 | 網站統計：瞭解哪些頁面對訪客有用，以便改進網站。統計數據絕不用於廣告，我們也絕不出售你的數據。 | 网站统计：了解哪些页面对访客有用，以便改进网站。统计数据绝不用于广告，我们也绝不出售你的数据。 |   | 隐私政策 | |
 | 608 | 還有誰會處理這些信息 | 还有谁会处理这些信息 |   | 隐私政策 | |
 | 609 | 只有 Abby 會查看你的預約信息。你的消息由你的電話運營商（短信）或 WhatsApp 傳送。其他服務會代我們處理部分信息：Google（Abby 的日曆，以及經你同意後的 Analytics）、Cloudflare（網站託管）、BinaryLane（位於悉尼、保存預約請求 24 小時的服務器）。這些公司可能把數據存儲在澳洲以外，例如美國。這些服務處理你的信息時，Abby 仍對其負責。 | 只有 Abby 会查看你的预约信息。你的消息由你的电话运营商（短信）或 WhatsApp 传送。其他服务会代我们处理部分信息：Google（Abby 的日历，以及经你同意后的 Analytics）、Cloudflare（网站托管）、BinaryLane（位于悉尼、保存预约请求 24 小时的服务器）。这些公司可能把数据存储在澳洲以外，例如美国。这些服务处理你的信息时，Abby 仍对其负责。 |   | 隐私政策 | |
-| 610 | 我們會妥善保護你的信息：只有 Abby 能使用她的手機和登錄這些賬號，賬號設有密碼和兩步驗證。 | 我们会妥善保护你的信息：只有 Abby 能使用她的手机和登录这些账号，账号设有密码和两步验证。 |   | 隐私政策 | |
+| 610 | 我們會妥善保護你的信息：只有 Abby 能使用她的手機和登錄這些帳號，帳號設有密碼和兩步驗證。 | 我们会妥善保护你的信息：只有 Abby 能使用她的手机和登录这些账号，账号设有密码和两步验证。 |   | 隐私政策 | |
 | 611 | 必要 Cookie（始終開啟）：你的 Cookie 選擇（保存在你的瀏覽器中）、讓你每次訪問看到同一網站外觀的 Cookie，以及你在頁面頂部選擇語言後用來記住這個選擇的 Cookie（保留一年）。 | 必要 Cookie（始终开启）：你的 Cookie 选择（保存在你的浏览器中）、让你每次访问看到同一网站外观的 Cookie，以及你在页面顶部选择语言后用来记住这个选择的 Cookie（保留一年）。 |   | 隐私政策 | |
 | 612 | 統計 Cookie（僅在“全部接受”後）：名稱以 _ga 開頭的 Google Analytics Cookie。 | 统计 Cookie（仅在“全部接受”后）：名称以 _ga 开头的 Google Analytics Cookie。 |   | 隐私政策 | |
 | 613 | 你可以隨時通過每個頁面底部的“Cookie 設置”更改選擇。12 個月後我們會再次詢問。 | 你可以随时通过每个页面底部的“Cookie 设置”更改选择。12 个月后我们会再次询问。 |   | 隐私政策 | |
 | 614 | 照片授權為選填，僅限年滿 18 歲的顧客，絕不是預約的前提條件。你可以隨時發短信至 | 照片授权为选填，仅限年满 18 岁的顾客，绝不是预约的前提条件。你可以随时发短信至 |   | 隐私政策 | |
-| 615 | 撤回同意：Abby 會在合理時間內刪除她網站和社交賬號上的相關照片，並停止在新的帖子和廣告中使用。已印刷的物料及他人轉發的內容無法收回。 | 撤回同意：Abby 会在合理时间内删除她网站和社交账号上的相关照片，并停止在新的帖子和广告中使用。已印刷的物料及他人转发的内容无法收回。 |   | 隐私政策 | |
+| 615 | 撤回同意：Abby 會在合理時間內刪除她網站和社交帳號上的相關照片，並停止在新的帖子和廣告中使用。已印刷的物料及他人轉發的內容無法收回。 | 撤回同意：Abby 会在合理时间内删除她网站和社交账号上的相关照片，并停止在新的帖子和广告中使用。已印刷的物料及他人转发的内容无法收回。 |   | 隐私政策 | |
 | 616 | 保存多久 | 保存多久 |   | 隐私政策 | |
 | 617 | 日曆鏈接背後的預約請求：24 小時。Abby 日曆中的預約記錄：保存 5 年（澳洲稅務記錄要求），之後刪除。網站統計數據：由 Google 保存，最長 14 個月。 | 日历链接背后的预约请求：24 小时。Abby 日历中的预约记录：保存 5 年（澳洲税务记录要求），之后删除。网站统计数据：由 Google 保存，最长 14 个月。 |   | 隐私政策 | |
 | 618 | 你的權利 | 你的权利 |   | 隐私政策 | |
@@ -731,6 +731,6 @@
 | 621 | 如需投訴，請先通過同樣方式聯繫 Abby，她會在 30 天內回覆。如對答覆不滿意，可向澳大利亞信息專員辦公室投訴： | 如需投诉，请先通过同样方式联系 Abby，她会在 30 天内回复。如对答复不满意，可向澳大利亚信息专员办公室投诉： |   | 隐私政策 | |
 | 622 | 2026年11月5日 | 2026年11月5日 |   | 服务页 嫁接睫毛 | |
 | 623 | 2026年10月30日 | 2026年10月30日 |   | 服务页 睫毛翘睫 | |
-| 624 | 10 分鐘 / 只 | 10 分钟 / 只 |   | 服务页 凝胶美甲 | |
+| 624 | 10 分鐘 / 隻 | 10 分钟 / 只 |   | 服务页 凝胶美甲 | |
 | 625 | 頁面不存在 | 页面不存在 |   | 找不到页面 (404) | |
 | 626 | 該頁面不存在或已移動。你可以前往： | 该页面不存在或已移动。你可以前往： |   | 找不到页面 (404) | |

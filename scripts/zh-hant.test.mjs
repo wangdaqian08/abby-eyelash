@@ -12,6 +12,13 @@ test('Taiwan character forms, characters only; ASCII and character references un
 test("Abby's wording fixes are applied after the conversion", () => {
   assert.ok(fixes.length >= 1);
   assert.equal(toHant('可以只延长几只吗？'), '可以只延長幾隻嗎？');
+  // Abby, review of rows 1–300: 帳 and 黏 everywhere (not 賬 / 粘), 回補 (not 迴補).
+  assert.equal(toHant('银行转账，账户信息，社交账号'), '銀行轉帳，帳戶信息，社交帳號');
+  assert.equal(toHant('逐根粘在真睫毛上，胶水粘得更牢，粘贴甲片'), '逐根黏在真睫毛上，膠水黏得更牢，黏貼甲片');
+  assert.equal(toHant('每 2–3 周回补一次，越早回补越便宜'), '每 2–3 週回補一次，越早回補越便宜');
+  // Nail unit: 隻 like 幾隻 (pages show "$6 / 只"; the booking app reads the bare string from data-config).
+  assert.equal(toHant('$6 / 只，10 分钟 / 只，只按数量收费'), '$6 / 隻，10 分鐘 / 隻，只按數量收費');
+  assert.equal(convertPage('data-config="[&quot;只&quot;,&quot;只在尾端&quot;]"'), 'data-config="[&quot;隻&quot;,&quot;只在尾端&quot;]"');
 });
 
 test('Traditional page: links in the text move to /zh-hant/, switcher and hreflang links keep their target', () => {
