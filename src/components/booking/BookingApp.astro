@@ -20,12 +20,7 @@ try {
   if (f) avatar = `/images/${f}`;
 } catch {}
 
-const config = {
-  lang,
-  turnstileSiteKey: import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? '',
-  web3formsKey: import.meta.env.PUBLIC_WEB3FORMS_ACCESS_KEY ?? '',
-  home: lang === 'zh' ? '/zh/' : '/',
-};
+const config = { lang };
 ---
 
 <section class={lookB ? "bg-surface-2 tabular-nums pb-[calc(var(--tabbar-h)+3rem)] pt-[calc(var(--header-h)+40px)] lg:pb-24 lg:pt-[calc(var(--header-h)+64px)]" : "tabular-nums pb-16 pt-[calc(var(--header-h)+40px)] lg:pb-24 lg:pt-[calc(var(--header-h)+64px)]"}>

@@ -1,0 +1,19 @@
+# Local PostgreSQL for development (npm run start starts it). Production: one PostgreSQL 16 on the Sydney VPS,
+# reached through Cloudflare Hyperdrive. Same schema (`abby`) and user (`abby_app`) in both places.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres # local only
+    ports:
+      - "127.0.0.1:5434:5432" # 5432 werewolf-simple, 5433 broker-agent
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+volumes:
+  pgdata:

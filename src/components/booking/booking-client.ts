@@ -1,18 +1,10 @@
-// Booking flow (vanilla TS): 1 Services (one or more, back to back) → 2 Date → 3 Time → 4 Details → success.
+// Booking flow (vanilla TS): 1 Services (one or more, back to back) → 2 Date → 3 Time → 4 Details → 5 Send.
+// Nothing is booked here: step 5 hands the customer a pre-filled SMS/WhatsApp to Abby (src/lib/booking-message.ts).
 import { addonOptions, bookable, bookableWith, groupAt, headline, itemsParam, mainOptions, priceText, quoteAll, quoteAllText, services, type Addons, type Lang, type Service, type ServiceOption } from '../../data/services';
 import { site } from '../../data/site';
 import { bookingStrings } from '../../i18n/booking';
 import { daysInMonth, localDate, maxDate, validateDetails, weekday, zonedTimeToUtc, type Details } from '../../lib/availability';
-
-declare global {
-  interface Window {
-    turnstile?: {
-      render(el: Element, o: Record<string, unknown>): string;
-      reset(id?: string): void;
-      remove(id: string): void;
-    };
-  }
-}
+import { smsHref, waTextHref } from '../../lib/booking-message';
 
 type Days = Record<string, string[]>;
 type Month = { days: Days; recommended: Days };
@@ -21,7 +13,6 @@ type Field = keyof Details | 'service' | 'option' | 'time' | 'deposit';
 type Chosen = { service: Service; option?: ServiceOption; addons: Addons }; // one ticked service
 
 const TZ = site.timezone;
-const MIN = 60_000;
 const phoneHref = `sms:${site.phone.replace(/\s/g, '')}`; // Abby takes texts/WhatsApp, not calls
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -51,7 +42,7 @@ const BTN_OUTLINE = LB ? `${BTN} btn-tinted` : `${BTN} btn-soft border border-pr
 const INPUT = 'block h-12 w-full appearance-none rounded-field bg-surface-2 px-4 text-base text-fg placeholder:text-muted aria-invalid:outline-2 aria-invalid:outline-danger';
 
 export function start(root: HTMLElement) {
-  const cfg = JSON.parse(root.dataset.config!) as { lang: Lang; turnstileSiteKey: string; web3formsKey: string; home: string };
+  const cfg = JSON.parse(root.dataset.config!) as { lang: Lang };
   const lang = cfg.lang;
   const t = bookingStrings[lang];
   const locale = lang === 'zh' ? 'zh-CN' : 'en-AU';
@@ -71,8 +62,10 @@ export function start(root: HTMLElement) {
     focus?: string; // keyboard focus within the calendar grid
     details: Details;
     started: boolean;
-    name?: string;
-  } = { step: 1, items: [], month: localDate(Date.now(), TZ).slice(0, 7), details: { name: '', phone: '', email: '', notes: '' }, started: false };
+    deposit: boolean; // ticks survive going back from step 5 to change details
+    photos: boolean;
+    link?: { key: string; code?: string }; // short calendar link for the current details (reused while they don't change)
+  } = { step: 1, items: [], month: localDate(Date.now(), TZ).slice(0, 7), details: { name: '', phone: '', notes: '' }, started: false, deposit: false, photos: false };
 
   const cache = new Map<string, Month | 'loading' | 'error'>();
   const itemOf = (id: string) => st.items.find((i) => i.service.id === id);
@@ -80,8 +73,6 @@ export function start(root: HTMLElement) {
   const asItems = () => st.items.map((i) => ({ service: i.service.id, option: i.option!.id, addons: i.addons }));
   const key = (m = st.month) => `${itemsParam(asItems())}/${m}`;
   const total = () => quoteAll(asItems())!; // the UI only offers valid combinations
-  let tsToken = '';
-  let tsWidget: string | undefined;
   let gridFocusPending = false;
 
   // --- formatting ---
@@ -140,7 +131,7 @@ export function start(root: HTMLElement) {
       ready() && label(),
       st.date && shortDate(st.date),
       st.date && st.time && fmtTime(st.date, st.time),
-      st.step === 5 ? st.name : undefined,
+      st.step === 5 ? st.details.name.trim() : undefined,
     ];
     $('[data-stepper]')!.innerHTML = t.steps
       .map((label, i) => {
@@ -154,7 +145,7 @@ export function start(root: HTMLElement) {
           ${i ? '<span aria-hidden="true" class="ml-[17px] block h-7 border-l border-dashed border-muted/40"></span>' : ''}
           ${current ? `<p class="mb-1 flex items-center gap-2 text-xs font-medium text-primary"><span class="size-2 rounded-full bg-primary"></span>${fill(t.stepN, { n })}</p><p class="mb-3 text-sm text-fg">${t.prompts[i]}</p>` : ''}
           ${
-            done && st.step < 5
+            done
               ? `<button type="button" data-goto="${n}" aria-label="${esc(fill(t.editStep, { step: label }))}: ${esc(text)}" class="flex min-h-11 w-full items-center gap-3 text-left hover:opacity-80">${inner}</button>`
               : `<div class="flex min-h-11 items-center gap-3">${inner}</div>`
           }
@@ -163,13 +154,11 @@ export function start(root: HTMLElement) {
       .join('');
 
     const progress = $('[data-progress]')!;
-    progress.hidden = st.step === 5;
-    if (st.step === 5) return;
     progress.innerHTML = `<div class="mb-3 flex min-h-11 items-center justify-between gap-4">
         ${st.step > 1 ? `<button type="button" data-action="back" class="-ml-2 inline-flex min-h-11 items-center gap-1 px-2 text-sm text-muted hover:text-fg">${ICON.prev}${t.back}</button>` : '<span></span>'}
         <span class="text-xs text-muted">${fill(t.stepOf, { n: st.step })} · ${t.steps[st.step - 1]}</span>
       </div>
-      <ol class="mb-8 flex items-center" aria-hidden="true">${[1, 2, 3, 4]
+      <ol class="mb-8 flex items-center" aria-hidden="true">${[1, 2, 3, 4, 5]
         .map(
           (n) =>
             `${n > 1 ? `<li class="h-px flex-1 ${n <= st.step ? 'bg-primary' : 'bg-border'}"></li>` : ''}<li class="size-2.5 rounded-full ${n <= st.step ? 'bg-primary' : 'border border-muted/50'}"></li>`,
@@ -345,7 +334,7 @@ export function start(root: HTMLElement) {
         ${control}<p id="bk-${k}-err" class="mt-1.5 flex items-start gap-1.5 text-sm text-danger" hidden></p></div>`;
     // Unticked by default. Deposit terms are required; photo consent stays optional (consent can't be a condition of booking).
     const agree = (k: string, text: string, required: boolean) =>
-      `<div><label class="flex cursor-pointer items-start gap-3"><input type="checkbox" id="bk-${k}" name="${k}" ${required ? 'required aria-describedby="bk-' + k + '-err"' : ''} class="mt-0.5 size-5 shrink-0 accent-[var(--color-primary)] aria-invalid:outline-2 aria-invalid:outline-danger">
+      `<div><label class="flex cursor-pointer items-start gap-3"><input type="checkbox" id="bk-${k}" name="${k}" ${st[k as 'deposit' | 'photos'] ? 'checked' : ''} ${required ? 'required aria-describedby="bk-' + k + '-err"' : ''} class="mt-0.5 size-5 shrink-0 accent-[var(--color-primary)] aria-invalid:outline-2 aria-invalid:outline-danger">
         <span class="${required ? '' : 'text-muted'}">${esc(text)}${required ? ' <span aria-hidden="true" class="text-danger">*</span>' : ''}</span></label>
         ${required ? `<p id="bk-${k}-err" class="mt-1.5 flex items-start gap-1.5 text-sm text-danger" hidden></p>` : ''}</div>`;
     const attrs = (k: Field) => `id="bk-${k}" name="${k}" aria-describedby="bk-${k}-err"`;
@@ -357,7 +346,6 @@ export function start(root: HTMLElement) {
       <div class="mt-6 grid gap-5">
         ${field('name', t.fName, `<input ${attrs('name')} required maxlength="80" autocomplete="name" class="${INPUT}" value="${esc(d.name)}">`)}
         ${field('phone', t.fPhone, `<input ${attrs('phone')} required type="tel" inputmode="tel" autocomplete="tel" maxlength="20" class="${INPUT}" value="${esc(d.phone)}">`)}
-        ${field('email', t.fEmail, `<input ${attrs('email')} required type="email" autocomplete="email" maxlength="254" class="${INPUT}" value="${esc(d.email)}">`)}
         ${field('notes', t.fNotes, `<textarea ${attrs('notes')} rows="3" maxlength="500" placeholder="${esc(t.notesHint)}" class="${INPUT} h-auto py-3">${esc(d.notes)}</textarea>`, false)}
       </div>
       <div data-summary class="mt-8">${summary()}</div>
@@ -365,7 +353,6 @@ export function start(root: HTMLElement) {
         ${agree('deposit', fill(t.agreeDeposit, { deposit: total().deposit, hours: site.booking.cancelHours }), true)}
         ${agree('photos', t.agreePhotos, false)}
       </div>
-      <div data-turnstile class="mt-6 min-h-0"></div>
       <button type="submit" class="${BTN_PRIMARY}${tracking} mt-6 w-full">${t.submit}</button>
       <p class="mt-3 text-center text-xs text-muted">${fill(t.privacyNote, { link: `<a href="${lang === 'zh' ? '/zh/privacy/' : '/privacy/'}" target="_blank" class="underline underline-offset-4 hover:text-fg">${t.privacyLink}</a>` })}</p>
     </form>`;
@@ -384,7 +371,7 @@ export function start(root: HTMLElement) {
 
   function readDetails(): Details {
     const v = (k: string) => $<HTMLInputElement>(`#bk-${k}`)?.value ?? '';
-    return (st.details = { name: v('name'), phone: v('phone'), email: v('email'), notes: v('notes') });
+    return (st.details = { name: v('name'), phone: v('phone'), notes: v('notes') });
   }
 
   const ticked = (k: string) => $<HTMLInputElement>(`#bk-${k}`)?.checked === true;
@@ -396,38 +383,10 @@ export function start(root: HTMLElement) {
     box.focus();
   }
 
-  function mountTurnstile() {
-    tsToken = '';
-    const el = $('[data-turnstile]');
-    if (!cfg.turnstileSiteKey || !el) return;
-    const go = () => {
-      tsWidget = window.turnstile!.render(el, {
-        sitekey: cfg.turnstileSiteKey,
-        language: lang === 'zh' ? 'zh-cn' : 'en',
-        callback: (tok: string) => (tsToken = tok),
-        'expired-callback': () => (tsToken = ''),
-        'error-callback': () => (tsToken = ''),
-      });
-    };
-    if (window.turnstile) return go();
-    const s = document.createElement('script');
-    s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-    s.async = true;
-    s.onload = go;
-    document.head.append(s);
-  }
-
-  // Before sending: the chosen time must still be free for the whole visit.
-  async function recheckSlot() {
-    await load(st.date!.slice(0, 7));
-    const days = daysFor(st.date!.slice(0, 7));
-    return !days || days[st.date!]?.includes(st.time!) === true; // unknown → let the server decide
-  }
-
-  async function submit() {
+  function submit() {
     const d = readDetails();
     const errs = validateDetails(d);
-    (['name', 'phone', 'email', 'notes'] as const).forEach((k) => setError(k, errs[k] && errMsg(k, errs[k]!)));
+    (['name', 'phone', 'notes'] as const).forEach((k) => setError(k, errs[k] && errMsg(k, errs[k]!)));
     const list: [Field, string][] = Object.entries(errs).map(([k, c]) => [k as Field, errMsg(k as Field, c!)]);
     const depositOk = ticked('deposit');
     setError('deposit', depositOk ? undefined : t.err.deposit.required);
@@ -439,137 +398,91 @@ export function start(root: HTMLElement) {
           .join('')}</ul>`,
       );
     }
-    if (!(await recheckSlot())) return showSummaryError(`<p>${t.slotTaken}</p><button type="button" data-action="to-time" class="${BTN_OUTLINE}${tracking} mt-3">${t.chooseAnotherTime}</button>`);
-    if (cfg.turnstileSiteKey && !tsToken) return showSummaryError(`<p>${t.captcha}</p>`);
+    st.deposit = true;
+    st.photos = ticked('photos');
+    go(5);
+    void fetchLink();
+  }
 
-    const btn = $<HTMLButtonElement>('[data-form] [type=submit]')!;
-    btn.disabled = true;
-    btn.setAttribute('aria-busy', 'true');
-    btn.innerHTML = `<span aria-hidden="true" class="size-4 rounded-full border-2 border-on-primary/40 border-t-on-primary motion-safe:animate-spin"></span>${t.submitting}`;
-    const payload = { ...d, deposit: depositOk, photos: ticked('photos'), items: itemsParam(asItems()), date: st.date, time: st.time, lang, turnstileToken: tsToken };
-    let res: Response | undefined;
-    let body: { ok?: boolean; demo?: boolean; error?: string; errors?: Record<string, string> } = {};
+  // Short /c/<code> link for Abby. The message shows at once; the 📅 line joins when the code arrives (no database → no line).
+  async function fetchLink() {
+    const d = st.details;
+    const body = { items: itemsParam(asItems()), date: st.date, time: st.time, name: d.name, phone: d.phone, photos: st.photos };
+    const key = JSON.stringify(body);
+    if (st.link?.key === key) return;
+    st.link = { key };
     try {
-      res = await fetch('/api/book', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
-      body = await res.json();
+      const r = await fetch('/api/request', { method: 'POST', headers: { 'content-type': 'application/json' }, body: key });
+      const code = r.ok ? ((await r.json()) as { code?: string }).code : undefined;
+      if (st.link?.key !== key || !code) return;
+      st.link.code = code;
+      if (st.step === 5) render();
     } catch {}
-
-    if (res?.ok && body.ok) {
-      if (body.demo) showDemo();
-      notifyOwner(d, payload.photos);
-      navigator.vibrate?.(12); // one short tick to confirm the booking went through (Android; iOS ignores it)
-      emit('booking_submitted', { service: st.items.map((i) => i.service.id).join('+'), option: st.items.map((i) => i.option!.id).join('+'), value: total().price, currency: 'AUD' });
-      st.name = d.name.trim();
-      load(st.date!.slice(0, 7), true); // bypass the browser's 60 s cache so the taken slot disappears
-      return go(5);
-    }
-
-    btn.disabled = false;
-    btn.removeAttribute('aria-busy');
-    btn.textContent = t.submit;
-    if (tsWidget) window.turnstile?.reset(tsWidget);
-    tsToken = '';
-    const phone = `<a class="whitespace-nowrap underline underline-offset-4" href="${phoneHref}">${site.phoneDisplay}</a>`;
-    if (body.error === 'validation' && body.errors) {
-      const entries = Object.entries(body.errors) as [Field, string][];
-      entries.forEach(([k, c]) => setError(k, errMsg(k, c)));
-      if (body.errors.deposit) $<HTMLInputElement>('#bk-deposit')!.checked = false; // so ticking again clears it
-      showSummaryError(`<p class="font-medium">${t.errSummary}</p><ul class="mt-2 list-disc pl-5">${entries.map(([k, c]) => `<li>${esc(errMsg(k, c))}</li>`).join('')}</ul>`);
-    } else if (body.error === 'slot_taken') {
-      cache.delete(key(st.date!.slice(0, 7)));
-      showSummaryError(`<p>${t.slotTaken}</p><button type="button" data-action="to-time" class="${BTN_OUTLINE}${tracking} mt-3">${t.chooseAnotherTime}</button>`);
-    } else if (body.error === 'captcha') {
-      showSummaryError(`<p>${t.captcha}</p>`);
-    } else {
-      showSummaryError(`<p>${t.serverError} ${phone}.</p>`);
-    }
   }
 
-  // Web3Forms only accepts browser-side submissions on the free plan; keepalive lets it finish during navigation.
-  function notifyOwner(d: Details, photos: boolean) {
-    if (!cfg.web3formsKey) return;
+  // --- step 5: the message the customer sends Abby (page language; the first line is the same in both so Abby spots it) ---
+  function message() {
+    const d = st.details;
     const q = total();
-    const service = label('en');
-    fetch('https://api.web3forms.com/submit', {
-      method: 'POST',
-      keepalive: true,
-      headers: { 'content-type': 'application/json', accept: 'application/json' },
-      body: JSON.stringify({
-        access_key: cfg.web3formsKey,
-        subject: `New booking request (pending): ${d.name.trim()} – ${st.date} ${st.time}`,
-        from_name: 'Abby Eyelashes website',
-        replyto: d.email.trim(),
-        name: d.name.trim(),
-        phone: d.phone.trim(),
-        email: d.email.trim(),
-        service: `${service} (${q.minutes} min)`,
-        date: st.date,
-        time: st.time,
-        price: quoteAllText(q, 'en'),
-        deposit: `$${q.deposit}`,
-        notes: d.notes.trim() || '-',
-        deposit_terms: `agreed (terms ${site.booking.termsVersion})`,
-        photo_consent: photos ? 'YES, may use photos for promotion' : 'NO, do not post photos',
-        language: lang,
-        status: 'PENDING — confirm by SMS/WhatsApp, collect the deposit, then rename the calendar event',
-      }),
-    }).catch(() => {});
+    const m = t.msg;
+    const c = lang === 'zh' ? '：' : ': ';
+    return [
+      '【预约 Booking】Abby Eyelashes',
+      `${m.service}${c}${label()}`,
+      `${m.when}${c}${shortDate(st.date!)} ${fmtTime(st.date!, st.time!)} (${mins(q.minutes)})`,
+      `${m.price}${c}${totalPrice(q)}`,
+      `${m.name}${c}${d.name.trim()}`,
+      `${m.phone}${c}${d.phone.trim()}`,
+      ...(d.notes.trim() ? [`${m.notes}${c}${d.notes.trim().replace(/\s+/g, ' ')}`] : []),
+      fill(m.deposit, { deposit: q.deposit, hours: site.booking.cancelHours }),
+      st.photos ? m.photosYes : m.photosNo,
+      ...(st.link?.code ? ['', `${m.calendar}${c}${location.origin}/c/${st.link.code}`] : []),
+    ].join('\n');
   }
 
-  // --- success ---
-  function successView() {
-    const start = zonedTimeToUtc(st.date!, st.time!, TZ);
-    const end = start + total().minutes * MIN;
-    const stamp = (ms: number) => new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-    const title = fill(t.calendarTitle, { service: label() });
-    const a = site.address;
-    const location = `${site.name}, ${a.street}, ${a.locality} ${a.region} ${a.postcode}`;
-    const successBody = fill(t.successBody, { deposit: total().deposit, hours: site.booking.cancelHours });
-    const details = `${t.pending}\n${successBody}\n${site.phoneDisplay}`;
-    const gcal = `https://calendar.google.com/calendar/render?${new URLSearchParams({ action: 'TEMPLATE', text: title, dates: `${stamp(start)}/${stamp(end)}`, details, location, ctz: TZ })}`;
-    const icsText = (s: string) => s.replace(/([\\;,])/g, '\\$1').replace(/\n/g, '\\n');
-    const ics = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//Abby Eyelashes//Booking//EN',
-      'BEGIN:VEVENT',
-      `UID:${stamp(start)}-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}@abby-eyelash`, // randomUUID only exists on HTTPS/localhost (not a phone on the LAN)
-      `DTSTAMP:${stamp(Date.now())}`,
-      `DTSTART:${stamp(start)}`,
-      `DTEND:${stamp(end)}`,
-      `SUMMARY:${icsText(title)}`,
-      `LOCATION:${icsText(location)}`,
-      `DESCRIPTION:${icsText(details)}`,
-      'END:VEVENT',
-      'END:VCALENDAR',
-    ].join('\r\n');
-    const icsUrl = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
+  function sendView() {
+    const text = message();
     return `<div class="max-w-xl">
-      <span class="flex size-12 items-center justify-center rounded-full bg-surface-2 text-primary">${ICON.check}</span>
-      <h2 data-focus tabindex="-1" class="mt-6 text-3xl outline-none">${t.successTitle}</h2>
-      <p class="mt-2">${esc(fill(t.successThanks, { name: st.name ?? '' }))}</p>
-      <p class="mt-4 inline-flex items-center gap-2 bg-surface-2 px-3 py-1.5 text-sm font-medium text-accent-ink"><span aria-hidden="true" class="size-2 rounded-full bg-accent"></span>${t.pending}</p>
-      <div class="mt-6">${summary()}</div>
-      <p class="mt-6">${successBody}</p>
-      <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <a href="${gcal}" target="_blank" rel="noopener" class="${BTN_PRIMARY}${tracking}">${t.addGoogle}</a>
-        <a href="${icsUrl}" download="abby-eyelash-booking.ics" class="${BTN_OUTLINE}${tracking}">${t.downloadIcs}</a>
-        <a href="${cfg.home}" class="${BTN}${tracking} text-muted hover:text-fg">${t.home}</a>
+      <h2 data-focus tabindex="-1" class="text-2xl outline-none sm:text-3xl">${t.sendTitle}</h2>
+      <p class="mt-2 text-muted">${esc(fill(t.sendBody, { deposit: total().deposit }))}</p>
+      <div class="mt-6 flex flex-col gap-3">
+        <a data-send="whatsapp" href="${esc(waTextHref(site.phone, text))}" target="_blank" rel="noopener" class="${BTN_PRIMARY}${tracking}">${t.sendWhatsApp}</a>
+        <a data-send="sms" href="${esc(smsHref(site.phone, text))}" class="${BTN_OUTLINE}${tracking}">${t.sendSms}</a>
       </div>
+      <label for="bk-message" class="mt-8 block text-sm font-medium">${t.messageLabel}</label>
+      <textarea id="bk-message" readonly rows="${text.split('\n').length + 3}" class="${INPUT} mt-1.5 h-auto resize-none py-3 text-sm [field-sizing:content]">${esc(text)}</textarea>
+      <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <button type="button" data-action="copy" class="${BTN}${tracking} -ml-2 text-muted hover:text-fg">${t.copy}</button>
+        <button type="button" data-goto="4" class="${BTN}${tracking} text-muted hover:text-fg">${t.edit}</button>
+      </div>
+      <p data-copied role="status" class="mt-2 text-sm text-muted"></p>
     </div>`;
   }
+
+  async function copyMessage() {
+    const box = $<HTMLTextAreaElement>('#bk-message')!;
+    // The clipboard API needs HTTPS; the select + execCommand fallback covers a phone testing over the LAN.
+    const ok = await navigator.clipboard?.writeText(box.value).then(() => true, () => false);
+    if (!ok) {
+      box.select();
+      document.execCommand('copy');
+    }
+    $('[data-copied]')!.textContent = fill(t.copied, { phone: site.phoneDisplay });
+    emitSent('copy');
+  }
+
+  const emitSent = (via: string) =>
+    emit('booking_submitted', { via, service: st.items.map((i) => i.service.id).join('+'), option: st.items.map((i) => i.option!.id).join('+'), value: total().price, currency: 'AUD' });
 
   // --- render + navigation ---
   function render() {
     const active = document.activeElement as HTMLElement | null;
     const hadGridFocus = gridFocusPending || !!active?.closest('[data-grid]');
     const action = view.contains(active) ? active?.dataset.action : undefined;
-    if (tsWidget) window.turnstile?.remove(tsWidget);
-    tsWidget = undefined;
     renderChrome();
     if (st.step === 1) view.innerHTML = serviceView();
     else if (st.step === 4) view.innerHTML = detailsView();
-    else if (st.step === 5) view.innerHTML = successView();
+    else if (st.step === 5) view.innerHTML = sendView();
     else
       view.innerHTML = `<div class="lg:grid lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-10">
         <div class="${st.step === 3 ? 'max-lg:hidden' : ''}">${calendarView()}</div>
@@ -583,7 +496,6 @@ export function start(root: HTMLElement) {
       view.querySelector<HTMLElement>(`[data-action="${action}"]:not([disabled])`)?.focus() ??
         view.querySelector<HTMLElement>('[data-focus]')?.focus();
     }
-    if (st.step === 4) mountTurnstile();
   }
 
   function go(step: Step, focus = true) {
@@ -595,7 +507,7 @@ export function start(root: HTMLElement) {
     const top = root.getBoundingClientRect().top;
     if (top < 0) window.scrollBy(0, top - 96);
     view.querySelector<HTMLElement>(step === 3 && mobile.matches ? '[data-slots-heading]' : '[data-focus]')?.focus({ preventScroll: true });
-    announce(step < 5 ? `${fill(t.stepOf, { n: step })} · ${t.steps[step - 1]}` : t.successTitle);
+    announce(`${fill(t.stepOf, { n: step })} · ${t.steps[step - 1]}`);
   }
 
   function setMonth(m: string) {
@@ -716,6 +628,8 @@ export function start(root: HTMLElement) {
         return setMonth(shift(-1));
       case 'next':
         return setMonth(shift(1));
+      case 'copy':
+        return void copyMessage();
       case 'retry':
         return void load(st.month, true).then(render);
     }
@@ -754,7 +668,7 @@ export function start(root: HTMLElement) {
       return;
     }
     readDetails();
-    if (!['name', 'phone', 'email', 'notes'].includes(k) || (onlyIfInvalid && !el.hasAttribute('aria-invalid'))) return;
+    if (!['name', 'phone', 'notes'].includes(k) || (onlyIfInvalid && !el.hasAttribute('aria-invalid'))) return;
     const c = validateDetails(st.details)[k];
     setError(k, c && errMsg(k, c));
   };
@@ -762,7 +676,11 @@ export function start(root: HTMLElement) {
   root.addEventListener('input', (e) => revalidate(e, true));
   root.addEventListener('submit', (e) => {
     e.preventDefault();
-    void submit();
+    submit();
+  });
+  root.addEventListener('click', (e) => {
+    const via = (e.target as HTMLElement).closest<HTMLElement>('[data-send]')?.dataset.send;
+    if (via) emitSent(via);
   });
 
   // Deep link: /book?service=lash-lift (id or service-page slug), optional &option=

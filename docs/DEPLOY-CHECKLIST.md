@@ -45,10 +45,11 @@ Docs: <https://developers.cloudflare.com/pages/configuration/build-configuration
 | `PUBLIC_GA4_ID` | `G-XXXXXXXXXX` (part G) | Text | Turns on Google Analytics. Empty = no analytics at all |
 | `LAUNCH` | `1` | Text | Launch guard: the build fails while dummy reviews remain |
 | `INDEXNOW_KEY` | 32 random letters and digits (part H) | Text | IndexNow key file |
-| `PUBLIC_TURNSTILE_SITE_KEY`, `PUBLIC_WEB3FORMS_ACCESS_KEY` | see `docs/SETUP-booking.md` part F | Text | Booking form |
-| `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_CALENDAR_ID` | see `docs/SETUP-booking.md` part F | Text | Booking calendar |
-| `GOOGLE_PRIVATE_KEY`, `TURNSTILE_SECRET_KEY` | see `docs/SETUP-booking.md` part F | **Secret** | Booking calendar and spam check |
-| `BOOKING_DEMO` | `1` **only for a preview before Google Calendar is connected**. Delete it at launch | Text | Allows demo booking (fake times, nothing saved). Without it, a missing Google or Turnstile value makes booking show an error with your phone number instead of silently faking bookings |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_CALENDAR_ID` | see `docs/SETUP-booking.md` part D | Text | Booking calendar |
+| `GOOGLE_PRIVATE_KEY` | see `docs/SETUP-booking.md` part D | **Secret** | Booking calendar (free/busy only) |
+| `BOOKING_DEMO` | `1` **only for a preview before Google Calendar is connected**. Delete it at launch | Text | Allows demo booking (fake times, nothing saved). Without it, a missing Google value makes the booking page show an error with your phone number instead of made-up free times |
+
+Compatibility date: **Settings → Runtime** → the compatibility date for Production and Preview must be **2026-08-04 or later**, or the `nodejs_compat` flag must be on. Otherwise the database driver behind the 📅 link stops the Functions runtime from starting, and the whole site fails.
 
 The `PUBLIC_…`, `SITE_URL`, `LAUNCH` and `INDEXNOW_KEY` values are read **while the site is built**. After you change one, go to **Deployments** → latest → **⋯** → **Retry deployment**.
 

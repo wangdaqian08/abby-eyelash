@@ -176,13 +176,12 @@ export function mockBusy(range: Interval, tz: string): Interval[] {
   return out;
 }
 
-// --- Customer details validation (UI blur checks and the /api/book trust boundary) ---
+// --- Customer details validation (UI blur checks and the /c calendar-link trust boundary) ---
 
-export const LIMITS = { name: 80, email: 254, notes: 500 } as const;
+export const LIMITS = { name: 80, notes: 500 } as const;
 export const normalisePhone = (s: string) => s.replace(/[\s().-]/g, '');
 // AU mobile (04…) or landline (02/03/07/08), with 0 or +61 prefix.
 const PHONE_RE = /^(?:\+?61|0)[2-478]\d{8}$/;
-const EMAIL_RE = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
 // eslint-disable-next-line no-control-regex
 const CONTROL_RE = /[\u0000-\u001f\u007f]/;
 
@@ -190,7 +189,6 @@ export type DetailError = 'required' | 'tooLong' | 'invalid';
 export interface Details {
   name: string;
   phone: string;
-  email: string;
   notes: string;
 }
 
@@ -202,10 +200,6 @@ export function validateDetails(d: Details): Partial<Record<keyof Details, Detai
   else if (CONTROL_RE.test(name)) e.name = 'invalid';
   if (!d.phone.trim()) e.phone = 'required';
   else if (!PHONE_RE.test(normalisePhone(d.phone))) e.phone = 'invalid';
-  const email = d.email.trim();
-  if (!email) e.email = 'required';
-  else if (email.length > LIMITS.email) e.email = 'tooLong';
-  else if (!EMAIL_RE.test(email)) e.email = 'invalid';
   if (d.notes.length > LIMITS.notes) e.notes = 'tooLong';
   return e;
 }

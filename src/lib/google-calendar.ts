@@ -1,5 +1,5 @@
 // Google Calendar via a service account (JWT RS256 signed with Web Crypto) — runs in Cloudflare Workers.
-import { mockBusy, type Interval } from './availability.ts';
+import { mockBusy, zonedTimeToUtc, type Interval } from './availability.ts';
 
 export interface GoogleEnv {
   GOOGLE_SERVICE_ACCOUNT_EMAIL?: string;
@@ -11,18 +11,18 @@ export interface GoogleEnv {
 export const isConfigured = (env: GoogleEnv) =>
   Boolean(env.GOOGLE_SERVICE_ACCOUNT_EMAIL && env.GOOGLE_PRIVATE_KEY && env.GOOGLE_CALENDAR_ID);
 
-// Demo mode (mock slots, no calendar writes, no Turnstile) only when explicitly enabled or on localhost,
+// Demo mode (mock slots) only when explicitly enabled or on localhost,
 // so a missing/misspelled secret in production fails closed instead of silently faking bookings.
 export const demoAllowed = (env: { BOOKING_DEMO?: string }, url: string) =>
   env.BOOKING_DEMO === '1' || ['localhost', '127.0.0.1'].includes(new URL(url).hostname);
 
-// Shared edge-cache key for /api/availability (slots depend only on duration + month), so a booking can purge what it just made stale.
-/** Edge-cache key for a month's busy times (one per month, whatever is being booked; a booking purges just this). */
+/** Edge-cache key for a month's busy times (one per month, whatever is being booked). */
 export const availabilityCacheKey = (origin: string, month: string) =>
   new Request(`${origin}/api/availability?${new URLSearchParams({ busy: '1', month })}`);
 
 const API = 'https://www.googleapis.com/calendar/v3';
-const SCOPE = 'https://www.googleapis.com/auth/calendar.freebusy https://www.googleapis.com/auth/calendar.events';
+// Read-only: event titles are needed to tell client bookings (💗) from Abby's personal events. The site never writes.
+const SCOPE = 'https://www.googleapis.com/auth/calendar.events.readonly';
 
 const b64url = (bytes: Uint8Array) =>
   btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -64,39 +64,43 @@ async function accessToken(env: GoogleEnv): Promise<string> {
   return access_token;
 }
 
-async function call<T>(env: GoogleEnv, path: string, body: unknown): Promise<T> {
-  const res = await fetch(API + path, {
-    method: 'POST',
-    headers: { authorization: `Bearer ${await accessToken(env)}`, 'content-type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+/** Marks a client booking (or time Abby closed): the event title starts with this. Other events never block booking times. */
+export const BOOKED_MARK = '💗';
+
+type CalEvent = { summary?: string; status?: string; start?: { date?: string; dateTime?: string }; end?: { date?: string; dateTime?: string } };
+
+/** Busy intervals from calendar events: only 💗 events count (all-day ones block whole days). Titles stay on the server. */
+export function bookedIntervals(events: CalEvent[], tz: string): Interval[] {
+  const at = (t: { date?: string; dateTime?: string }) => (t.dateTime ? Date.parse(t.dateTime) : zonedTimeToUtc(t.date!, '00:00', tz));
+  return events
+    .filter((e) => e.status !== 'cancelled' && e.start && e.end && (e.summary ?? '').trimStart().startsWith(BOOKED_MARK))
+    .map((e) => ({ start: at(e.start!), end: at(e.end!) }));
+}
+
+async function get<T>(env: GoogleEnv, path: string, query: Record<string, string>): Promise<T> {
+  const res = await fetch(`${API}${path}?${new URLSearchParams(query)}`, { headers: { authorization: `Bearer ${await accessToken(env)}` } });
+  // A calendar that isn't shared with the service account (with "See all event details") fails here, never reads as "free".
   if (!res.ok) throw new Error(`google ${path} ${res.status}: ${await res.text()}`);
   return res.json() as Promise<T>;
 }
 
-/** Busy intervals in the calendar. Demo mode (no credentials) returns deterministic mock blocks. */
+/** Busy intervals in the calendar (💗 events only). Demo mode (no credentials) returns deterministic mock blocks. */
 export async function busyBetween(env: GoogleEnv, range: Interval, tz: string): Promise<Interval[]> {
   if (!isConfigured(env)) return mockBusy(range, tz);
-  const id = env.GOOGLE_CALENDAR_ID!;
-  const r = await call<{ calendars: Record<string, { busy?: { start: string; end: string }[]; errors?: unknown[] }> }>(
-    env,
-    '/freeBusy',
-    { timeMin: new Date(range.start).toISOString(), timeMax: new Date(range.end).toISOString(), items: [{ id }] },
-  );
-  const cal = r.calendars[id];
-  // A calendar that isn't shared with the service account comes back as an error, not as "free".
-  if (!cal || cal.errors?.length) throw new Error(`freeBusy error: ${JSON.stringify(cal?.errors)}`);
-  return (cal.busy ?? []).map((b) => ({ start: Date.parse(b.start), end: Date.parse(b.end) }));
-}
-
-export async function insertEvent(
-  env: GoogleEnv,
-  e: { summary: string; description: string; start: number; end: number; timeZone: string },
-): Promise<void> {
-  await call(env, `/calendars/${encodeURIComponent(env.GOOGLE_CALENDAR_ID!)}/events`, {
-    summary: e.summary,
-    description: e.description,
-    start: { dateTime: new Date(e.start).toISOString(), timeZone: e.timeZone },
-    end: { dateTime: new Date(e.end).toISOString(), timeZone: e.timeZone },
-  });
+  const path = `/calendars/${encodeURIComponent(env.GOOGLE_CALENDAR_ID!)}/events`;
+  const events: CalEvent[] = [];
+  let pageToken = '';
+  do {
+    const r = await get<{ items?: CalEvent[]; nextPageToken?: string }>(env, path, {
+      timeMin: new Date(range.start).toISOString(),
+      timeMax: new Date(range.end).toISOString(),
+      singleEvents: 'true', // recurring events expanded into their occurrences
+      maxResults: '2500',
+      fields: 'items(summary,status,start,end),nextPageToken',
+      ...(pageToken && { pageToken }),
+    });
+    events.push(...(r.items ?? []));
+    pageToken = r.nextPageToken ?? '';
+  } while (pageToken);
+  return bookedIntervals(events, tz);
 }
