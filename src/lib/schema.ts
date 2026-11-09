@@ -2,13 +2,13 @@
 // Never emit FAQPage, AggregateRating or Review (strategy §2) — schema.test.ts enforces it.
 import { site } from '../data/site.ts';
 import { headline, services, type Lang, type Service } from '../data/services.ts';
-import { localePath, neutralPath } from './i18n.ts';
+import { HREFLANG, localePath, neutralPath } from './i18n.ts';
 import { common } from '../i18n/common.ts';
 
 type Node = Record<string, unknown>;
 const BIZ_TYPE = ['BeautySalon', 'NailSalon'];
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-export const LOCALE = { en: 'en-AU', zh: 'zh-Hans' } as const;
+export const LOCALE = HREFLANG;
 
 /** Language-neutral path with a trailing slash (matches Astro's directory build + Cloudflare Pages URLs). */
 export const pagePath = (pathname: string) => {
@@ -105,7 +105,7 @@ export function businessNode(base: string | URL, lang: Lang, image: string): Nod
     // Mirrors the home service cards: one "from $X" (or exact) price per service, linking to its page.
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
-      name: lang === 'zh' ? '服务项目' : 'Services',
+      name: lang !== 'en' ? '服务项目' : 'Services',
       // An on-request service gets no price at all rather than a made-up one.
       itemListElement: services.map((s) => {
         const h = headline(s);
@@ -150,7 +150,7 @@ export function breadcrumbNode(base: string | URL, lang: Lang, url: string, name
     '@type': 'BreadcrumbList',
     '@id': url + '#breadcrumb',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: lang === 'zh' ? '首页' : 'Home', item: abs(base, localePath(lang, '/')) },
+      { '@type': 'ListItem', position: 1, name: lang !== 'en' ? '首页' : 'Home', item: abs(base, localePath(lang, '/')) },
       { '@type': 'ListItem', position: 2, name, item: url },
     ],
   };

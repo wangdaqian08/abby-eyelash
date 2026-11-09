@@ -1,28 +1,52 @@
 ---
-// EN | 中文 — links to the same page in the other language. On phones only the other language shows (header width).
+// EN | 简 | 繁 — the same page in each language. Links carry ?lang=… so the router (functions/_middleware.ts,
+// src/lib/i18n.ts) remembers the choice; without that the phone's language could move the visitor back.
+// `compact` (header): on phones one button showing the current language opens the three choices (<details>, no JS).
+// The Simplified names are written as character references, so the Traditional conversion after the build
+// (scripts/zh-hant.mjs) leaves them as 简 / 简体中文.
 import type { Lang } from '../../data/services';
-import { localePath, neutralPath } from '../../lib/i18n';
+import { HREFLANG, LANGS, LANG_PARAM, localePath, neutralPath } from '../../lib/i18n';
 import { publicPath } from '../../lib/ab-test';
-interface Props { lang: Lang; class?: string }
-const { lang, class: cls } = Astro.props;
+interface Props { lang: Lang; compact?: boolean; class?: string }
+const { lang, compact = false, class: cls } = Astro.props;
 const path = neutralPath(publicPath(Astro.url.pathname));
-const items = [
-  { l: 'en' as const, label: 'EN', hreflang: 'en-AU', name: 'English' },
-  { l: 'zh' as const, label: '中文', hreflang: 'zh-Hans', name: '简体中文' },
-];
+const ref = (s: string) => [...s].map((c) => (c.codePointAt(0)! > 127 ? `&#${c.codePointAt(0)};` : c)).join('');
+const names: Record<Lang, { label: string; name: string }> = {
+  en: { label: 'EN', name: 'English' },
+  zh: { label: ref('简'), name: ref('简体中文') },
+  'zh-hant': { label: '繁', name: '繁體中文' },
+};
+const items = LANGS.map((l) => ({ l, href: `${localePath(l, path)}?${LANG_PARAM}=${l}`, ...names[l] }));
+const label = lang === 'en' ? 'Language' : '语言';
 ---
-<nav aria-label={lang === 'zh' ? '语言' : 'Language'} class:list={['flex items-center text-sm', cls]}>
+{compact && (
+  <details data-lang-menu class:list={['relative text-sm sm:hidden', cls]}>
+    <summary aria-label={label} class="inline-flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center gap-0.5 px-1 font-medium text-fg [&::-webkit-details-marker]:hidden">
+      <span lang={HREFLANG[lang]} set:html={names[lang].label} />
+      <svg viewBox="0 0 24 24" class="size-3.5 text-muted" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+    </summary>
+    <ul class="absolute right-0 top-full z-50 mt-1 min-w-36 rounded-card bg-surface-3 p-1.5 shadow-[0_16px_40px_-16px_rgb(30_18_21/0.35)]">
+      {items.map((it) => (
+        <li>
+          <a href={it.href} hreflang={HREFLANG[it.l]} lang={HREFLANG[it.l]} aria-current={it.l === lang ? 'true' : undefined}
+            class:list={['flex min-h-11 items-center rounded-[0.75rem] px-3', it.l === lang ? 'font-medium text-fg' : 'text-muted active:bg-surface-2']}
+            set:html={it.name} />
+        </li>
+      ))}
+    </ul>
+  </details>
+)}
+<nav aria-label={label} class:list={['items-center text-sm', compact ? 'hidden sm:flex' : 'flex', cls]}>
   {items.map((it, i) => (
     <>
-      {i > 0 && <span aria-hidden="true" class="text-border max-sm:hidden">|</span>}
+      {i > 0 && <span aria-hidden="true" class="text-border">|</span>}
       <a
-        href={localePath(it.l, path)}
-        hreflang={it.hreflang}
-        lang={it.hreflang}
-        aria-label={it.name}
+        href={it.href}
+        hreflang={HREFLANG[it.l]}
+        lang={HREFLANG[it.l]}
         aria-current={it.l === lang ? 'true' : undefined}
-        class:list={['inline-flex min-h-11 min-w-11 items-center justify-center px-1 transition-colors duration-200', it.l === lang ? 'font-medium text-fg max-sm:hidden' : 'text-muted hover:text-fg']}
-      >{it.label}</a>
+        class:list={['inline-flex min-h-11 min-w-11 items-center justify-center px-1 transition-colors duration-200', it.l === lang ? 'font-medium text-fg' : 'text-muted hover:text-fg']}
+      ><span aria-hidden="true" set:html={it.label} /><span class="sr-only" set:html={it.name} /></a>
     </>
   ))}
 </nav>

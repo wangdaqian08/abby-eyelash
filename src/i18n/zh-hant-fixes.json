@@ -1,0 +1,7 @@
+{
+  "about": "Wording fixes for the Traditional Chinese site (/zh-hant/), applied after every build by scripts/zh-hant.mjs. fixes: left = the text as the converter wrote it (as seen on /zh-hant/), right = how it should read; a longer phrase wins over a shorter one inside it. keep: words that look Simplified character by character but are correct Traditional, so the build check accepts them.",
+  "fixes": {
+    "几只": "幾隻"
+  },
+  "keep": ["游泳", "濃郁"]
+}

@@ -2,8 +2,10 @@
 // Prices/durations are interpolated from services.ts so the visible copy always matches the price table and JSON-LD.
 // Body strings are trusted HTML (rendered with set:html) so they can carry citation links.
 // Every `// OWNER-REVIEW` marks a claim Abby must confirm before launch (products, aftercare, policies).
-import { depositFor, services, type Lang } from './services';
-import { site } from './site';
+import { depositFor, services, type Lang } from './services.ts';
+import { site } from './site.ts';
+import { localePath } from '../lib/i18n.ts';
+import { aliasHant } from '../lib/hant.ts';
 
 export interface Section {
   h2: [string, string]; // "Line one " + <em>accent</em>
@@ -64,7 +66,7 @@ const ext = () => `$${opt(X, 'extension').price}`; // per nail
 const pct = (s: string, o: string, n: number) => `$${Math.round((opt(s, o).price * n) / 100)}`; // share of the current price
 const link = (lang: Lang, id: string, text: string) => {
   const s = services.find((v) => v.id === id)!;
-  return `<a href="${lang === 'zh' ? '/zh' : ''}/${s.slug}/" class="underline underline-offset-4 hover:text-fg">${text}</a>`;
+  return `<a href="${localePath(lang, s.slug)}" class="underline underline-offset-4 hover:text-fg">${text}</a>`;
 };
 
 // Shared nail-safety copy (gel products + curing lamps).
@@ -81,7 +83,7 @@ const nailSafety = {
   ],
 };
 
-const content: Record<string, Record<Lang, ServiceContent>> = {
+const content: Record<string, { en: ServiceContent; zh: ServiceContent }> = {
   [L]: {
     en: {
       title: 'Eyelash Extensions in Burwood | Abby Eyelashes',
@@ -849,8 +851,10 @@ const content: Record<string, Record<Lang, ServiceContent>> = {
   },
 };
 
+aliasHant(content); // 'zh-hant' reads the zh copy (converted after the build; its /zh/ links are rewritten then too)
+
 export const serviceContent = (serviceId: string, lang: Lang): ServiceContent => {
-  const c = content[serviceId]?.[lang];
+  const c = (content[serviceId] as Record<Lang, ServiceContent> | undefined)?.[lang];
   if (!c) throw new Error(`service-content: missing copy for ${serviceId}/${lang}`);
   return c;
 };

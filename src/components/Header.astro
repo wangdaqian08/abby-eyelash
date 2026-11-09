@@ -40,7 +40,7 @@ const book = localePath(lang, '/book');
     </nav>
 
     <div class="flex items-center gap-2 sm:gap-4">
-      <LangSwitch lang={lang} />
+      <LangSwitch lang={lang} compact />
       {lookB ? (
 <Button href={book} lang={lang} track="book_click" class="min-h-10! px-5! max-lg:hidden">{t.book}</Button>
 ) : (

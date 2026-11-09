@@ -15,7 +15,9 @@ Agreed with the owner on 2026-10-26. This is the source of truth for all build w
 - All business facts (NAP, hours, socials, prices, booking rules) live in **one config/content source** so a single edit updates the whole site + schema.
 
 ## 3. Languages
-- English default at `/`, Simplified Chinese at `/zh/`. Language switcher in header. `hreflang` (en-AU, zh-Hans, x-default) on every page. Claude translates; owner reviews.
+- English default at `/`, Simplified Chinese at `/zh/`, Traditional Chinese at `/zh-hant/` (2026-11-10, design: `docs/superpowers/specs/2026-11-09-traditional-chinese-design.md`). Language switcher EN / 简 / 繁 in the header and footer. `hreflang` (en-AU, zh-Hans, zh-Hant, x-default) on every page. Claude translates; owner reviews.
+- **Traditional is converted, not written:** the `/zh-hant/` pages are built from the Simplified text and converted to Taiwan character forms after the build (`scripts/zh-hant.mjs`, OpenCC cn → tw, characters only). Wording fixes: `src/i18n/zh-hant-fixes.json`. Review sheet: `npm run build && npm run review:zh-hant`.
+- **Automatic language** (`functions/_middleware.ts`, rules in `src/lib/i18n.ts`): a choice made in the switcher is remembered (cookie `lang`, 1 year); without one, a phone set to Chinese gets its Chinese (zh-TW/HK/MO → Traditional, other Chinese → Simplified); a phone in any other language is never moved, so a Chinese link stays Chinese. Crawlers and link previews are never redirected.
 
 ## 4. Pages
 - **Home** — long single-scroll page modelled on the reference demo (https://linter-stick-70077518.figma.site/):

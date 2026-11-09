@@ -9,7 +9,7 @@ import { bookableWith, groupAt, headline, priceText, services, type Lang, type S
 import { site } from '../../data/site';
 import { serviceContent } from '../../data/service-content';
 import { serviceStrings } from '../../i18n/service';
-import { localePath } from '../../lib/i18n';
+import { INTL, localePath } from '../../lib/i18n';
 import { hoursRows, lastStartLine, mapsUrl, smsHref, waHref } from '../../i18n/common';
 import { lookOf } from '../../lib/ab-test';
 const lookB = lookOf(Astro.url) === 'B'; // look B markup (lib/ab-test.ts)
@@ -26,7 +26,7 @@ const en = lang === 'en';
 const bookHref = `${localePath(lang, '/book')}?service=${bookableWith(service).id}`; // add-on-only services book via the service that offers them
 const wa = waHref(site.phone);
 const a = site.address;
-const updated = new Intl.DateTimeFormat(en ? 'en-AU' : 'zh-CN', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(service.updated));
+const updated = new Intl.DateTimeFormat(INTL[lang], { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(service.updated));
 
 const sp: ServiceSlots | undefined = servicePhotos[service.id];
 const related = services.filter((s) => s.id !== service.id);

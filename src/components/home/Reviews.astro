@@ -22,10 +22,10 @@ const t = common[lang].reviews;
       {reviews.map((r) => (
         <li class="flex flex-col rounded-card bg-on-primary/10 p-6 sm:p-8">
           <div class="flex items-center justify-between gap-4">
-            <Stars class="text-on-primary/90" rating={r.rating} label={lang === 'zh' ? `${r.rating} 星（满分 5 星）` : `${r.rating} out of 5 stars`} />
+            <Stars class="text-on-primary/90" rating={r.rating} label={lang !== 'en' ? `${r.rating} 星（满分 5 星）` : `${r.rating} out of 5 stars`} />
             <span class="inline-flex items-center gap-1.5 text-xs text-on-primary/90"><GoogleMark class="size-3.5" />{t.google}</span>
           </div>
-          <blockquote lang={r.lang === 'zh' ? 'zh-Hans' : 'en-AU'} class:list={['mt-6 flex-1 font-serif text-lg leading-relaxed', r.lang === 'en' && 'italic']}>
+          <blockquote lang={r.lang !== 'en' ? 'zh-Hans' : 'en-AU'} class:list={['mt-6 flex-1 font-serif text-lg leading-relaxed', r.lang === 'en' && 'italic']}>
             <p>“{r.text}”</p>
           </blockquote>
           <p class="mt-6 text-sm text-on-primary/90">— {r.name} · <time datetime={r.date}>{monthYear(r.date, lang)}</time></p>
