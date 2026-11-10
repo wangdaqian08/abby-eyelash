@@ -2,7 +2,7 @@
 // GA4 + conversion events (docs/GEO-STRATEGY.md §4). Renders nothing until a GA4 ID is set
 // (PUBLIC_GA4_ID build env, or site.google.ga4Id). Events:
 //   click on any [data-track="<event>"] → gtag event <event> {link_url, page_location, lang}
-//   window CustomEvents booking_start {service} / booking_submitted {service, option, value, currency}
+//   window CustomEvents booking_start {service} / booking_submitted {service, option, value, currency, via: whatsapp | sms | copy}
 // Every event carries style_variant (A/B look, from the `style` cookie set by functions/_middleware.ts; A when no test runs).
 import { site } from '../data/site';
 const raw = import.meta.env.PUBLIC_GA4_ID || site.google.ga4Id;
@@ -42,7 +42,7 @@ const host = Astro.site?.host ?? ''; // only the production host reports, so loc
         addEventListener('booking_start', (e) => gtag('event', 'booking_start', { service: e.detail.service, lang, style_variant }));
         addEventListener('booking_submitted', (e) => {
           const d = e.detail;
-          gtag('event', 'booking_submitted', { service: d.service, option: d.option, value: d.value, currency: d.currency, lang, style_variant });
+          gtag('event', 'booking_submitted', { service: d.service, option: d.option, value: d.value, currency: d.currency, via: d.via, lang, style_variant });
         });
       }
     </script>

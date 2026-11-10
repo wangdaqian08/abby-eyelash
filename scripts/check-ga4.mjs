@@ -2,17 +2,18 @@
 // Google receives page_view and book_click for G-ND8T7ZBSLR with style_variant and lang.
 // Usage: npm run check:ga4 → the live site. It sends a few real hits to Abby's GA4, tagged utm_source=site-check so they
 // can be filtered out of reports. Only the live host reports (src/components/Analytics.astro), so before a deploy:
-// npm run build && DIST=1 npm run check:ga4 → the live address answered from ./dist, hits stopped in the browser (no
-// middleware there, so no A/B cookie: look A).
-// Paste the output into docs/verification/<date>-ga4.md.
-import { readFileSync, existsSync } from 'node:fs';
+// `npm run start` (local build on :8788 with the demo booking API), then LOCAL=1 npm run check:ga4 → the live address
+// in the browser, every page taken from :8788, every hit stopped in the browser.
+// Booking hits are always stopped in the browser (a real booking_submitted would count as a conversion in Abby's
+// reports). The SMS tap is cancelled: a headless browser can't switch to the Messages app, so that part is checked by
+// hand on a phone (docs/verification/2026-11-10-ga4.md). Paste the output into docs/verification/<date>-ga4.md.
 import { chromium } from 'playwright';
 import { site } from '../src/data/site.ts';
 
 const BASE = 'https://www.abbyeyelashes.com';
 const ID = site.google.ga4Id;
 const TAG = 'utm_source=site-check&utm_medium=test';
-const DIST = !!process.env.DIST;
+const LOCAL = process.env.LOCAL ? 'http://localhost:8788' : '';
 const isGoogle = (u) => /googletagmanager\.com|google-analytics\.com|analytics\.google\.com/.test(u);
 
 let pass = 0;
@@ -33,19 +34,16 @@ const hits = (req) => {
 const show = (h) => ['tid', 'en', 'up.style_variant', 'ep.style_variant', 'ep.lang', 'dl'].filter((k) => h[k]).map((k) => `${k}=${h[k]}`).join(' ');
 
 const browser = await chromium.launch();
-console.log(`GA4 check · ${new Date().toISOString()} · ${BASE} · ${ID} · ${DIST ? 'pages from ./dist, hits not sent' : 'live, hits sent'} · Chromium ${browser.version()} · 375×812\n`);
+console.log(`GA4 check · ${new Date().toISOString()} · ${BASE} · ${ID} · ${LOCAL ? `pages from ${LOCAL}, hits not sent` : 'live, hits sent (booking hits stopped)'} · Chromium ${browser.version()} · 375×812\n`);
 
 async function visit(name, fn) {
   const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true, locale: 'en-AU' });
   const page = await ctx.newPage();
-  if (DIST) {
-    await page.route(`${BASE}/**`, (r) => {
-      const path = new URL(r.request().url()).pathname;
-      const file = `dist${path}${path.endsWith('/') ? 'index.html' : ''}`;
-      if (!existsSync(file)) return r.fulfill({ status: 404 });
-      r.fulfill({ body: readFileSync(file), contentType: /\.html$/.test(file) ? 'text/html' : undefined });
-    });
+  if (LOCAL) {
+    await page.route(`${BASE}/**`, async (r) => r.fulfill({ response: await r.fetch({ url: r.request().url().replace(BASE, LOCAL), maxRedirects: 0 }) }));
     await page.route('**/g/collect**', (r) => r.fulfill({ status: 204 })); // seen by the 'request' listener, never reaches Google
+  } else {
+    await page.route('**/g/collect**', (r) => (/en=booking_/.test(r.request().url() + (r.request().postData() ?? '')) ? r.fulfill({ status: 204 }) : r.continue()));
   }
   const requests = [];
   const events = [];
@@ -102,6 +100,26 @@ for (const [path, lang] of [['/', 'en-AU'], ['/zh/', 'zh-Hans']]) {
     check(!!again && !(await page.isVisible('[data-consent="all"]')), 'next page load: tracking starts without asking again', again ? show(again) : 'no page_view after reload');
   });
 }
+
+await visit('a booking up to "Send by SMS" on /book/', async ({ page, events, waitFor }) => {
+  await page.goto(`${BASE}/book/?service=lash-lift&${TAG}`);
+  await page.tap('[data-consent="all"]');
+  await page.tap('[data-action="to-date"]');
+  await page.tap('[data-grid] button[data-date]:not([aria-disabled])', { timeout: 15000 });
+  await page.tap('button[data-time]', { timeout: 15000 });
+  await page.tap('[data-action="to-details"]');
+  await page.fill('#bk-name', 'GA4 Check');
+  await page.fill('#bk-phone', '0412 345 678');
+  await page.tap('#bk-deposit');
+  await page.tap('[data-form] [type=submit]');
+  await page.waitForSelector('[data-send="sms"]');
+  await page.evaluate(() => document.querySelector('[data-send="sms"]').addEventListener('click', (e) => e.preventDefault()));
+  await page.tap('[data-send="sms"]');
+  const bs = await waitFor((h) => h.en === 'booking_start');
+  check(bs?.['ep.service'] === 'lash-lift' && bs?.['ep.lang'] && /^[AB]$/.test(bs?.['ep.style_variant'] ?? ''), 'booking_start with service, lang, style_variant', bs ? show(bs) : 'no booking_start hit');
+  const sub = await waitFor((h) => h.en === 'booking_submitted');
+  check(sub?.['epn.value'] && sub?.cu === 'AUD' && sub?.['ep.via'] === 'sms', 'booking_submitted with value, currency AUD and via=sms', sub ? `${show(sub)} epn.value=${sub['epn.value']} cu=${sub.cu} ep.via=${sub['ep.via'] ?? '(missing)'}` : 'no booking_submitted hit');
+});
 
 await browser.close();
 console.log(`${pass} passed, ${fails.length} failed${fails.length ? `:\n  ${fails.join('\n  ')}` : ''}`);
