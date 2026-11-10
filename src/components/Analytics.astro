@@ -2,7 +2,7 @@
 // GA4 + conversion events (docs/GEO-STRATEGY.md §4). Renders nothing until a GA4 ID is set
 // (PUBLIC_GA4_ID build env, or site.google.ga4Id). Events:
 //   click on any [data-track="<event>"] → gtag event <event> {link_url, page_location, lang}
-//   window CustomEvents booking_start {service} / booking_submitted {service, option, value, currency}
+//   window CustomEvents booking_start {service} / booking_submitted {service, option, value, currency, via: whatsapp | sms | copy}
 // Every event carries style_variant (A/B look, from the `style` cookie set by functions/_middleware.ts; A when no test runs).
 import { site } from '../data/site';
 const raw = import.meta.env.PUBLIC_GA4_ID || site.google.ga4Id;
@@ -33,14 +33,32 @@ const host = Astro.site?.host ?? ''; // only the production host reports, so loc
         gtag('set', 'user_properties', { style_variant });
         gtag('config', id, { style_variant });
         const lang = document.documentElement.lang;
+        // A click that opens another page of this site in the same tab unloads this page before gtag sends its batch
+        // (the hit was lost: docs/verification/2026-11-10-ga4.md), so it is kept here and sent from the next page.
+        const PENDING = 'ga4-pending';
+        try {
+          for (const [name, params] of JSON.parse(sessionStorage.getItem(PENDING) || '[]')) gtag('event', name, params);
+          sessionStorage.removeItem(PENDING);
+        } catch {}
         document.addEventListener('click', (e) => {
           const el = e.target.closest && e.target.closest('[data-track]');
-          if (el) gtag('event', el.dataset.track, { link_url: el.href, page_location: location.href, lang, style_variant });
+          if (!el) return;
+          const params = { link_url: el.href, page_location: location.href, lang, style_variant };
+          const to = el.href ? new URL(el.href, location.href) : null;
+          const leaves = to && to.origin === location.origin && to.pathname + to.search !== location.pathname + location.search
+            && !el.target && !e.defaultPrevented && !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey);
+          if (leaves) {
+            try {
+              sessionStorage.setItem(PENDING, JSON.stringify([...JSON.parse(sessionStorage.getItem(PENDING) || '[]'), [el.dataset.track, params]]));
+              return;
+            } catch {} // no sessionStorage: send now, it may be lost
+          }
+          gtag('event', el.dataset.track, params);
         });
         addEventListener('booking_start', (e) => gtag('event', 'booking_start', { service: e.detail.service, lang, style_variant }));
         addEventListener('booking_submitted', (e) => {
           const d = e.detail;
-          gtag('event', 'booking_submitted', { service: d.service, option: d.option, value: d.value, currency: d.currency, lang, style_variant });
+          gtag('event', 'booking_submitted', { service: d.service, option: d.option, value: d.value, currency: d.currency, via: d.via, lang, style_variant });
         });
       }
     </script>

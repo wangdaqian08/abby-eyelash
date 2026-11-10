@@ -2,11 +2,14 @@
 // reaches Abby's reports. Hits are read at the browser's network layer (CDP), which also sees requests sent while a
 // page unloads. Prints one PASS/FAIL line per check and the raw hits; exits 1 if any check fails.
 // Run: `npm run check:ga4` (BASE=https://www.abbyeyelashes.com by default; GA4 only reports on the production host).
+// Before a merge: SERVE_FROM=http://localhost:8788 npm run check:ga4 keeps the production address in the browser but
+// takes every page of it from the local build (`npm run start`), so the check runs on the new code.
 // Record each run in docs/verification/.
 import { chromium, devices } from 'playwright';
 import { site } from '../src/data/site.ts';
 
 const BASE = process.env.BASE ?? 'https://www.abbyeyelashes.com';
+const SERVE_FROM = process.env.SERVE_FROM;
 const ID = site.google.ga4Id;
 const BATCH_MS = 12_000; // gtag batches hits for several seconds before sending
 const GA = /googletagmanager\.com|google-analytics\.com|analytics\.google\.com/;
@@ -18,6 +21,7 @@ const check = (ok, name, evidence) => results.push({ ok: !!ok, name, evidence })
 async function phone(browser) {
   const ctx = await browser.newContext({ ...devices['iPhone 13'] });
   await ctx.route(/\/g\/collect/, (r) => r.fulfill({ status: 204, body: '' }));
+  if (SERVE_FROM) await ctx.route((u) => u.origin === new URL(BASE).origin, async (r) => r.fulfill({ response: await r.fetch({ url: r.request().url().replace(new URL(BASE).origin, SERVE_FROM), maxRedirects: 0 }) }));
   const page = await ctx.newPage();
   const cdp = await ctx.newCDPSession(page);
   await cdp.send('Network.enable');
@@ -28,7 +32,7 @@ async function phone(browser) {
     if (!/\/g\/collect/.test(request.url)) return;
     const u = new URL(request.url);
     const base = Object.fromEntries(u.searchParams);
-    const lines = (request.postData || '').split('\n').filter(Boolean);
+    const lines = (request.postData || '').split(/\r?\n/).filter(Boolean);
     for (const l of lines.length ? lines : ['']) {
       const p = { ...base, ...Object.fromEntries(new URLSearchParams(l)) };
       const params = Object.fromEntries(Object.entries(p).filter(([k]) => /^(ep|epn|up)\.|^cu$/.test(k)));
@@ -78,8 +82,6 @@ const all = await phone(browser);
   await page.locator('main [data-track="book_click"]:visible').first().tap();
   await page.waitForURL(/\/book\//);
   await page.waitForTimeout(BATCH_MS);
-  const bc = find(hits, 'book_click')[0];
-  check(bc, 'book_click (home "Book" button, opens /book/) is sent', bc ? show(bc) : 'not sent: the page changed before the batched hit went out');
   const pvBook = find(hits, 'page_view').find((h) => h.path === '/book/');
   check(pvBook, 'page_view on /book/', pvBook ? show(pvBook) : 'no page_view');
 }
@@ -108,10 +110,16 @@ const all = await phone(browser);
   check(sub && sub.params['epn.value'] && sub.params.cu === 'AUD', 'booking_submitted with value and currency AUD', sub ? show(sub) : 'not sent');
   check(sub?.params['ep.via'] === 'sms', 'booking_submitted says which channel (via=sms)', sub ? `ep.via=${sub.params['ep.via'] ?? '(missing)'}` : 'not sent');
 }
+await all.page.goto('about:blank'); // leaving the page sends whatever gtag still holds
+await all.page.waitForTimeout(3000);
+// Judged last: the click opened /book/, so its hit can go out in any later batch.
+const bc = find(all.hits, 'book_click');
+check(bc.length === 1 && /\/book\b/.test(bc[0].params['ep.link_url'] ?? ''), 'book_click (home "Book" button, opens /book/) is sent once',
+  bc.length ? bc.map(show).join(' | ') : 'not sent: the page changed before the batched hit went out');
 await all.ctx.close();
 await browser.close();
 
-console.log(`GA4 check · ${BASE} · ${ID} · ${startedAt}`);
+console.log(`GA4 check · ${BASE}${SERVE_FROM ? ` (pages from ${SERVE_FROM})` : ''} · ${ID} · ${startedAt}`);
 for (const r of results) console.log(`${r.ok ? 'PASS' : 'FAIL'}  ${r.name}\n      ${r.evidence}`);
 console.log('\nAll hits (accept-all session):');
 for (const h of all.hits) console.log('  ' + show(h));
