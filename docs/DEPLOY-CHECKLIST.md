@@ -101,10 +101,10 @@ Replace `https://SITE` with your address.
 ### G2. Google Analytics 4
 
 1. <https://analytics.google.com/> → **Admin** → **Create** → **Property**. Use time zone **Australia/Sydney** and currency **AUD**. Then create a **Web** data stream for your domain. Docs: <https://support.google.com/analytics/answer/9304153>.
-2. Copy the **Measurement ID** (`G-…`), put it in `PUBLIC_GA4_ID` (part C) and retry the deployment. Check: View Source on the live site should contain `googletagmanager.com/gtag/js?id=G-…`. Without the ID, the site loads no analytics code at all.
+2. Copy the **Measurement ID** (`G-…`) into `site.google.ga4Id` in `src/data/site.ts` (or `PUBLIC_GA4_ID`, part C) and redeploy. Check: `npm run check:ga4` runs the live site in a phone-size browser (cookie choice respected; `page_view` and `book_click` reach Google with `style_variant` and `lang`) — save its output in `docs/verification/`. Before a deploy: `npm run start`, then `LOCAL=1 npm run check:ga4`. The SMS / WhatsApp tap itself needs a real phone: book on the live site, tap **Send by SMS**, then look at **Reports → Realtime** (Admin → Events lags by hours). Without the ID, the site loads no analytics code at all.
 3. **AI assistants channel.** GA4's own "AI Assistant" channel leaves out some AI tools (Perplexity and Claude may land in Referral), so add a custom group. Docs: <https://support.google.com/analytics/answer/13051316>.
    1. **Admin** → **Data display** → **Channel groups** → **Create new channel group**. Name: `Channels incl. AI`.
-   2. **Add new channel**. Name: `AI assistants`. **Add condition group**: **Source** · **matches regex** · paste exactly:
+   2. **Add new channel**. Name: `AI assistants`. **Add condition group**: **Source** · **partially matches regex** · paste exactly (GA4's plain "matches regex" must match the whole source, so it would miss e.g. `www.perplexity.ai`; the pattern carries its own anchors):
       ```
       (^|\.)(chatgpt\.com|chat\.openai\.com|openai\.com|perplexity\.ai|claude\.ai|gemini\.google\.com|copilot\.microsoft\.com|copilot\.com|edgeservices\.bing\.com|deepseek\.com|chat\.deepseek\.com|grok\.com|meta\.ai)$
       ```
@@ -118,7 +118,7 @@ Replace `https://SITE` with your address.
    | `booking_submitted` | a booking request is saved (with value in AUD) |
    | `book_click`, `message_click`, `map_click`, `social_click`, `review_click` | taps on links that carry a `data-track` attribute |
 
-   Each event appears in GA4 after it first fires (use the site once yourself). Then go to **Admin** → **Data display** → **Events** → click the **star** next to `booking_submitted`, `book_click`, `message_click` and `map_click`. Docs: <https://support.google.com/analytics/answer/13128484>.
+   Mark `booking_submitted`, `book_click`, `message_click` and `map_click` as key events. An event that already shows under **Admin** → **Data display** → **Events** → **Recent events**: click its **star**. One that hasn't fired yet: **Create event** → enter the name → **Create with code** (the site sends it; "Create without code" would make a new event from page views) → turn on **Mark as key event** → **Don't set a default key event value** (the site sends the AUD value; the default is US$1) → **Create**. Done 2026-11-10 for all four (`docs/verification/2026-11-10-ga4.md`). Docs: <https://support.google.com/analytics/answer/13128484>.
 
 ## H. Bing (Copilot, Bing AI answers, and part of ChatGPT search)
 
