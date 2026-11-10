@@ -44,7 +44,15 @@ jobs:
           path: node_modules/.astro
           key: astro-images-${{ hashFiles('src/assets/**') }}
           restore-keys: astro-images-
-      - run: npx playwright install --with-deps --only-shell chromium # headless browser + system fonts (CJK for the Chinese pages)
+      - uses: actions/cache@v4 # the fonts Playwright installs with apt (~22 MB): the Ubuntu mirror sometimes runs at ~150 kB/s
+        with:
+          path: ~/apt-debs
+          key: playwright-apt-${{ runner.os }}-${{ env.ImageOS }}
+      - name: Install the headless browser + system fonts (CJK for the Chinese pages)
+        run: |
+          sudo cp ~/apt-debs/*.deb /var/cache/apt/archives/ 2>/dev/null || true
+          npx playwright install --with-deps --only-shell chromium
+          mkdir -p ~/apt-debs && cp /var/cache/apt/archives/*.deb ~/apt-debs/ 2>/dev/null || true
       - run: npm run test:e2e # builds, serves dist/ in booking demo mode, runs every shard at once
       - run: npm run check:seo
       - run: node scripts/indexnow.mjs --write-key dist
