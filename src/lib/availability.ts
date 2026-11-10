@@ -110,25 +110,6 @@ export function slotsForDate(date: string, minutes: number, busy: Interval[], no
   return out;
 }
 
-/**
- * Abby's preferred starts among `slots` (free starts on `date`): on an empty day 11:00 and evening (17:00+);
- * otherwise the free starts right before or right after an existing booking, so the day stays compact.
- */
-export function recommendedSlots(date: string, slots: string[], minutes: number, busy: Interval[], r: Rules): string[] {
-  const dayStart = zonedTimeToUtc(date, '00:00', r.timezone);
-  const dayEnd = zonedTimeToUtc(addDays(date, 1), '00:00', r.timezone);
-  const today = busy.filter((b) => b.start < dayEnd && b.end > dayStart);
-  if (!today.length) return slots.filter((s) => s === '11:00' || s >= '17:00');
-  const buf = r.booking.bufferMinutes * MIN;
-  const step = r.booking.slotMinutes * MIN;
-  return slots.filter((s) => {
-    const start = zonedTimeToUtc(date, s, r.timezone);
-    const end = start + minutes * MIN;
-    // gap to the neighbouring booking (after its buffer) is shorter than one slot step
-    return today.some((b) => (start >= b.end + buf && start - (b.end + buf) < step) || (end + buf <= b.start && b.start - (end + buf) < step));
-  });
-}
-
 /** Days of `month` ("YYYY-MM") with at least one slot → their slots. */
 export function monthAvailability(month: string, minutes: number, busy: Interval[], now: number, r: Rules, lead = 0) {
   const days: Record<string, string[]> = {};
@@ -137,16 +118,6 @@ export function monthAvailability(month: string, minutes: number, busy: Interval
     if (s.length) days[date] = s;
   }
   return days;
-}
-
-/** Recommended starts for each day of a monthAvailability() result (days without any are left out). */
-export function monthRecommended(days: Record<string, string[]>, minutes: number, busy: Interval[], r: Rules) {
-  const out: Record<string, string[]> = {};
-  for (const [date, slots] of Object.entries(days)) {
-    const rec = recommendedSlots(date, slots, minutes, busy, r);
-    if (rec.length) out[date] = rec;
-  }
-  return out;
 }
 
 /** UTC window worth querying for busy times in `month` (padded by the buffer), or null if nothing is bookable. */
