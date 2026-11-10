@@ -1,5 +1,5 @@
 ---
-// Privacy policy (EN + ZH; Traditional is converted from ZH after the build). Facts must match the code: cookies (CookieConsent.astro, functions/_middleware.ts),
+// Privacy policy (EN + ZH; Traditional is converted from ZH after the build). Facts must match the code: cookies (CookieConsent.astro, functions/_middleware.ts, the Google map in home/Contact.astro),
 // booking by message (booking-client.ts, lib/booking-message.ts; the short calendar link: functions/api/request.ts, lib/db.ts, kept 24 h),
 // calendar access (lib/google-calendar.ts, read-only), photo consent wording (i18n/booking.ts).
 import type { Lang } from '../data/services';
@@ -35,12 +35,13 @@ const copy = byLang<{ title: string; updated: string; sections: [string, string[
         'Website statistics: to see which pages help visitors so we can improve them. Statistics are never used for advertising, and we never sell your data.',
       ]],
       ['Who else handles it', [
-        `Only ${site.owner} sees your booking details. Your message is carried by your phone company (SMS) or WhatsApp. Other services process some details for us: Google (${site.owner}’s calendar and, with your OK, Analytics), Cloudflare (hosting) and BinaryLane (the server in Sydney that keeps booking requests for 24 hours). These companies may store data outside Australia, for example in the United States. ${site.owner} stays responsible for your information when they handle it.`,
+        `Only ${site.owner} sees your booking details. Your message is carried by your phone company (SMS) or WhatsApp. Other services process some details for us: Google (${site.owner}’s calendar, the map on the home page and, with your OK, Analytics), Cloudflare (hosting) and BinaryLane (the server in Sydney that keeps booking requests for 24 hours). These companies may store data outside Australia, for example in the United States. ${site.owner} stays responsible for your information when they handle it.`,
         `We keep your information secure: only ${site.owner} can use her phone and sign in to these accounts, and they are protected by passwords and two-step sign-in.`,
       ]],
       ['Cookies', [
         'Necessary (always on): your cookie choice (kept in your browser), a cookie that keeps the same site look on each visit, and, if you pick a language at the top of the page, a cookie that remembers it for a year.',
         'Analytics (only after “Accept all”): Google Analytics cookies whose names start with _ga.',
+        'Map: the home page shows a Google Maps map of our street. When it loads, Google may set its own cookies and see your IP address, whatever you choose here (see Google’s privacy policy).',
         'You can change your choice at any time with “Cookie settings” at the bottom of every page. We ask again after 12 months.',
       ]],
       ['Photos', [
@@ -73,12 +74,13 @@ const copy = byLang<{ title: string; updated: string; sections: [string, string[
         '网站统计：了解哪些页面对访客有用，以便改进网站。统计数据绝不用于广告，我们也绝不出售你的数据。',
       ]],
       ['还有谁会处理这些信息', [
-        `只有 ${site.owner} 会查看你的预约信息。你的消息由你的电话运营商（短信）或 WhatsApp 传送。其他服务会代我们处理部分信息：Google（${site.owner} 的日历，以及经你同意后的 Analytics）、Cloudflare（网站托管）、BinaryLane（位于悉尼、保存预约请求 24 小时的服务器）。这些公司可能把数据存储在澳洲以外，例如美国。这些服务处理你的信息时，${site.owner} 仍对其负责。`,
+        `只有 ${site.owner} 会查看你的预约信息。你的消息由你的电话运营商（短信）或 WhatsApp 传送。其他服务会代我们处理部分信息：Google（${site.owner} 的日历、首页的地图，以及经你同意后的 Analytics）、Cloudflare（网站托管）、BinaryLane（位于悉尼、保存预约请求 24 小时的服务器）。这些公司可能把数据存储在澳洲以外，例如美国。这些服务处理你的信息时，${site.owner} 仍对其负责。`,
         `我们会妥善保护你的信息：只有 ${site.owner} 能使用她的手机和登录这些账号，账号设有密码和两步验证。`,
       ]],
       ['Cookie', [
         '必要 Cookie（始终开启）：你的 Cookie 选择（保存在你的浏览器中）、让你每次访问看到同一网站外观的 Cookie，以及你在页面顶部选择语言后用来记住这个选择的 Cookie（保留一年）。',
         '统计 Cookie（仅在“全部接受”后）：名称以 _ga 开头的 Google Analytics Cookie。',
+        '地图：首页显示我们所在街道的 Google 地图。地图加载时，无论你在这里如何选择，Google 都可能设置它自己的 Cookie 并看到你的 IP 地址（详见 Google 的隐私政策）。',
         '你可以随时通过每个页面底部的“Cookie 设置”更改选择。12 个月后我们会再次询问。',
       ]],
       ['照片', [

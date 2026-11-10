@@ -8,6 +8,8 @@ The website for Abby's lash, brow and nail studio in Burwood NSW. Astro builds t
 npm install
 npm run start   # build, then http://localhost:8788 with the mock booking API (BOOKING_DEMO=1)
 npm test        # unit tests
+npm run test:e2e  # browser test of the booking flow, against a running `npm run start` (BASE=… for another port)
+npm run check:layout  # text over text, cut-off text, sideways scroll: every page + booking step, 360–1280px
 ```
 
 More documents are in `docs/`: `SPEC.md`, `SETUP-booking.md`, `DEPLOY-CHECKLIST.md` and `PRICES.md`.
@@ -21,6 +23,36 @@ More documents are in `docs/`: `SPEC.md`, `SETUP-booking.md`, `DEPLOY-CHECKLIST.
 5. Abby saves the event and replies to the customer. Her reply makes the booking final.
 
 Booking times (decided 2026-11-09): only events whose title starts with ❤️ block a time. Personal events, for example an all-day "rent" reminder, never block. Abby writes `❤️ 休假` to close a day. The calendar link creates events that start with `❤️ ⏳`.
+
+## Booking combinations that are not allowed (decided 2026-11-10)
+
+Every other combination can be booked. `quote()` in `src/data/services.ts` rejects each one below, so the booking APIs refuse it too, not only the form. Tests: `src/data/services.test.ts` (every permutation) and `scripts/e2e-booking.mjs` (every click order in the browser).
+
+**Eyelash extensions, in one booking**
+
+| # | Not allowed | Example | What the form does |
+|---|---|---|---|
+| 1 | Nothing chosen | Only the "Eyelash Extensions" card ticked | Continue stays disabled |
+| 2 | Bottom lashes without a full set or infill | Bottom lashes – full on its own | Bottom lashes appear only after a set or infill is picked |
+| 3 | Bottom lashes + removal, no full set or infill | Removal + bottom lashes – natural | Same as 2 |
+| 4 | Infill + removal | Infill within 2 weeks + removal | Removal is hidden once an infill is picked; a removal ticked before is dropped |
+| 5 | Two full sets or infills | Classic natural + hybrid full, or a set + an infill | One choice only (radio) |
+| 6 | Bottom lashes natural + full | Both bottom-lash options | One choice only (radio) |
+
+Why 4: an infill means Abby did the lashes, and removal is charged only for lashes done elsewhere ($10–$20). Removal is allowed on its own, or with a full set and bottom lashes in any order. A total that includes removal reads "from", for example "from $90".
+
+**Nails**
+
+| # | Not allowed | What the form does |
+|---|---|---|
+| 7 | Nail extensions without a gel or hand-painted design | The extensions link opens Gel Nails, and the client picks a design |
+| 8 | More than 10 extensions | The menu stops at 10 |
+
+**Several services**
+
+| # | Not allowed | What the form does |
+|---|---|---|
+| 9 | The same service twice, for example two sets of lash extensions | Each service can be ticked once |
 
 ## Hosting and data (decided 2026-11-09)
 
