@@ -27,11 +27,15 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        part: [1, 2] # two machines at once, each runs half of the E2E shards
     env: # read while the site is built: the same values as Cloudflare's Production variables (repository Variables)
       SITE_URL: ${{ vars.SITE_URL }}
       PUBLIC_GA4_ID: ${{ vars.PUBLIC_GA4_ID }}
       LAUNCH: ${{ vars.LAUNCH }}
       INDEXNOW_KEY: ${{ vars.INDEXNOW_KEY }}
+      E2E_PART: ${{ matrix.part }}/2
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -47,16 +51,19 @@ jobs:
       - uses: actions/cache@v4 # the fonts Playwright installs with apt (~22 MB): the Ubuntu mirror sometimes runs at ~150 kB/s
         with:
           path: ~/apt-debs
-          key: playwright-apt-${{ runner.os }}-${{ env.ImageOS }}
+          key: playwright-apt-${{ runner.os }}-v1
       - name: Install the headless browser + system fonts (CJK for the Chinese pages)
         run: |
           sudo cp ~/apt-debs/*.deb /var/cache/apt/archives/ 2>/dev/null || true
           npx playwright install --with-deps --only-shell chromium
           mkdir -p ~/apt-debs && cp /var/cache/apt/archives/*.deb ~/apt-debs/ 2>/dev/null || true
       - run: npm run test:e2e # builds, serves dist/ in booking demo mode, runs every shard at once
-      - run: npm run check:seo
-      - run: node scripts/indexnow.mjs --write-key dist
-      - uses: actions/upload-artifact@v4 # the exact build that passed is the one deployed
+      - if: matrix.part == 1
+        run: npm run check:seo
+      - if: matrix.part == 1
+        run: node scripts/indexnow.mjs --write-key dist
+      - if: matrix.part == 1
+        uses: actions/upload-artifact@v4 # the exact build that passed is the one deployed
         with:
           name: dist
           path: dist
