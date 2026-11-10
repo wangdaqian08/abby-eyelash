@@ -4,7 +4,7 @@ import { convertMarked, convertPage, fixes, simplifiedLeft, toHant } from './zh-
 import { linkText } from '../functions/c/[code].ts';
 
 test('Taiwan character forms, characters only; ASCII and character references untouched', () => {
-  assert.equal(toHant('悉尼宝活 Burwood 雾眉'), '悉尼寶活 Burwood 霧眉');
+  assert.equal(toHant('宝活 Burwood 雾眉'), '寶活 Burwood 霧眉');
   assert.equal(toHant('里面为了着急'), '裡面為了著急'); // Taiwan forms, not 裏/爲/着
   assert.equal(toHant('<a href="/x/?a=1">&#31616;</a>'), '<a href="/x/?a=1">&#31616;</a>');
 });
@@ -16,6 +16,7 @@ test("Abby's wording fixes are applied after the conversion", () => {
   assert.equal(toHant('银行转账，账户信息，社交账号'), '銀行轉帳，帳戶信息，社交帳號');
   assert.equal(toHant('逐根粘在真睫毛上，胶水粘得更牢，粘贴甲片'), '逐根黏在真睫毛上，膠水黏得更牢，黏貼甲片');
   assert.equal(toHant('每 2–3 周回补一次，越早回补越便宜'), '每 2–3 週回補一次，越早回補越便宜');
+  assert.equal(toHant('悉尼宝活 Burwood'), '雪梨寶活 Burwood'); // Sydney is 雪梨 in Taiwan (Abby)
   // Nail unit: 支 in Taiwan (Abby: 隻 is for animals). Pages show "$6 / 只"; the booking app reads the bare string from data-config.
   assert.equal(toHant('$6 / 只，10 分钟 / 只，每只 $6，一只到十只，只按数量收费'), '$6 / 支，10 分鐘 / 支，每支 $6，一支到十支，只按數量收費');
   assert.equal(convertPage('data-config="[&quot;只&quot;,&quot;只在尾端&quot;]"'), 'data-config="[&quot;支&quot;,&quot;只在尾端&quot;]"');
