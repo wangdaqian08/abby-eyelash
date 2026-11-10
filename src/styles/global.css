@@ -63,6 +63,7 @@ html[data-look='B'] { --header-h: 72px; }
   --color-whatsapp: #25d366;
   --color-wechat: #07c160;
   --color-xiaohongshu: #ff2442;
+  --color-threads: #000000;
 }
 @utility bg-instagram {
   background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);

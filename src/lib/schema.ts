@@ -79,7 +79,7 @@ export const specialHours = (now = Date.now()) => {
 const providerRef = (base: string | URL) => ({ '@type': BIZ_TYPE, '@id': abs(base, '/#business'), name: site.name });
 
 export function businessNode(base: string | URL, lang: Lang, image: string): Node {
-  const sameAs = [site.google.reviewsUrl, site.social.instagram, site.social.xiaohongshu].filter(isRealProfileUrl);
+  const sameAs = [site.google.reviewsUrl, site.social.instagram, site.social.xiaohongshu, site.social.threads].filter(isRealProfileUrl);
   const email = site.email && !site.email.endsWith('@example.com') ? site.email : undefined;
   return {
     ...providerRef(base),

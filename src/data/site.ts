@@ -37,7 +37,8 @@ export const site = {
   ] as { day: number; open: string; close: string; nth?: number }[],
   social: {
     instagram: 'https://www.instagram.com/a.b_flora/',
-    xiaohongshu: '' as string, // not published; empty hides it
+    xiaohongshu: 'https://www.xiaohongshu.com/user/profile/6a0a7b10000000000d035c02' as string, // empty hides it
+    threads: 'https://www.threads.com/@abby83921' as string, // empty hides it
     wechatId: 'AB_Flora',
   },
   google: {
