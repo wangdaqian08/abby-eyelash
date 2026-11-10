@@ -93,7 +93,7 @@ Opening hours (`hours`), 30-minute slot grid (`slotMinutes`), gap around every c
 npm install
 cp .dev.vars.example .dev.vars          # leave GOOGLE_* empty for demo mode
 npm run start                           # build + http://localhost:8788/book with BOOKING_DEMO=1
-npm test                                # unit tests (availability incl. DST, message + calendar link)
+npm run test:unit                       # unit tests (availability incl. DST, message + calendar link)
 ```
 
 ## Troubleshooting

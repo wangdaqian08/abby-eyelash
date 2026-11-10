@@ -33,6 +33,17 @@ The code must be in a GitHub or GitLab repository. Docs: <https://developers.clo
 4. **Node version.** Astro 7 needs Node **22.23.4 or newer**, but Cloudflare's build image defaults to 22.16.0. Add the variable `NODE_VERSION` = `24` (see step C). Docs: <https://developers.cloudflare.com/pages/configuration/build-image/>.
 5. **Save and Deploy**.
 
+## B2. Deploy only after the tests pass (10 minutes)
+
+GitHub Actions (`.github/workflows/ci.yml`) runs the unit tests and the E2E tests at the same time. If both pass, it deploys the exact build it tested: a pull request goes to a preview deployment and `main` goes to production. If either fails, nothing is deployed. For this to work, Cloudflare must stop building from Git by itself. Do the steps in this order: until step 3, Cloudflare keeps deploying by itself, so nothing breaks in between.
+
+1. **API token.** Cloudflare → **My Profile** → **API Tokens** → **Create Token** → **Custom token** → permission **Account** · **Cloudflare Pages** · **Edit**. In GitHub → repository **Settings** → **Secrets and variables** → **Actions** → **Secrets**, add `CLOUDFLARE_API_TOKEN` (the token) and `CLOUDFLARE_ACCOUNT_ID` (on the Cloudflare dashboard home page → **Account ID**). Docs: <https://developers.cloudflare.com/pages/how-to/use-direct-upload-with-continuous-integration/>.
+2. **Build values.** Same page → **Variables** tab: add `SITE_URL`, `PUBLIC_GA4_ID`, `LAUNCH` and `INDEXNOW_KEY`, copied from Cloudflare's Production variables (part C). The site is now built in GitHub, so these four are read from GitHub. The runtime values (`GOOGLE_*`, `DATABASE_URL`, `BOOKING_DEMO`) stay in Cloudflare.
+3. **Turn off Cloudflare's own builds.** `abby-eyelash` → **Settings** → **Builds & deployments**: under **Configure Production deployments**, untick **Enable automatic production branch deployments** and save; under **Preview branch control**, choose **None** and save. Docs: <https://developers.cloudflare.com/pages/configuration/git-integration/> ("Disable automatic deployments").
+4. **Block merging while tests fail** (optional, recommended): GitHub → **Settings** → **Branches** → add a rule for `main` → **Require status checks to pass** → pick `unit` and `e2e`.
+
+From then on, after you change one of the four build values, rebuild in GitHub → **Actions** → **CI** → **Run workflow** (branch `main`). Cloudflare's **Retry deployment** re-sends the old build without rebuilding.
+
 ## C. Environment variables
 
 Dashboard → **Workers & Pages** → `abby-eyelash` → **Settings** → **Variables and Secrets** → **Production**.
@@ -51,7 +62,7 @@ Docs: <https://developers.cloudflare.com/pages/configuration/build-configuration
 
 Compatibility date: **Settings → Runtime** → the compatibility date for Production and Preview must be **2026-08-04 or later**, or the `nodejs_compat` flag must be on. Otherwise the database driver behind the 📅 link stops the Functions runtime from starting, and the whole site fails.
 
-The `PUBLIC_…`, `SITE_URL`, `LAUNCH` and `INDEXNOW_KEY` values are read **while the site is built**. After you change one, go to **Deployments** → latest → **⋯** → **Retry deployment**.
+The `PUBLIC_…`, `SITE_URL`, `LAUNCH` and `INDEXNOW_KEY` values are read **while the site is built**. Once part B2 is done, they live in GitHub's repository Variables. After you change one, run GitHub → **Actions** → **CI** → **Run workflow**.
 
 ### C2. Rate limit the booking API (5 minutes)
 
@@ -140,7 +151,7 @@ Protocol: <https://www.indexnow.org/documentation>.
 
 ## I. Monthly routine (15 minutes)
 
-- **Redeploy once a month** (Deployments → latest → ⋯ → Retry deployment) even if nothing changed. The page data lists the next six "3rd Sunday" openings and is computed at build time, so a site that is never rebuilt eventually stops showing them.
+- **Redeploy once a month** (GitHub → Actions → CI → Run workflow on `main`) even if nothing changed. The page data lists the next six "3rd Sunday" openings and is computed at build time, so a site that is never rebuilt eventually stops showing them.
 
 - Search Console: Performance and Generative AI report. Bing: AI Performance. GA4: the **AI assistants** channel and key events.
 - Cloudflare → AI Crawl Control: confirm that OAI-SearchBot, PerplexityBot, Claude-SearchBot and Bingbot fetch pages and are not blocked.

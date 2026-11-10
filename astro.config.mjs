@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { services } from './src/data/services.ts';
 
 // Production address (www is canonical; the bare domain redirects to it). SITE_URL (env) overrides.
-const site = process.env.SITE_URL ?? 'https://www.abbyeyelashes.com';
+const site = process.env.SITE_URL || 'https://www.abbyeyelashes.com'; // || : CI passes an unset variable as ''
 
 export default defineConfig({
   site,
