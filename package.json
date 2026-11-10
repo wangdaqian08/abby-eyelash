@@ -6,6 +6,7 @@
     "dev": "npm run start",
     "prebuild": "node scripts/prices.mjs",
     "build": "astro build",
+    "postbuild": "node scripts/zh-hant.mjs",
     "start": "npm run build && npm run preview",
     "prepreview": "node scripts/db.mjs up",
     "preview": "wrangler pages dev ./dist --port 8788 --ip 0.0.0.0 --compatibility-flags nodejs_compat --binding BOOKING_DEMO=1 --binding DATABASE_URL=postgres://abby_app:abby_dev@127.0.0.1:5434/postgres",
@@ -17,6 +18,7 @@
     "check:layout": "node scripts/check-layout.mjs",
     "check:seo": "node scripts/check-seo.mjs dist",
     "check:go-live": "node scripts/check-go-live.mjs",
+    "review:zh-hant": "node scripts/zh-hant-review.mjs",
     "check:looks": "npm run build && node scripts/check-looks.mjs",
     "indexnow": "node scripts/indexnow.mjs",
     "check:ga4": "node scripts/check-ga4.mjs"
@@ -31,6 +33,7 @@
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
+    "opencc-js": "^1.4.2",
     "playwright": "1.64.1",
     "wrangler": "^4.152.0"
   }

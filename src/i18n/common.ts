@@ -1,7 +1,9 @@
 // Shared UI copy (header, footer, home page) in EN + natively written Simplified Chinese,
 // plus small pure formatters. Only type imports here so `node --test` can load this file directly.
-import { headline, priceText, type Lang, type Service } from '../data/services.ts';
+import { headline, priceText, wasText, type Lang, type Service } from '../data/services.ts';
 import type { Site } from '../data/site';
+import { byLang } from '../lib/hant.ts';
+import { INTL } from '../lib/i18n.ts';
 
 const en = {
   nav: {
@@ -284,7 +286,7 @@ const zh: Strings = {
   closed: '休息',
 };
 
-export const common: Record<Lang, Strings> = { en, zh };
+export const common = byLang<Strings>({ en, zh });
 
 /** Replace `{key}` placeholders. */
 export const fill = (s: string, vars: Record<string, string | number>) =>
@@ -293,8 +295,8 @@ export const fill = (s: string, vars: Record<string, string | number>) =>
 /** "from $80 · 50–75 min" · "$480 (was $580) · 120 min" · "$6 / nail" — computed from services.ts (the only price source). */
 export function priceLine(s: Service, lang: Lang) {
   const h = headline(s);
-  const was = h.wasPrice ? (lang === 'zh' ? `（原价 $${h.wasPrice}）` : ` (was $${h.wasPrice})`) : '';
-  const time = h.minutes && `${h.minutes[0] === h.minutes[1] ? h.minutes[0] : `${h.minutes[0]}–${h.minutes[1]}`} ${lang === 'zh' ? '分钟' : 'min'}`;
+  const was = h.wasPrice ? wasText(h.wasPrice, lang) : '';
+  const time = h.minutes && `${h.minutes[0] === h.minutes[1] ? h.minutes[0] : `${h.minutes[0]}–${h.minutes[1]}`} ${lang !== 'en' ? '分钟' : 'min'}`;
   return [priceText(h, lang) + was, time].filter(Boolean).join(' · ');
 }
 
@@ -311,10 +313,10 @@ export const mapsUrl = (site: Pick<Site, 'address'>) => `https://www.google.com/
 /** Embedded map of the same address (no API key needed). Replace with site.google.mapsEmbed once the studio has a Google Business Profile. */
 export const mapsEmbedUrl = (site: Pick<Site, 'address'>) => `https://maps.google.com/maps?q=${encodeURIComponent(napAddress(site))}&z=15&output=embed`;
 
-const DAYS: Record<Lang, string[]> = {
+const DAYS = byLang<string[]>({
   en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
   zh: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
-};
+});
 const WEEK = [1, 2, 3, 4, 5, 6, 0]; // Monday first (AU)
 
 const time = (hhmm: string) => {
@@ -339,21 +341,21 @@ export function hoursRows(hours: readonly { day: number; open: string; close: st
   }
   return groups.map((g) => ({
     days:
-      (g.from === g.to ? DAYS[lang][g.from] : `${DAYS[lang][g.from]}${lang === 'zh' ? '至' : ' – '}${DAYS[lang][g.to]}`) +
-      (g.h?.nth ? (lang === 'zh' ? `（仅每月第 ${g.h.nth} 个）` : ` (${['1st', '2nd', '3rd', '4th', '5th'][g.h.nth - 1]} of the month only)`) : ''),
+      (g.from === g.to ? DAYS[lang][g.from] : `${DAYS[lang][g.from]}${lang !== 'en' ? '至' : ' – '}${DAYS[lang][g.to]}`) +
+      (g.h?.nth ? (lang !== 'en' ? `（仅每月第 ${g.h.nth} 个）` : ` (${['1st', '2nd', '3rd', '4th', '5th'][g.h.nth - 1]} of the month only)`) : ''),
     time: g.h ? `${time(g.h.open)} – ${time(g.h.close)}` : common[lang].closed,
   }));
 }
 
 /** Review dates: "September 2026" / "2026年9月". */
 export const monthYear = (iso: string, lang: Lang) =>
-  new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-AU', { year: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(iso));
+  new Intl.DateTimeFormat(INTL[lang], { year: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(iso));
 
 /**
  * Home FAQ — answers are always visible (GEO-STRATEGY #2) and each answer stands on its own.
  * `{phone}`, `{address}`, `{deposit}`, `{browDeposit}` and `{hours}` are filled from site.ts / services.ts.
  */
-export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
+export const homeFaq = byLang<{ q: string; a: string }[]>({
   en: [
     {
       q: 'How do I book, and what is the cancellation policy?',
@@ -430,4 +432,4 @@ export const homeFaq: Record<Lang, { q: string; a: string }[]> = {
       a: '凝胶美甲和手绘造型一般能维持 4 周左右，之后甲根会露出新长的指甲。甲片延长（每只 $6，可加在任何凝胶或手绘款上）一般约 4 周后重做。',
     },
   ],
-};
+});

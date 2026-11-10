@@ -1,7 +1,9 @@
 import { findOption, priceText, type Lang } from './services.ts';
 import { localePath } from '../lib/i18n.ts';
+import { aliasHant } from '../lib/hant.ts';
 
-type L10n = Record<Lang, string>;
+// Written in en + zh; aliasHant (end of file) adds 'zh-hant', read as the zh text and converted after the build.
+type L10n = { en: string; zh: string; readonly 'zh-hant'?: string };
 export type Ratio = '4:3' | '3:4' | 'original';
 /** Fractions of the (EXIF-rotated) source, applied before the ratio crop. */
 export interface Box { left: number; top: number; width: number; height: number }
@@ -202,3 +204,5 @@ export const servicePhotos: Record<string, ServiceSlots> = {
 };
 
 export const homeHero = 'hero-mirror';
+
+aliasHant([photos, nailVideo, browVideo, nailGroups, styleGuide, styledLooks, browGroups, lashGroups, servicePhotos]);

@@ -2,8 +2,10 @@
 // Names and grouping live here; prices and durations live in prices.csv.
 import { prices } from './prices.generated.ts';
 import { site } from './site.ts';
+import { aliasHant } from '../lib/hant.ts';
 
-export type Lang = 'en' | 'zh';
+// 'zh-hant' (Traditional Chinese) has no text of its own: it reads the zh text, converted after the build (src/lib/hant.ts).
+export type Lang = 'en' | 'zh' | 'zh-hant';
 type L10n = Record<Lang, string>;
 
 export interface ServiceOption {
@@ -39,8 +41,12 @@ export interface Service {
   options: ServiceOption[];
 }
 
-type Draft = Omit<Service, 'updated' | 'options'> & {
-  options: Pick<ServiceOption, 'id' | 'name' | 'extra' | 'group' | 'addon' | 'max' | 'alone' | 'noRemoval' | 'unit' | 'priceKey'>[];
+// Written text: en + zh only; aliasHant adds 'zh-hant' when the module loads.
+type Text = { en: string; zh: string };
+type Draft = Omit<Service, 'updated' | 'options' | 'name' | 'summary'> & {
+  name: Text;
+  summary: Text;
+  options: (Pick<ServiceOption, 'id' | 'extra' | 'addon' | 'max' | 'alone' | 'noRemoval' | 'priceKey'> & { name: Text; group?: Text; unit?: Text })[];
 };
 
 const FULL_SET = { en: 'Full sets', zh: '全套' };
@@ -124,7 +130,7 @@ const drafts: Draft[] = [
 ];
 
 /** Merges prices.csv into the drafts; a "50%" row is a share of the client's last price, so it has no dollar amount. */
-function withPrices(d: Draft): Service {
+function withPrices(d: Draft) {
   const rows = d.options.map((o) => {
     const p = prices[o.priceKey ?? `${d.id}/${o.id}`];
     if (!p) throw new Error(`src/data/prices.csv has no row for ${o.priceKey ?? `${d.id}/${o.id}`}`);
@@ -137,7 +143,7 @@ function withPrices(d: Draft): Service {
   };
 }
 
-export const services: Service[] = drafts.map(withPrices);
+export const services = aliasHant(drafts.map(withPrices)) as unknown as Service[]; // aliasHant adds 'zh-hant' to every text
 
 const unknown = Object.keys(prices).filter((k) => !services.some((s) => s.options.some((o) => (o.priceKey ?? `${s.id}/${o.id}`) === k)));
 if (unknown.length) throw new Error(`src/data/prices.csv has rows no service uses: ${unknown.join(', ')}`);
@@ -165,13 +171,21 @@ export function headline(s: Service) {
 
 type Priced = Pick<ServiceOption, 'price' | 'from' | 'unit' | 'onRequest' | 'pct' | 'maxPrice'>;
 /** "$10–$20" · "$80" · "from $130" · "$6 / nail" · "Price on request" · "50% of your last price" (zh: "$10 起至 $20" · "$130 起" · "$6 / 只" · "定制价，需咨询" · "上次价格的 50%"). */
+type PriceWords = { onRequest: string; pct: string; range: string; from: string; was: string };
+export const priceWords = aliasHant({
+  en: { onRequest: 'Price on request', pct: '{n}% of your last price', range: '{p}–{max}', from: 'from {p}', was: ' (was {p})' },
+  zh: { onRequest: '定制价，需咨询', pct: '上次价格的 {n}%', range: '{p} 起至 {max}', from: '{p} 起', was: '（原价 {p}）' },
+}) as Record<Lang, PriceWords>;
 export const priceText = (o: Priced, lang: Lang) => {
-  if (o.onRequest) return lang === 'zh' ? '定制价，需咨询' : 'Price on request';
-  if (o.pct) return lang === 'zh' ? `上次价格的 ${o.pct}%` : `${o.pct}% of your last price`;
-  if (o.maxPrice) return lang === 'zh' ? `$${o.price} 起至 $${o.maxPrice}` : `$${o.price}–$${o.maxPrice}`;
-  const p = o.from ? (lang === 'zh' ? `$${o.price} 起` : `from $${o.price}`) : `$${o.price}`;
+  const w = priceWords[lang];
+  if (o.onRequest) return w.onRequest;
+  if (o.pct) return w.pct.replace('{n}', String(o.pct));
+  if (o.maxPrice) return w.range.replace('{p}', `$${o.price}`).replace('{max}', `$${o.maxPrice}`);
+  const p = o.from ? w.from.replace('{p}', `$${o.price}`) : `$${o.price}`;
   return o.unit ? `${p} / ${o.unit[lang]}` : p;
 };
+/** " (was $580)" / "（原价 $580）" after a price. */
+export const wasText = (wasPrice: number, lang: Lang) => priceWords[lang].was.replace('{p}', `$${wasPrice}`);
 
 /** Services you can start a booking with (an add-on-only service like nail extensions is booked on top of another). */
 export const bookable = () => services.filter((s) => mainOptions(s).length);

@@ -115,6 +115,11 @@ html[data-look='B'] { --header-h: 72px; }
     font-size: 1rem;
     line-height: 1.65;
   }
+  /* Traditional Chinese: Traditional system fonts first (Taiwan glyph shapes), the Simplified ones only as a fallback. */
+  :lang(zh-Hant) {
+    --font-serif: 'Playfair Display', 'Noto Serif TC', 'Songti TC', 'Noto Serif SC', 'Songti SC', serif;
+    --font-sans: 'DM Sans Variable', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans SC', 'PingFang SC', system-ui, sans-serif;
+  }
   /* DM Sans at 400 is much thinner than the CJK system fonts; 480 evens it out. English pages only: on Chinese pages it would bump PingFang to Medium. */
   html:lang(en) body { font-weight: 480; } /* under 500 so font-medium still stands out */
   h1, h2, h3 {

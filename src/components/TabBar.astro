@@ -14,13 +14,13 @@ const book = localePath(lang, '/book');
 const here = publicPath(Astro.url.pathname);
 const onBook = here.startsWith(book);
 const tabs = [
-  { id: 'home', href: home, label: lang === 'zh' ? '首页' : 'Home', on: !onBook && here === home, d: 'M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z' },
+  { id: 'home', href: home, label: lang !== 'en' ? '首页' : 'Home', on: !onBook && here === home, d: 'M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z' },
   { id: 'services', href: `${home}#services`, label: t.services, on: false, d: 'M12 3c2 3.5 6 5 6 10a6 6 0 0 1-12 0c0-5 4-6.5 6-10z' },
   { id: 'gallery', href: `${home}#gallery`, label: t.gallery, on: false, d: 'M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4' },
   { id: 'book', href: book, label: t.bookShort, on: onBook, track: 'book_click', d: 'M5 6h14v14H5zM5 10h14M9 3v4M15 3v4' },
 ];
 ---
-<nav aria-label={lang === 'zh' ? '快捷导航' : 'Quick links'} class="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 lg:hidden">
+<nav aria-label={lang !== 'en' ? '快捷导航' : 'Quick links'} class="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 lg:hidden">
   <ul class="glass [--glass-fill:rgb(255_255_255/0.88)] flex h-[var(--tabbar-h)] items-center justify-around rounded-full px-1.5">
     {tabs.map((tab) => (
       <li class="flex-1">

@@ -13,12 +13,12 @@ interface Props { lang: Lang }
 const { lang } = Astro.props;
 const t = common[lang].about;
 const a = site.abby;
-const vars = { name: site.name, owner: site.owner, suburb: lang === 'zh' ? '宝活' : site.address.locality };
+const vars = { name: site.name, owner: site.owner, suburb: lang !== 'en' ? '宝活' : site.address.locality };
 // Facts come only from site.ts; empty values hide their line (D4).
 const facts = [
   a.yearsExperience ? fill(t.years, { n: a.yearsExperience }) : '',
-  a.certifications.length ? `${t.certifications} ${a.certifications.join(lang === 'zh' ? '、' : ', ')}` : '',
-  a.products.length ? `${t.products} ${a.products.join(lang === 'zh' ? '、' : ', ')}` : '',
+  a.certifications.length ? `${t.certifications} ${a.certifications.join(lang !== 'en' ? '、' : ', ')}` : '',
+  a.products.length ? `${t.products} ${a.products.join(lang !== 'en' ? '、' : ', ')}` : '',
 ].filter(Boolean);
 const stats = [
   a.yearsExperience ? [`${a.yearsExperience}+`, t.statYears] : null,

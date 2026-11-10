@@ -1,5 +1,5 @@
 // Service-page UI copy (EN + Simplified Chinese). Long-form copy lives in src/data/service-content.ts.
-import type { Lang } from '../data/services';
+import { byLang } from '../lib/hant.ts';
 
 const en = {
   home: 'Home',
@@ -79,4 +79,4 @@ const zh: Strings = {
   ctaBody: '在线选择时间，Abby 会通过短信或 WhatsApp 与你确认。',
 };
 
-export const serviceStrings: Record<Lang, Strings> = { en, zh };
+export const serviceStrings = byLang<Strings>({ en, zh });

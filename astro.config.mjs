@@ -11,17 +11,17 @@ export default defineConfig({
   site,
   output: 'static',
   i18n: {
-    locales: ['en', 'zh'],
+    locales: ['en', 'zh', 'zh-hant'],
     defaultLocale: 'en',
     routing: { prefixDefaultLocale: false },
   },
   integrations: [
     sitemap({
-      i18n: { defaultLocale: 'en', locales: { en: 'en-AU', zh: 'zh-Hans' } },
+      i18n: { defaultLocale: 'en', locales: { en: 'en-AU', zh: 'zh-Hans', 'zh-hant': 'zh-Hant' } },
       filter: (page) => !/\/404\/?$/.test(page) && !new URL(page).pathname.startsWith('/look-b/'), // look-B copies are served at the normal URLs
       // Truthful lastmod (GEO-STRATEGY #13): service pages and the home pages (which show prices) get a real date; others omit it.
       serialize(item) {
-        const slug = new URL(item.url).pathname.replace(/^\/zh(?=\/)/, '').replace(/^\/|\/$/g, '');
+        const slug = new URL(item.url).pathname.replace(/^\/zh(?:-hant)?(?=\/)/, '').replace(/^\/|\/$/g, '');
         // home pages list every service's prices, so they change whenever any service does
         const updated = slug === '' ? services.map((s) => s.updated).sort().at(-1) : services.find((s) => s.slug === slug)?.updated;
         return updated ? { ...item, lastmod: updated } : item;

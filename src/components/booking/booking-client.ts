@@ -1,10 +1,13 @@
 // Booking flow (vanilla TS): 1 Services (one or more, back to back) → 2 Date → 3 Time → 4 Details → 5 Send.
 // Nothing is booked here: step 5 hands the customer a pre-filled SMS/WhatsApp to Abby (src/lib/booking-message.ts).
-import { addonOptions, bookable, bookableWith, groupAt, headline, itemsParam, mainOptions, priceText, quoteAll, quoteAllText, services, type Addons, type Lang, type Service, type ServiceOption } from '../../data/services';
+import { addonOptions, bookable, bookableWith, groupAt, headline, itemsParam, mainOptions, priceText, quoteAll, quoteAllText, services, wasText, type Addons, type Lang, type Service, type ServiceOption } from '../../data/services';
 import { site } from '../../data/site';
 import { bookingStrings } from '../../i18n/booking';
 import { daysInMonth, localDate, maxDate, validateDetails, weekday, zonedTimeToUtc, type Details } from '../../lib/availability';
 import { smsHref, waTextHref } from '../../lib/booking-message';
+import { aliasHant, convertWith } from '../../lib/hant';
+import { INTL, localePath } from '../../lib/i18n';
+import { bookingText } from './booking-text';
 
 type Days = Record<string, string[]>;
 type Month = { days: Days; recommended: Days };
@@ -43,10 +46,11 @@ const BTN_OUTLINE = LB ? `${BTN} btn-tinted` : `${BTN} btn-soft border border-pr
 const INPUT = 'block h-12 w-full appearance-none rounded-field bg-surface-2 px-4 text-base text-fg placeholder:text-muted aria-invalid:outline-2 aria-invalid:outline-danger';
 
 export function start(root: HTMLElement) {
-  const cfg = JSON.parse(root.dataset.config!) as { lang: Lang };
+  const cfg = JSON.parse(root.dataset.config!) as { lang: Lang; hant?: string[] };
   const lang = cfg.lang;
+  if (cfg.hant) aliasHant(bookingText, convertWith(bookingText, cfg.hant));
   const t = bookingStrings[lang];
-  const locale = lang === 'zh' ? 'zh-CN' : 'en-AU';
+  const locale = INTL[lang];
   const tracking = lang === 'en' ? ' text-xs tracking-[0.2em]' : ' text-sm'; // no tracking on CJK
   const $ = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel);
   const view = $('[data-view]')!;
@@ -85,12 +89,12 @@ export function start(root: HTMLElement) {
   const fmtTime = (date: string, time: string) =>
     new Intl.DateTimeFormat(locale, {
       timeZone: TZ,
-      hour: lang === 'zh' ? '2-digit' : 'numeric',
+      hour: lang !== 'en' ? '2-digit' : 'numeric',
       minute: '2-digit',
-      hourCycle: lang === 'zh' ? 'h23' : 'h12',
+      hourCycle: lang !== 'en' ? 'h23' : 'h12',
     }).format(zonedTimeToUtc(date, time, TZ));
   const price = (o: Parameters<typeof priceText>[0] & { wasPrice?: number }) =>
-    priceText(o, lang) + (o.wasPrice ? (lang === 'zh' ? `（原价 $${o.wasPrice}）` : ` (was $${o.wasPrice})`) : '');
+    priceText(o, lang) + (o.wasPrice ? wasText(o.wasPrice, lang) : '');
   // Booking total: dollar part summed, then what isn't a dollar amount, e.g. "$80 + Price on request + $24".
   const totalPrice = (q: ReturnType<typeof total>) => quoteAllText(q, lang);
   const label = (l: Lang = lang) =>
@@ -248,7 +252,7 @@ export function start(root: HTMLElement) {
     const tabbable =
       [st.focus, st.date].find(inMonth) ?? dates.find((d) => days && d in days) ?? (inMonth(today) ? today : dates[0]);
     const mondayFirst = (d: string) => (weekday(d) + 6) % 7;
-    const wd = Array.from({ length: 7 }, (_, i) => fmtDate(`2026-11-0${2 + i}`, { weekday: lang === 'zh' ? 'narrow' : 'short' }));
+    const wd = Array.from({ length: 7 }, (_, i) => fmtDate(`2026-11-0${2 + i}`, { weekday: lang !== 'en' ? 'narrow' : 'short' }));
     const cells: string[] = Array(mondayFirst(dates[0])).fill('<span role="gridcell"></span>');
     for (const d of dates) {
       if (!days) {
@@ -359,7 +363,7 @@ export function start(root: HTMLElement) {
         ${agree('photos', t.agreePhotos, false)}
       </div>
       <button type="submit" class="${BTN_PRIMARY}${tracking} mt-6 w-full">${t.submit}</button>
-      <p class="mt-3 text-center text-xs text-muted">${fill(t.privacyNote, { link: `<a href="${lang === 'zh' ? '/zh/privacy/' : '/privacy/'}" target="_blank" class="underline underline-offset-4 hover:text-fg">${t.privacyLink}</a>` })}</p>
+      <p class="mt-3 text-center text-xs text-muted">${fill(t.privacyNote, { link: `<a href="${localePath(lang, '/privacy')}" target="_blank" class="underline underline-offset-4 hover:text-fg">${t.privacyLink}</a>` })}</p>
     </form>`;
   }
 
@@ -425,14 +429,14 @@ export function start(root: HTMLElement) {
     } catch {}
   }
 
-  // --- step 5: the message the customer sends Abby (page language; the first line is the same in both so Abby spots it) ---
+  // --- step 5: the message the customer sends Abby (page language; the first line is the same in every language so Abby spots it) ---
   function message() {
     const d = st.details;
     const q = total();
     const m = t.msg;
-    const c = lang === 'zh' ? '：' : ': ';
+    const c = lang !== 'en' ? '：' : ': ';
     return [
-      '【预约 Booking】Abby Eyelashes',
+      m.header,
       `${m.service}${c}${label()}`,
       `${m.when}${c}${shortDate(st.date!)} ${fmtTime(st.date!, st.time!)} (${mins(q.minutes)})`,
       `${m.price}${c}${totalPrice(q)}`,

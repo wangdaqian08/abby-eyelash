@@ -11,9 +11,13 @@ import ZhHome from '../zh/index.astro';
 import ZhBook from '../zh/book.astro';
 import ZhPrivacy from '../zh/privacy.astro';
 import ZhService from '../zh/[slug].astro';
+import HantHome from '../zh-hant/index.astro';
+import HantBook from '../zh-hant/book.astro';
+import HantPrivacy from '../zh-hant/privacy.astro';
+import HantService from '../zh-hant/[slug].astro';
 import { services } from '../../data/services';
 
-const pages = { Home, Book, Privacy, NotFound, Service, ZhHome, ZhBook, ZhPrivacy, ZhService };
+const pages = { Home, Book, Privacy, NotFound, Service, ZhHome, ZhBook, ZhPrivacy, ZhService, HantHome, HantBook, HantPrivacy, HantService };
 type Page = keyof typeof pages;
 
 export function getStaticPaths() {
@@ -26,8 +30,12 @@ export function getStaticPaths() {
     one('zh', 'ZhHome'),
     one('zh/book', 'ZhBook'),
     one('zh/privacy', 'ZhPrivacy'),
+    one('zh-hant', 'HantHome'),
+    one('zh-hant/book', 'HantBook'),
+    one('zh-hant/privacy', 'HantPrivacy'),
     ...services.map((service) => ({ params: { path: service.slug }, props: { page: 'Service' as Page, service } })),
     ...services.map((service) => ({ params: { path: `zh/${service.slug}` }, props: { page: 'ZhService' as Page, service } })),
+    ...services.map((service) => ({ params: { path: `zh-hant/${service.slug}` }, props: { page: 'HantService' as Page, service } })),
   ];
 }
 const { page, ...props } = Astro.props;
