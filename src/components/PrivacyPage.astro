@@ -1,24 +1,25 @@
 ---
-// Privacy policy (EN + ZH). Facts must match the code: cookies (CookieConsent.astro, functions/_middleware.ts, the Google map in home/Contact.astro),
+// Privacy policy (EN + ZH; Traditional is converted from ZH after the build). Facts must match the code: cookies (CookieConsent.astro, functions/_middleware.ts, the Google map in home/Contact.astro),
 // booking by message (booking-client.ts, lib/booking-message.ts; the short calendar link: functions/api/request.ts, lib/db.ts, kept 24 h),
 // calendar access (lib/google-calendar.ts, read-only), photo consent wording (i18n/booking.ts).
 import type { Lang } from '../data/services';
 import { site } from '../data/site';
 import { waHref } from '../i18n/common';
+import { byLang } from '../lib/hant';
 
 interface Props { lang: Lang }
 const { lang } = Astro.props;
-const updated = '2026-11-09';
+const updated = '2026-11-10';
 const link = 'class="underline underline-offset-4"';
 // "text or WhatsApp {phone}": the number opens SMS, the word WhatsApp opens a chat.
 const phone = `<a href="sms:${site.phone.replace(/\s/g, '')}" ${link}>${site.phoneDisplay}</a>`;
 const wa = `<a href="${waHref(site.phone)}" target="_blank" rel="noopener" ${link}>WhatsApp</a>`;
 const oaic = '<a href="https://www.oaic.gov.au/privacy/privacy-complaints" target="_blank" rel="noopener" class="underline underline-offset-4">oaic.gov.au</a>';
 
-const copy: Record<Lang, { title: string; updated: string; sections: [string, string[]][] }> = {
+const copy = byLang<{ title: string; updated: string; sections: [string, string[]][] }>({
   en: {
     title: 'Privacy policy',
-    updated: 'Last updated 9 November 2026',
+    updated: 'Last updated 10 November 2026',
     sections: [
       ['Who we are', [`${site.name} is ${site.owner}’s lash, brow and nail studio in ${site.address.locality} ${site.address.region}. For any privacy question or request, text ${phone} or message ${wa}.`]],
       ['What we collect', [
@@ -38,7 +39,7 @@ const copy: Record<Lang, { title: string; updated: string; sections: [string, st
         `We keep your information secure: only ${site.owner} can use her phone and sign in to these accounts, and they are protected by passwords and two-step sign-in.`,
       ]],
       ['Cookies', [
-        'Necessary (always on): your cookie choice (kept in your browser) and a cookie that keeps the same site look on each visit.',
+        'Necessary (always on): your cookie choice (kept in your browser), a cookie that keeps the same site look on each visit, and, if you pick a language at the top of the page, a cookie that remembers it for a year.',
         'Analytics (only after “Accept all”): Google Analytics cookies whose names start with _ga.',
         'Map: the home page shows a Google Maps map of our street. When it loads, Google may set its own cookies and see your IP address, whatever you choose here (see Google’s privacy policy).',
         'You can change your choice at any time with “Cookie settings” at the bottom of every page. We ask again after 12 months.',
@@ -57,7 +58,7 @@ const copy: Record<Lang, { title: string; updated: string; sections: [string, st
   },
   zh: {
     title: '隐私政策',
-    updated: '最后更新：2026 年 11 月 9 日',
+    updated: '最后更新：2026 年 11 月 10 日',
     sections: [
       ['我们是谁', [`${site.name} 是 ${site.owner} 在 ${site.address.locality} ${site.address.region} 的美睫、美眉与美甲工作室。如有任何隐私问题或请求，请发短信至 ${phone} 或通过 ${wa} 联系。`]],
       ['我们收集哪些信息', [
@@ -77,7 +78,7 @@ const copy: Record<Lang, { title: string; updated: string; sections: [string, st
         `我们会妥善保护你的信息：只有 ${site.owner} 能使用她的手机和登录这些账号，账号设有密码和两步验证。`,
       ]],
       ['Cookie', [
-        '必要 Cookie（始终开启）：你的 Cookie 选择（保存在你的浏览器中），以及让你每次访问看到同一网站外观的 Cookie。',
+        '必要 Cookie（始终开启）：你的 Cookie 选择（保存在你的浏览器中）、让你每次访问看到同一网站外观的 Cookie，以及你在页面顶部选择语言后用来记住这个选择的 Cookie（保留一年）。',
         '统计 Cookie（仅在“全部接受”后）：名称以 _ga 开头的 Google Analytics Cookie。',
         '地图：首页显示我们所在街道的 Google 地图。地图加载时，无论你在这里如何选择，Google 都可能设置它自己的 Cookie 并看到你的 IP 地址（详见 Google 的隐私政策）。',
         '你可以随时通过每个页面底部的“Cookie 设置”更改选择。12 个月后我们会再次询问。',
@@ -94,7 +95,7 @@ const copy: Record<Lang, { title: string; updated: string; sections: [string, st
       ]],
     ],
   },
-};
+});
 const t = copy[lang];
 ---
 <section class="mx-auto max-w-3xl px-4 pb-16 pt-[calc(var(--header-h)+40px)] sm:px-6 lg:pb-24 lg:pt-[calc(var(--header-h)+64px)]">

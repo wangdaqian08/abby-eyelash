@@ -11,7 +11,7 @@ import { common, smsHref, waHref } from '../../i18n/common';
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const t = common[lang].footer;
-const zh = lang === 'zh';
+const zh = lang !== 'en';
 
 const sms = 'M4 4.5h16a1.5 1.5 0 0 1 1.5 1.5v10a1.5 1.5 0 0 1-1.5 1.5H9.2L4.6 21v-3.5H4A1.5 1.5 0 0 1 2.5 16V6A1.5 1.5 0 0 1 4 4.5zM8 10a1.2 1.2 0 1 0 0 2.4A1.2 1.2 0 0 0 8 10zm4 0a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4zm4 0a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z';
 const ext = { target: '_blank', rel: 'noopener' };

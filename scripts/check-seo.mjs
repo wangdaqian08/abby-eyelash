@@ -49,7 +49,7 @@ const byCanonical = new Map(indexable.map((p) => [p.canonicals[0], p]));
 // ---- per-page checks
 for (const p of pages) {
   const at = p.rel;
-  const wantLang = /^\/zh(\/|$)/.test(at) ? 'zh-Hans' : 'en-AU';
+  const wantLang = /^\/zh-hant(\/|$)/.test(at) ? 'zh-Hant' : /^\/zh(\/|$)/.test(at) ? 'zh-Hans' : 'en-AU';
   if (p.lang !== wantLang) fail(at, `html lang="${p.lang}", expected "${wantLang}"`);
   if (!p.title) fail(at, 'missing <title>');
   else if ([...p.title].length > 60) fail(at, `title is ${[...p.title].length} chars (>60): "${p.title}"`);
@@ -76,7 +76,7 @@ for (const p of pages) {
   const canon = new URL(p.canonicals[0]);
   if (fileFor(canon.pathname) !== p.file) fail(at, `canonical ${canon.href} does not point to this page`);
   if (!p.jsonld.length) fail(at, 'no JSON-LD');
-  for (const hl of ['en-AU', 'zh-Hans', 'x-default']) {
+  for (const hl of ['en-AU', 'zh-Hans', 'zh-Hant', 'x-default']) {
     const href = p.alternates[hl];
     if (!href) { fail(at, `missing hreflang ${hl}`); continue; }
     const target = byCanonical.get(href);

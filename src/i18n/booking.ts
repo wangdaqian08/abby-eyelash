@@ -1,5 +1,5 @@
-// Booking page copy (EN + Simplified Chinese). `{x}` placeholders are filled by the booking script.
-import type { Lang } from '../data/services';
+// Booking page copy (EN + Simplified Chinese; Traditional is converted from the Simplified, src/lib/hant.ts). `{x}` placeholders are filled by the booking script.
+import { byLang } from '../lib/hant.ts';
 
 const en = {
   metaTitle: 'Book an appointment | Abby Eyelashes, Burwood',
@@ -80,6 +80,7 @@ const en = {
   messageLabel: 'Your message',
   edit: 'Change details',
   msg: {
+    header: '【预约 Booking】Abby Eyelashes', // first line, the same in every language so Abby spots it
     service: 'Service',
     when: 'When',
     price: 'Price',
@@ -167,6 +168,7 @@ const zh: Strings = {
   messageLabel: '你的消息',
   edit: '修改信息',
   msg: {
+    header: '【预约 Booking】Abby Eyelashes',
     service: '项目',
     when: '时间',
     price: '价格',
@@ -180,5 +182,5 @@ const zh: Strings = {
   },
 };
 
-export const bookingStrings: Record<Lang, Strings> = { en, zh };
+export const bookingStrings = byLang<Strings>({ en, zh });
 export type BookingStrings = Strings;

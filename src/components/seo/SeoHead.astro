@@ -2,8 +2,8 @@
 // Canonical, hreflang, robots, Open Graph/Twitter and JSON-LD (docs/GEO-STRATEGY.md #5, #11, #12, #13).
 import type { Lang } from '../../data/services';
 import { site } from '../../data/site';
-import { localePath } from '../../lib/i18n';
-import { abs, buildGraph, LOCALE, pagePath } from '../../lib/schema';
+import { HREFLANG, LANGS, localePath } from '../../lib/i18n';
+import { abs, buildGraph, pagePath } from '../../lib/schema';
 import { publicPath } from '../../lib/ab-test';
 
 export interface Props {
@@ -24,8 +24,7 @@ const pathname = publicPath(Astro.url.pathname); // look-B pages describe the pu
 const path = pagePath(pathname);
 const canonical = abs(base, localePath(lang, path));
 const ogImage = abs(base, image);
-const other: Lang = lang === 'zh' ? 'en' : 'zh';
-const ogLocale = { en: 'en_AU', zh: 'zh_CN' };
+const ogLocale: Record<Lang, string> = { en: 'en_AU', zh: 'zh_CN', 'zh-hant': 'zh_TW' };
 // Escape "<" so content can never close the script element.
 const jsonLd = JSON.stringify(
   buildGraph({ site: base, lang, pathname, title, image: ogImage, updated, extra: schema }),
@@ -36,8 +35,7 @@ const jsonLd = JSON.stringify(
 {!noindex && (
   <>
     <link rel="canonical" href={canonical} />
-    <link rel="alternate" hreflang={LOCALE.en} href={abs(base, localePath('en', path))} />
-    <link rel="alternate" hreflang={LOCALE.zh} href={abs(base, localePath('zh', path))} />
+    {LANGS.map((l) => <link rel="alternate" hreflang={HREFLANG[l]} href={abs(base, localePath(l, path))} />)}
     <link rel="alternate" hreflang="x-default" href={abs(base, localePath('en', path))} />
   </>
 )}
@@ -54,7 +52,7 @@ const jsonLd = JSON.stringify(
   </>
 )}
 <meta property="og:locale" content={ogLocale[lang]} />
-<meta property="og:locale:alternate" content={ogLocale[other]} />
+{LANGS.filter((l) => l !== lang).map((l) => <meta property="og:locale:alternate" content={ogLocale[l]} />)}
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />

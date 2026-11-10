@@ -4,6 +4,7 @@
 // /api/* never splits (one booking backend). Crawlers are not singled out: same rules, same text in both looks.
 import { abTest } from '../src/data/ab-test.ts';
 import { cookieHeader, LOOK_B_PREFIX, lookBPath, neverSplit, pickVariant } from '../src/lib/ab-test.ts';
+import { langCookieHeader, langRoute } from '../src/lib/i18n.ts';
 
 type Ctx = {
   request: Request;
@@ -15,6 +16,21 @@ export const onRequest = async ({ request, next, env }: Ctx) => {
   const url = new URL(request.url);
   // The look-B copies are only ever served at the normal URLs (robots.txt also disallows them).
   if (url.pathname === LOOK_B_PREFIX || url.pathname.startsWith(`${LOOK_B_PREFIX}/`)) return new Response('Not found', { status: 404 });
+  // Language: a remembered choice, or a phone set to Chinese, picks the version (rules in src/lib/i18n.ts).
+  if (request.method === 'GET' || request.method === 'HEAD') {
+    const go = langRoute({
+      pathname: url.pathname,
+      search: url.search,
+      cookie: request.headers.get('cookie'),
+      acceptLanguage: request.headers.get('accept-language'),
+      userAgent: request.headers.get('user-agent'),
+    });
+    if (go) {
+      const headers = new Headers({ location: go.location, 'cache-control': 'private, no-store', vary: 'Accept-Language, Cookie' });
+      if (go.remember) headers.append('set-cookie', langCookieHeader(go.remember, url.protocol === 'https:'));
+      return new Response(null, { status: 302, headers });
+    }
+  }
   // Env override is for local testing only (wrangler --binding); production uses the value in src/data/ab-test.ts.
   const bPercent = env.AB_B_PERCENT !== undefined ? Number(env.AB_B_PERCENT) : abTest.bPercent;
   // Test off: only someone who forced a look (?style=B, cookie) still gets it, so a look can be checked on the live domain.
