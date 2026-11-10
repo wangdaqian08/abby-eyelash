@@ -1,12 +1,13 @@
 {
   "about": "Wording fixes for the Traditional Chinese site (/zh-hant/), applied after every build by scripts/zh-hant.mjs. fixes: left = the text as the converter wrote it (as seen on /zh-hant/), right = how it should read; a longer phrase wins over a shorter one inside it. keep: words that look Simplified character by character but are correct Traditional, so the build check accepts them.",
   "fixes": {
-    "几只": "幾隻",
+    "几只": "幾支",
     "迴補": "回補",
     "賬": "帳",
     "粘": "黏",
-    "/ 只": "/ 隻",
-    "&quot;只&quot;": "&quot;隻&quot;"
+    "/ 只": "/ 支",
+    "&quot;只&quot;": "&quot;支&quot;",
+    "隻": "支"
   },
   "keep": [
     "游泳",
