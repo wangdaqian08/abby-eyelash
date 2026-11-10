@@ -28,10 +28,12 @@ const host = Astro.site?.host ?? ''; // only the production host reports, so loc
         document.head.append(tag);
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
         const style_variant = (/(?:^|;\s*)style=(A|B)(?:;|$)/.exec(document.cookie) || [, 'A'])[1];
+        // Before 'js': gtag.js sends the first page_view as soon as it reads 'js', so a user property set after it only
+        // rides on the next hit, and a visitor who leaves after one page has no look (npm run check:ga4, 2026-11-10).
         gtag('set', 'user_properties', { style_variant });
-        gtag('config', id, { style_variant });
+        gtag('js', new Date());
+        gtag('config', id);
         const lang = document.documentElement.lang;
         document.addEventListener('click', (e) => {
           const el = e.target.closest && e.target.closest('[data-track]');

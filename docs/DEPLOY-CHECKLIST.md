@@ -101,7 +101,7 @@ Replace `https://SITE` with your address.
 ### G2. Google Analytics 4
 
 1. <https://analytics.google.com/> → **Admin** → **Create** → **Property**. Use time zone **Australia/Sydney** and currency **AUD**. Then create a **Web** data stream for your domain. Docs: <https://support.google.com/analytics/answer/9304153>.
-2. Copy the **Measurement ID** (`G-…`), put it in `PUBLIC_GA4_ID` (part C) and retry the deployment. Check: View Source on the live site should contain `googletagmanager.com/gtag/js?id=G-…`. Without the ID, the site loads no analytics code at all.
+2. Copy the **Measurement ID** (`G-…`) into `site.google.ga4Id` in `src/data/site.ts` (or `PUBLIC_GA4_ID`, part C) and redeploy. Check: `npm run check:ga4` runs the live site in a phone-size browser (cookie choice respected; `page_view` and `book_click` reach Google with `style_variant` and `lang`) — save its output in `docs/verification/`. Before a deploy: `npm run build && DIST=1 npm run check:ga4`. Without the ID, the site loads no analytics code at all.
 3. **AI assistants channel.** GA4's own "AI Assistant" channel leaves out some AI tools (Perplexity and Claude may land in Referral), so add a custom group. Docs: <https://support.google.com/analytics/answer/13051316>.
    1. **Admin** → **Data display** → **Channel groups** → **Create new channel group**. Name: `Channels incl. AI`.
    2. **Add new channel**. Name: `AI assistants`. **Add condition group**: **Source** · **matches regex** · paste exactly:
