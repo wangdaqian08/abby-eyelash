@@ -48,7 +48,7 @@ export const site = {
   },
   booking: {
     slotMinutes: 30,
-    bufferMinutes: 15,
+    bufferMinutes: 0, // gap kept free before/after each ❤️ event; 0 = a start right when a booking ends (Abby, 2026-11-11)
     minNoticeHours: 3,
     maxAdvanceDays: 60,
     deposit: 20, // AUD per service (powder brows: its own `deposit` in services.ts), paid by bank transfer; not refunded inside cancelHours

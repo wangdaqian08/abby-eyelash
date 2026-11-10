@@ -13,9 +13,10 @@ import {
 } from './availability.ts';
 
 const TZ = site.timezone;
-// Fixed rules so these tests don't change when Abby edits her hours in site.ts.
+// Fixed rules so these tests don't change when Abby edits her hours or buffer in site.ts.
 const R = {
   ...site,
+  booking: { ...site.booking, bufferMinutes: 15 },
   hours: [1, 2, 3, 4, 5, 6].map((day) => ({ day, open: '10:00', close: '20:00' })).concat({ day: 0, open: '09:00', close: '20:00', nth: 3 } as never),
 };
 const at = (iso: string) => Date.parse(iso);
@@ -54,6 +55,11 @@ test('15-min buffer applies on both sides of a busy event', () => {
   assert.ok(!s.includes('12:30'));
   assert.ok(!s.includes('13:00')); // starts inside 13:00–13:15 buffer
   assert.ok(s.includes('13:30'));
+});
+
+test('site rules: a booking ending 15:30 can be followed by a 15:30 start', () => {
+  const busy = [{ start: syd('2026-11-14', '12:00'), end: syd('2026-11-14', '15:30') }];
+  assert.equal(slotsForDate('2026-11-14', 120, busy, EARLY, site).find((t) => t >= '12:00'), '15:30');
 });
 
 test('min notice 3h', () => {
