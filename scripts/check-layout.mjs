@@ -103,13 +103,8 @@ for (const width of WIDTHS) {
     await page.click('[data-action="to-date"]');
     await page.waitForSelector('[data-grid] button[data-date]:not([aria-disabled])');
     report(`${width}px ${lang}/book step 2`, await scanPage(page));
-    // a day with a recommended time, if any, so the badge is checked
-    const dates = await page.$$eval('[data-grid] button[data-date]:not([aria-disabled])', (bs) => bs.map((b) => b.dataset.date));
-    for (const d of dates) {
-      await page.click(`[data-date="${d}"]`);
-      await page.waitForSelector('[data-slots-heading]');
-      if (await page.$('button[data-time] span')) break;
-    }
+    await page.click('[data-grid] button[data-date]:not([aria-disabled])');
+    await page.waitForSelector('[data-slots-heading]');
     report(`${width}px ${lang}/book step 3`, await scanPage(page));
     await page.click('button[data-time]');
     report(`${width}px ${lang}/book step 3 (time picked)`, await scanPage(page));

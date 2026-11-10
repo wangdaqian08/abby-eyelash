@@ -6,7 +6,6 @@ import {
   localDate,
   slotsForDate,
   hoursOn,
-  recommendedSlots,
   monthAvailability,
   busyQueryRange,
   mockBusy,
@@ -14,9 +13,10 @@ import {
 } from './availability.ts';
 
 const TZ = site.timezone;
-// Fixed rules so these tests don't change when Abby edits her hours in site.ts.
+// Fixed rules so these tests don't change when Abby edits her hours or buffer in site.ts.
 const R = {
   ...site,
+  booking: { ...site.booking, bufferMinutes: 15 },
   hours: [1, 2, 3, 4, 5, 6].map((day) => ({ day, open: '10:00', close: '20:00' })).concat({ day: 0, open: '09:00', close: '20:00', nth: 3 } as never),
 };
 const at = (iso: string) => Date.parse(iso);
@@ -57,6 +57,11 @@ test('15-min buffer applies on both sides of a busy event', () => {
   assert.ok(s.includes('13:30'));
 });
 
+test('site rules: a booking ending 15:30 can be followed by a 15:30 start', () => {
+  const busy = [{ start: syd('2026-11-14', '12:00'), end: syd('2026-11-14', '15:30') }];
+  assert.equal(slotsForDate('2026-11-14', 120, busy, EARLY, site).find((t) => t >= '12:00'), '15:30');
+});
+
 test('min notice 3h', () => {
   const now = syd('2026-11-16', '10:10');
   assert.equal(slotsForDate('2026-11-16', 60, [], now, R)[0], '13:30');
@@ -86,21 +91,6 @@ test('DST starts 2026-10-04: +10 before, +11 after', () => {
   const busy = [{ start: at('2026-10-05T00:00:00Z'), end: at('2026-10-05T01:00:00Z') }];
   const s = slotsForDate('2026-10-05', 30, busy, at('2026-10-01T00:00:00Z'), R);
   assert.deepEqual(s.slice(0, 2), ['10:00', '12:30']);
-});
-
-test('recommended: empty day → 11:00 and 17:00 onwards', () => {
-  const slots = slotsForDate('2026-11-16', 60, [], EARLY, R);
-  assert.deepEqual(recommendedSlots('2026-11-16', slots, 60, [], R), ['11:00', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00']);
-});
-
-test('recommended: with a booking → only the free starts right before and right after it', () => {
-  const busy = [{ start: syd('2026-11-16', '13:00'), end: syd('2026-11-16', '14:00') }];
-  const slots = slotsForDate('2026-11-16', 60, busy, EARLY, R);
-  // 11:30 ends 12:30 (+15 buffer = 12:45, 15 min before 13:00); 14:30 starts 15 min after 14:00 + buffer
-  assert.deepEqual(recommendedSlots('2026-11-16', slots, 60, busy, R), ['11:30', '14:30']);
-  // a booking on another day doesn't count
-  const other = [{ start: syd('2026-11-17', '13:00'), end: syd('2026-11-17', '14:00') }];
-  assert.ok(recommendedSlots('2026-11-16', slots, 60, other, R).includes('11:00'));
 });
 
 test('monthAvailability lists only days with slots; fully busy days are absent', () => {

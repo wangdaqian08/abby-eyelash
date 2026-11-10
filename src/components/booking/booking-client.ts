@@ -10,7 +10,7 @@ import { INTL, localePath } from '../../lib/i18n';
 import { bookingText } from './booking-text';
 
 type Days = Record<string, string[]>;
-type Month = { days: Days; recommended: Days };
+type Month = { days: Days };
 type Step = 1 | 2 | 3 | 4 | 5;
 type Field = keyof Details | 'service' | 'option' | 'time' | 'deposit';
 type Chosen = { service: Service; option?: ServiceOption; addons: Addons }; // one ticked service
@@ -86,13 +86,9 @@ export function start(root: HTMLElement) {
   // --- formatting ---
   const fmtDate = (date: string, o: Intl.DateTimeFormatOptions) =>
     new Intl.DateTimeFormat(locale, { timeZone: 'UTC', ...o }).format(new Date(`${date}T12:00:00Z`));
+  // 12-hour clock: "上午10:00" / "下午4:00" (same characters in Simplified and Traditional), "10:00 AM" / "4:00 PM" in English.
   const fmtTime = (date: string, time: string) =>
-    new Intl.DateTimeFormat(locale, {
-      timeZone: TZ,
-      hour: lang !== 'en' ? '2-digit' : 'numeric',
-      minute: '2-digit',
-      hourCycle: lang !== 'en' ? 'h23' : 'h12',
-    }).format(zonedTimeToUtc(date, time, TZ));
+    new Intl.DateTimeFormat(locale, { timeZone: TZ, hour: 'numeric', minute: '2-digit', hourCycle: 'h12' }).format(zonedTimeToUtc(date, time, TZ)).toUpperCase();
   const price = (o: Parameters<typeof priceText>[0] & { wasPrice?: number }) =>
     priceText(o, lang) + (o.wasPrice ? wasText(o.wasPrice, lang) : '');
   // Booking total: dollar part summed, then what isn't a dollar amount, e.g. "$80 + Price on request + $24".
@@ -117,7 +113,7 @@ export function start(root: HTMLElement) {
       const r = await fetch(`/api/availability?${q}`, force ? { cache: 'reload' } : {});
       if (!r.ok) throw new Error(String(r.status));
       const j = (await r.json()) as Month & { demo?: boolean };
-      cache.set(k, { days: j.days, recommended: j.recommended ?? {} });
+      cache.set(k, { days: j.days });
       if (j.demo) showDemo();
     } catch {
       cache.set(k, 'error');
@@ -127,10 +123,6 @@ export function start(root: HTMLElement) {
   const daysFor = (m = st.month) => {
     const d = cache.get(key(m));
     return typeof d === 'object' ? d.days : undefined;
-  };
-  const recommendedFor = (date: string) => {
-    const d = cache.get(key(date.slice(0, 7)));
-    return new Set(typeof d === 'object' ? d.recommended[date] : []);
   };
 
   // --- rail stepper (desktop) + progress bar (mobile) ---
@@ -304,17 +296,13 @@ export function start(root: HTMLElement) {
   function slotsView() {
     if (!st.date) return `<p class="text-sm text-muted lg:pt-3">${t.pickDateHint}</p>`;
     const list = daysFor(st.date.slice(0, 7))?.[st.date] ?? [];
-    const rec = recommendedFor(st.date);
-    // Three columns (empty · time · badge): the time stays centred, and in a narrow column the badge pushes it left instead of covering it.
-    const badge = `<span class="${LB ? `justify-self-end whitespace-nowrap rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-accent-ink` : `justify-self-end whitespace-nowrap rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-accent-ink`}">${t.recommended}</span>`;
     const items = list
       .map((time) => {
         const label = fmtTime(st.date!, time);
-        const tag = rec.has(time) ? badge : '';
         return time === st.time
-          ? `<li class="grid grid-cols-2 gap-2"><span${LB ? ' data-pop' : ''} class="${LB ? `relative flex h-12 items-center justify-center rounded-full bg-primary/8 font-medium text-primary ring-2 ring-inset ring-primary/60` : `flex h-12 items-center justify-center rounded-field bg-muted tabular-nums text-on-primary`}">${label}${tag && `<span class="sr-only">, ${t.recommended}</span>`}</span>
+          ? `<li class="grid grid-cols-2 gap-2"><span${LB ? ' data-pop' : ''} class="${LB ? `relative flex h-12 items-center justify-center rounded-full bg-primary/8 font-medium text-primary ring-2 ring-inset ring-primary/60` : `flex h-12 items-center justify-center rounded-field bg-muted tabular-nums text-on-primary`}">${label}</span>
               <button type="button" data-action="to-details" aria-label="${t.next}: ${label}" class="${LB ? `btn-solid press h-12 rounded-full font-medium` : `btn-raise h-12 rounded-field bg-primary font-medium text-on-primary transition duration-200 hover:bg-primary/90 active:scale-[.97]`}">${t.next}</button></li>`
-          : `<li><button type="button" data-time="${time}" class="${LB ? `press grid h-12 w-full grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-full bg-surface-2 px-3 text-fg tabular-nums` : `grid h-12 w-full grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-field bg-surface-2/70 px-3 tabular-nums text-muted transition duration-200 hover:bg-surface-2 hover:text-fg active:scale-[.97]`}"><span></span><span class="whitespace-nowrap">${label}</span>${tag}</button></li>`;
+          : `<li><button type="button" data-time="${time}" class="${LB ? `press flex h-12 w-full items-center justify-center rounded-full bg-surface-2 px-3 text-fg tabular-nums` : `flex h-12 w-full items-center justify-center rounded-field bg-surface-2/70 px-3 tabular-nums text-muted transition duration-200 hover:bg-surface-2 hover:text-fg active:scale-[.97]`} whitespace-nowrap">${label}</button></li>`;
       })
       .join('');
     return `<h3 data-slots-heading tabindex="-1" class="font-sans text-base font-normal outline-none">${fmtDate(st.date, { weekday: 'long', day: 'numeric', month: 'long' })}</h3>

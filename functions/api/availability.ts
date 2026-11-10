@@ -1,9 +1,9 @@
 // GET /api/availability?items=service/option/addon:n,…;service/option/…&month=YYYY-MM (one or more services, back to back)
-//   → { days: { "YYYY-MM-DD": ["HH:MM", …] }, recommended: { "YYYY-MM-DD": ["HH:MM", …] }, demo }
+//   → { days: { "YYYY-MM-DD": ["HH:MM", …] }, demo }
 // Only computed free start times leave this function — never calendar event details.
 import { site } from '../../src/data/site.ts';
 import { parseItems, quoteAll } from '../../src/data/services.ts';
-import { busyQueryRange, monthAvailability, monthRecommended, type Interval } from '../../src/lib/availability.ts';
+import { busyQueryRange, monthAvailability, type Interval } from '../../src/lib/availability.ts';
 import { availabilityCacheKey, busyBetween, demoAllowed, isConfigured, type GoogleEnv } from '../../src/lib/google-calendar.ts';
 
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
@@ -30,7 +30,7 @@ export const onRequestGet = async ({ request, env, waitUntil }: Ctx) => {
   const cacheKey = availabilityCacheKey(url.origin, month);
   const now = Date.now();
   const range = busyQueryRange(month, now, site);
-  if (!range) return json({ days: {}, recommended: {}, demo }, 200, { 'cache-control': 'public, max-age=60' });
+  if (!range) return json({ days: {}, demo }, 200, { 'cache-control': 'public, max-age=60' });
   try {
     const hit = await cache?.match(cacheKey).catch(() => undefined);
     const busy: Interval[] = hit ? await hit.json() : await busyBetween(env, range, site.timezone);
@@ -39,7 +39,7 @@ export const onRequestGet = async ({ request, env, waitUntil }: Ctx) => {
       waitUntil(cache.put(cacheKey, stored).catch(() => {}));
     }
     const days = monthAvailability(month, booking.minutes, busy, now, site, booking.lead);
-    return json({ days, recommended: monthRecommended(days, booking.minutes, busy, site), demo }, 200, { 'cache-control': 'public, max-age=60' });
+    return json({ days, demo }, 200, { 'cache-control': 'public, max-age=60' });
   } catch (err) {
     console.error('availability failed', err);
     return json({ error: 'calendar_unavailable' }, 502, { 'cache-control': 'no-store' });

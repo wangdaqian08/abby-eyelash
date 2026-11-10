@@ -37,7 +37,8 @@ export const site = {
   ] as { day: number; open: string; close: string; nth?: number }[],
   social: {
     instagram: 'https://www.instagram.com/a.b_flora/',
-    xiaohongshu: '' as string, // not published; empty hides it
+    xiaohongshu: 'https://www.xiaohongshu.com/user/profile/6a0a7b10000000000d035c02' as string, // empty hides it
+    threads: 'https://www.threads.com/@abby83921' as string, // empty hides it
     wechatId: 'AB_Flora',
   },
   google: {
@@ -47,7 +48,7 @@ export const site = {
   },
   booking: {
     slotMinutes: 30,
-    bufferMinutes: 15,
+    bufferMinutes: 0, // gap kept free before/after each ❤️ event; 0 = a start right when a booking ends (Abby, 2026-11-11)
     minNoticeHours: 3,
     maxAdvanceDays: 60,
     deposit: 20, // AUD per service (powder brows: its own `deposit` in services.ts), paid by bank transfer; not refunded inside cancelHours

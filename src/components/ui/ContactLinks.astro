@@ -19,15 +19,16 @@ const apps = [
   { href: waHref(site.phone), track: 'message_click', bg: 'bg-whatsapp', d: brandIcons.whatsapp, label: 'WhatsApp', aria: zh ? '用 WhatsApp 给 Abby 发消息' : 'Message Abby on WhatsApp', ...ext },
   { href: smsHref(site.phone), track: 'message_click', bg: 'bg-primary', d: sms, label: zh ? '短信' : 'SMS', aria: zh ? `给 Abby 发短信 ${site.phoneDisplay}` : `Text Abby on ${site.phoneDisplay}` },
   { href: site.social.instagram, track: 'social_click', bg: 'bg-instagram', d: brandIcons.instagram, label: 'Instagram', aria: zh ? 'Abby 的 Instagram' : "Abby's Instagram", ...ext },
-  // Shown once Abby publishes the account (site.social.xiaohongshu).
+  // Each shows only while its URL is set in site.social.
   site.social.xiaohongshu && { href: site.social.xiaohongshu, track: 'social_click', bg: 'bg-xiaohongshu', d: brandIcons.xiaohongshu, label: zh ? '小红书' : 'RedNote', aria: zh ? 'Abby 的小红书' : "Abby's RedNote (Xiaohongshu)", ...ext },
+  site.social.threads && { href: site.social.threads, track: 'social_click', bg: 'bg-threads', d: brandIcons.threads, label: 'Threads', aria: zh ? 'Abby 的 Threads' : "Abby's Threads", ...ext },
 ].filter(Boolean) as { href: string; track: string; bg: string; d: string; label: string; aria: string; target?: string; rel?: string }[];
 
 const cell = 'group flex flex-col items-center gap-1.5 rounded-field py-1 text-center';
 const icon = 'app-icon flex size-12 items-center justify-center text-white';
 const glyph = (d: string, extra = '') => `<svg ${extra} class="size-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="${d}"/></svg>`;
 ---
-<ul class:list={["grid gap-1", apps.length + 1 === 5 ? "grid-cols-5" : "grid-cols-4"]}>
+<ul class:list={["grid gap-1", { 4: "grid-cols-4", 5: "grid-cols-5", 6: "grid-cols-3" }[apps.length + 1]]}>
   {apps.map((a) => (
     <li>
       <a href={a.href} data-track={a.track} target={a.target} rel={a.rel} aria-label={a.aria} class={cell}>

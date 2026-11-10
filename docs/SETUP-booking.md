@@ -44,7 +44,7 @@ You need about 30 minutes. Do the steps on a computer, signed in to the Gmail ac
 - Closed for a holiday or an appointment of your own? Add `❤️ 休假` (all day) or `❤️ Doctor` (with times). That time is then closed on the website.
 - A ❤️ later in the title doesn't count (`给妈妈买花❤️` stays free time). Only the first character counts.
 - Only the red heart ❤️ counts. Look-alikes such as 💗, 💓 or 🩷 do not block anything.
-- There is always a 15-minute gap before and after each ❤️ event.
+- No gap around ❤️ events: a new booking can start the moment one ends (`bufferMinutes: 0`).
 - **Before going live:** put ❤️ at the start of every client booking that is already in your calendar. Without it, the website shows that time as free.
 
 Typing ❤️ fast on iPhone: **Settings → General → Keyboard → Text Replacement → +**. Phrase: `❤️`, Shortcut: `yy`. Typing `yy` then gives ❤️.
@@ -85,7 +85,7 @@ The 📅 link needs the database: PostgreSQL, schema `abby`, user `abby_app`. Ea
 
 ## Booking rules (change in `src/data/site.ts`)
 
-Opening hours (`hours`), 30-minute slot grid (`slotMinutes`), 15-minute gap around every calendar event (`bufferMinutes`), at least 3 hours' notice (`minNoticeHours`), up to 60 days ahead (`maxAdvanceDays`). Service lengths and prices are in `src/data/services.ts`. Times are always Sydney time, including daylight-saving changes.
+Opening hours (`hours`), 30-minute slot grid (`slotMinutes`), gap around every calendar event (`bufferMinutes`, now 0), at least 3 hours' notice (`minNoticeHours`), up to 60 days ahead (`maxAdvanceDays`). Service lengths and prices are in `src/data/services.ts`. Times are always Sydney time, including daylight-saving changes.
 
 ## For a developer: running it locally
 
