@@ -82,13 +82,9 @@ export function start(root: HTMLElement) {
   // --- formatting ---
   const fmtDate = (date: string, o: Intl.DateTimeFormatOptions) =>
     new Intl.DateTimeFormat(locale, { timeZone: 'UTC', ...o }).format(new Date(`${date}T12:00:00Z`));
+  // 12-hour clock: "上午10:00" / "下午4:00" (same characters in Simplified and Traditional), "10:00 AM" / "4:00 PM" in English.
   const fmtTime = (date: string, time: string) =>
-    new Intl.DateTimeFormat(locale, {
-      timeZone: TZ,
-      hour: lang === 'zh' ? '2-digit' : 'numeric',
-      minute: '2-digit',
-      hourCycle: lang === 'zh' ? 'h23' : 'h12',
-    }).format(zonedTimeToUtc(date, time, TZ));
+    new Intl.DateTimeFormat(locale, { timeZone: TZ, hour: 'numeric', minute: '2-digit', hourCycle: 'h12' }).format(zonedTimeToUtc(date, time, TZ)).toUpperCase();
   const price = (o: Parameters<typeof priceText>[0] & { wasPrice?: number }) =>
     priceText(o, lang) + (o.wasPrice ? (lang === 'zh' ? `（原价 $${o.wasPrice}）` : ` (was $${o.wasPrice})`) : '');
   // Booking total: dollar part summed, then what isn't a dollar amount, e.g. "$80 + Price on request + $24".
