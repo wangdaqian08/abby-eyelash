@@ -20,7 +20,8 @@
     "check:go-live": "node scripts/check-go-live.mjs",
     "review:zh-hant": "node scripts/zh-hant-review.mjs",
     "check:looks": "npm run build && node scripts/check-looks.mjs",
-    "indexnow": "node scripts/indexnow.mjs"
+    "indexnow": "node scripts/indexnow.mjs",
+    "check:ga4": "node scripts/check-ga4.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
