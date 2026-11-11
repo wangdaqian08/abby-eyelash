@@ -7,9 +7,16 @@ The website for Abby's lash, brow and nail studio in Burwood NSW. Astro builds t
 ```sh
 npm install
 npm run start   # build, then http://localhost:8788 with the mock booking API (BOOKING_DEMO=1)
-npm test        # unit tests
-npm run test:e2e  # browser test of the booking flow, against a running `npm run start` (BASE=… for another port)
-npm run check:layout  # text over text, cut-off text, sideways scroll: every page + booking step, 360–1280px
+npm test            # unit + E2E tests side by side; fails if any test fails
+npm run test:unit   # unit tests only (node runs the files in parallel)
+npm run test:e2e    # E2E only: booking flow + layout check (every page and booking step, 360–1280px), split into
+                    # shards that run at once. Uses a running `npm run start`, or builds and serves the site itself.
+```
+
+CI (`.github/workflows/ci.yml`) runs the unit and E2E jobs side by side on every pull request and every push to `main`. The site goes to Cloudflare only when both pass: a pull request gets a preview deployment, `main` goes to production. A failing test means no deployment. Setup: `docs/DEPLOY-CHECKLIST.md` part B2.
+
+```sh
+npm run check:layout  # the layout check alone, against a running site
 ```
 
 More documents are in `docs/`: `SPEC.md`, `SETUP-booking.md`, `DEPLOY-CHECKLIST.md` and `PRICES.md`.

@@ -1,12 +1,15 @@
 // Layout check: every built page plus each booking step, at phone and desktop width. Reports text drawn over other
 // text, text cut off by its box, and sideways page scroll. Run against a served build: `npm run start`, then
-// `node scripts/check-layout.mjs` (BASE=http://localhost:8788 by default).
+// `node scripts/check-layout.mjs` (BASE=http://localhost:8788 by default). SHARD=k/n checks every n-th page × width.
 import { readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { chromium } from 'playwright';
 
 const BASE = process.env.BASE ?? 'http://localhost:8788';
 const WIDTHS = [360, 390, 768, 1024, 1280];
+const [K, N] = (process.env.SHARD ?? '1/1').split('/').map(Number);
+let unit = 0;
+const mine = () => unit++ % N === K - 1; // true for this shard's share of the pages
 const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(join(d, e.name)) : e.name === 'index.html' ? [join(d, e.name)] : []));
 const pages = walk('dist').map((f) => '/' + relative('dist', f).replace(/index\.html$/, ''));
 
@@ -86,11 +89,13 @@ const report = (where, list) => list.forEach((p) => problems.push(`${where}: ${p
 for (const width of WIDTHS) {
   const page = await browser.newPage({ viewport: { width, height: 900 } });
   for (const path of pages) {
+    if (!mine()) continue;
     await page.goto(BASE + path, { waitUntil: 'networkidle' });
     report(`${width}px ${path}`, await scanPage(page));
   }
   // Booking steps, English and Chinese.
   for (const lang of ['', '/zh']) {
+    if (!mine()) continue;
     await page.goto(`${BASE}${lang}/book/`);
     await page.waitForSelector('input[name="bk-service"]');
     for (const s of ['lash-extensions', 'gel-nails', 'handcrafted-nails']) await page.click(`label:has(input[name="bk-service"][value="${s}"])`);

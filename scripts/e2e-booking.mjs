@@ -1,10 +1,14 @@
 // Browser test of the booking flow: every lash-extension choice (main × bottom × removal), in every click order the
 // form allows, through to the step-5 message. Run against a served build: `npm run start`, then `node scripts/e2e-booking.mjs`.
 // BASE=http://localhost:8788 by default. Expected totals come from src/data/services.ts, the code the APIs use.
+// SHARD=k/n runs every n-th case starting at the k-th, so `npm run test:e2e` can run n copies side by side.
 import { chromium } from 'playwright';
 import { quoteAll, quoteAllText, services } from '../src/data/services.ts';
 
 const BASE = process.env.BASE ?? 'http://localhost:8788';
+const [K, N] = (process.env.SHARD ?? '1/1').split('/').map(Number);
+let unit = 0;
+const mine = () => unit++ % N === K - 1; // true for this shard's share of the test cases
 const L = 'lash-extensions';
 const lash = services.find((s) => s.id === L);
 const mains = lash.options.filter((o) => !o.addon);
@@ -69,6 +73,7 @@ for (const main of [undefined, ...mains])
     for (const rem of [false, true]) {
       if (!main && bottom) {
         // not reachable: no bottom-lash choice is shown before a set is picked
+        if (!mine()) continue;
         await open();
         await tick(L);
         if (rem) await act.removal();
@@ -77,6 +82,7 @@ for (const main of [undefined, ...mains])
       }
       if (main?.noRemoval && rem) {
         // infill: removal is hidden once it is picked, and a removal ticked before is dropped
+        if (!mine()) continue;
         const ctx = `${main.id} / ${bottom ?? 'no-bottom'} / removal`;
         cases++;
         await open();
@@ -95,6 +101,7 @@ for (const main of [undefined, ...mains])
         continue;
       }
       for (const order of orders(main?.id, bottom, rem).length ? orders(main?.id, bottom, rem) : [[]]) {
+        if (!mine()) continue;
         const ctx = `${main?.id ?? 'no-set'} / ${bottom ?? 'no-bottom'} / ${rem ? 'removal' : 'no-removal'} [${order.join('→') || 'nothing'}]`;
         cases++;
         await open();
@@ -115,87 +122,98 @@ for (const main of [undefined, ...mains])
     }
 
 // 2. Changing your mind keeps the other choices.
-await open();
-await tick(L);
-await act.removal();
-await act.main('classic-natural');
-await act.bottom('bottom-full');
-await act.main('hybrid-full');
-check(await isChecked(`input[data-service="${L}"][value="bottom-full"]`), 'switching set dropped bottom lashes');
-check(await isChecked(`input[data-service="${L}"][value="removal"]`), 'switching set dropped removal');
-await page.click(`label:has(input[data-service="${L}"][value="removal"]) >> xpath=preceding-sibling::label[1]`);
-check(!(await isChecked(`input[data-service="${L}"][value="removal"]`)), 'removal "None" did not untick removal');
-check(await isChecked(`input[name="bk-option-${L}"][value="hybrid-full"]`), 'removal "None" dropped the set');
-check(await continueOn(), 'set + bottom without removal should continue');
+if (mine()) {
+  await open();
+  await tick(L);
+  await act.removal();
+  await act.main('classic-natural');
+  await act.bottom('bottom-full');
+  await act.main('hybrid-full');
+  check(await isChecked(`input[data-service="${L}"][value="bottom-full"]`), 'switching set dropped bottom lashes');
+  check(await isChecked(`input[data-service="${L}"][value="removal"]`), 'switching set dropped removal');
+  await page.click(`label:has(input[data-service="${L}"][value="removal"]) >> xpath=preceding-sibling::label[1]`);
+  check(!(await isChecked(`input[data-service="${L}"][value="removal"]`)), 'removal "None" did not untick removal');
+  check(await isChecked(`input[name="bk-option-${L}"][value="hybrid-full"]`), 'removal "None" dropped the set');
+  check(await continueOn(), 'set + bottom without removal should continue');
 
-await open();
-await tick(L);
-await act.removal();
-await page.click(`label:has(input[data-service="${L}"][value="removal"]) >> xpath=preceding-sibling::label[1]`);
-check(!(await continueOn()), 'removal ticked then un-ticked with no set should not continue');
+  await open();
+  await tick(L);
+  await act.removal();
+  await page.click(`label:has(input[data-service="${L}"][value="removal"]) >> xpath=preceding-sibling::label[1]`);
+  check(!(await continueOn()), 'removal ticked then un-ticked with no set should not continue');
 
-await open();
-await tick(L);
-await act.main('styled');
-await act.removal();
-await tick(L);
-await tick(L);
-check(!(await continueOn()) && !(await isChecked(`input[data-service="${L}"][value="removal"]`)), 'untick + retick the service should start clean');
+  await open();
+  await tick(L);
+  await act.main('styled');
+  await act.removal();
+  await tick(L);
+  await tick(L);
+  check(!(await continueOn()) && !(await isChecked(`input[data-service="${L}"][value="removal"]`)), 'untick + retick the service should start clean');
+}
 
 // 3. Back from step 2 keeps step-1 choices.
-await open();
-await tick(L);
-await act.main('classic-full');
-await act.removal();
-await page.click('[data-action="to-date"]');
-await page.click('[data-stepper] button[data-goto="1"]');
-await page.waitForSelector(`input[name="bk-option-${L}"]`);
-check(
-  (await isChecked(`input[name="bk-option-${L}"][value="classic-full"]`)) && (await isChecked(`input[data-service="${L}"][value="removal"]`)),
-  'going back to step 1 lost the choices',
-);
+if (mine()) {
+  await open();
+  await tick(L);
+  await act.main('classic-full');
+  await act.removal();
+  await page.click('[data-action="to-date"]');
+  await page.click('[data-stepper] button[data-goto="1"]');
+  await page.waitForSelector(`input[name="bk-option-${L}"]`);
+  check(
+    (await isChecked(`input[name="bk-option-${L}"][value="classic-full"]`)) && (await isChecked(`input[data-service="${L}"][value="removal"]`)),
+    'going back to step 1 lost the choices',
+  );
+}
 
 // 4. Deep links.
-await open(`/book/?service=${L}&option=removal`);
-check((await isChecked(`input[data-service="${L}"][value="removal"]`)) && (await continueOn()), 'deep link option=removal');
-await open(`/book/?service=${L}&option=classic-natural`);
-check((await isChecked(`input[name="bk-option-${L}"][value="classic-natural"]`)) && !(await isChecked(`input[data-service="${L}"][value="removal"]`)), 'deep link option=classic-natural');
+if (mine()) {
+  await open(`/book/?service=${L}&option=removal`);
+  check((await isChecked(`input[data-service="${L}"][value="removal"]`)) && (await continueOn()), 'deep link option=removal');
+  await open(`/book/?service=${L}&option=classic-natural`);
+  check((await isChecked(`input[name="bk-option-${L}"][value="classic-natural"]`)) && !(await isChecked(`input[data-service="${L}"][value="removal"]`)), 'deep link option=classic-natural');
+}
 
 // 5. Several services: removal alone + gel with 3 extensions + lash lift.
-await open();
-await tick(L);
-await act.removal();
-await tick('gel-nails');
-await radio('input[name="bk-option-gel-nails"][value="cat-eye"]');
-await page.selectOption('select[data-service="gel-nails"]', '3');
-await tick('lash-lift');
-const gel = services.find((s) => s.id === 'gel-nails');
-const lift = services.find((s) => s.id === 'lash-lift');
-await finish(
-  'multi-service',
-  [{ service: L, option: 'removal', addons: {} }, { service: 'lash-lift', option: 'keratin-lift', addons: {} }, { service: 'gel-nails', option: 'cat-eye', addons: { extension: 3 } }],
-  `${lash.name.en} · ${name('removal')} + ${lift.name.en} · ${name('keratin-lift', lift)} + ${gel.name.en} · ${name('cat-eye', gel)} + ${name('extension', gel)} × 3`,
-);
-check((await page.textContent('[data-stepper]')).includes('Send') && !(await page.textContent('[data-stepper]')).includes('undefined'), 'step-5 rail label');
+if (mine()) {
+  await open();
+  await tick(L);
+  await act.removal();
+  await tick('gel-nails');
+  await radio('input[name="bk-option-gel-nails"][value="cat-eye"]');
+  await page.selectOption('select[data-service="gel-nails"]', '3');
+  await tick('lash-lift');
+  const gel = services.find((s) => s.id === 'gel-nails');
+  const lift = services.find((s) => s.id === 'lash-lift');
+  await finish(
+    'multi-service',
+    [{ service: L, option: 'removal', addons: {} }, { service: 'lash-lift', option: 'keratin-lift', addons: {} }, { service: 'gel-nails', option: 'cat-eye', addons: { extension: 3 } }],
+    `${lash.name.en} · ${name('removal')} + ${lift.name.en} · ${name('keratin-lift', lift)} + ${gel.name.en} · ${name('cat-eye', gel)} + ${name('extension', gel)} × 3`,
+  );
+  check((await page.textContent('[data-stepper]')).includes('Send') && !(await page.textContent('[data-stepper]')).includes('undefined'), 'step-5 rail label');
+}
 
 // 6. Chinese page and a phone-width screen: removal + set, no junk text.
-await open('/zh/book/');
-await tick(L);
-await act.removal();
-await act.main('classic-natural');
-check(await continueOn(), 'zh: removal + set should continue');
-await noJunk('zh');
-await page.setViewportSize({ width: 390, height: 844 });
-await open();
-await tick(L);
-await act.main('hybrid-natural');
-await act.removal();
-await act.bottom('bottom-natural');
-check(await continueOn(), 'mobile: set + removal + bottom should continue');
-await noJunk('mobile');
+if (mine()) {
+  await open('/zh/book/');
+  await tick(L);
+  await act.removal();
+  await act.main('classic-natural');
+  check(await continueOn(), 'zh: removal + set should continue');
+  await noJunk('zh');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open();
+  await tick(L);
+  await act.main('hybrid-natural');
+  await act.removal();
+  await act.bottom('bottom-natural');
+  check(await continueOn(), 'mobile: set + removal + bottom should continue');
+  await noJunk('mobile');
+}
 
 check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
 await browser.close();
 console.log(`${cases} lash click-order cases, ${pass} checks passed, ${fails.length} failed`);
 for (const f of fails) console.log('FAIL', f);
+process.exit(fails.length ? 1 : 0);
 process.exit(fails.length ? 1 : 0);

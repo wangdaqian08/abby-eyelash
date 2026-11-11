@@ -1,6 +1,6 @@
 // Owner price table (src/data/prices.csv) → src/data/prices.generated.ts. Runs before dev, build and test.
 // Abby edits the CSV; a bad row stops the build with a message she can act on, so the live site keeps the old prices.
-import { writeFileSync, readFileSync } from 'node:fs';
+import { existsSync, writeFileSync, readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const CSV = new URL('../src/data/prices.csv', import.meta.url);
@@ -51,10 +51,9 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     const prices = parsePrices(readFileSync(CSV, 'utf8'));
     const type = '{ price?: number; minutes: number; updated: string; from?: boolean; maxPrice?: number; pct?: number; wasPrice?: number; onRequest?: boolean }';
-    writeFileSync(
-      OUT,
-      `// GENERATED from src/data/prices.csv by scripts/prices.mjs — edit the CSV, not this file.\nexport const prices = ${JSON.stringify(prices, null, 2)} as Record<string, ${type}>;\n`,
-    );
+    const text = `// GENERATED from src/data/prices.csv by scripts/prices.mjs — edit the CSV, not this file.\nexport const prices = ${JSON.stringify(prices, null, 2)} as Record<string, ${type}>;\n`;
+    // Unchanged → no write: unit tests may be reading this file while the E2E build runs this script (npm test runs both at once).
+    if (!existsSync(OUT) || readFileSync(OUT, 'utf8') !== text) writeFileSync(OUT, text);
     console.log(`价格表已读取：${Object.keys(prices).length} 项`);
   } catch (err) {
     console.error(err.message);

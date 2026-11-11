@@ -1,12 +1,20 @@
 name: CI
 
+# Every push to main and every pull request: unit tests and E2E (browser) tests run side by side. Cloudflare Pages only
+# gets the site when both pass: a pull request → preview deployment, main → production. Cloudflare's own automatic
+# deployments are switched off (docs/DEPLOY-CHECKLIST.md, part B2), so a failing test blocks both.
 on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch: # Actions → CI → Run workflow: rebuild and redeploy without a code change (e.g. after editing a Variable)
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build:
+  unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,6 +23,75 @@ jobs:
           node-version: 24 # matches NODE_VERSION on Cloudflare Pages (docs/DEPLOY-CHECKLIST.md)
           cache: npm
       - run: npm ci
-      - run: npm test
-      - run: npm run build
-      - run: npm run check:seo
+      - run: npm run test:unit # node runs the test files in parallel
+
+  e2e:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        part: [1, 2] # two machines at once, each runs half of the E2E shards
+    env: # read while the site is built: the same values as Cloudflare's Production variables (repository Variables)
+      SITE_URL: ${{ vars.SITE_URL }}
+      PUBLIC_GA4_ID: ${{ vars.PUBLIC_GA4_ID }}
+      LAUNCH: ${{ vars.LAUNCH }}
+      INDEXNOW_KEY: ${{ vars.INDEXNOW_KEY }}
+      E2E_PART: ${{ matrix.part }}/2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: actions/cache@v4 # Astro's optimized photos: ~80 s to make from scratch (after npm ci, which empties node_modules)
+        with:
+          path: node_modules/.astro
+          key: astro-images-${{ hashFiles('src/assets/**') }}
+          restore-keys: astro-images-
+      - uses: actions/cache@v4 # the fonts Playwright installs with apt (~22 MB): the Ubuntu mirror sometimes runs at ~150 kB/s
+        with:
+          path: ~/apt-debs
+          key: playwright-apt-${{ runner.os }}-v1
+      - name: Install the headless browser + system fonts (CJK for the Chinese pages)
+        run: |
+          sudo cp ~/apt-debs/*.deb /var/cache/apt/archives/ 2>/dev/null || true
+          npx playwright install --with-deps --only-shell chromium
+          mkdir -p ~/apt-debs && cp /var/cache/apt/archives/*.deb ~/apt-debs/ 2>/dev/null || true
+      - run: npm run test:e2e # builds, serves dist/ in booking demo mode, runs every shard at once
+      - if: matrix.part == 1
+        run: npm run check:seo
+      - if: matrix.part == 1
+        run: node scripts/indexnow.mjs --write-key dist
+      - if: matrix.part == 1
+        uses: actions/upload-artifact@v4 # the exact build that passed is the one deployed
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
+
+  deploy:
+    needs: [unit, e2e]
+    # Pull requests from forks get no secrets: they are tested, never deployed.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4 # functions/ is bundled from source at deploy time
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: node scripts/prices.mjs # functions import the generated price table
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: Deploy to Cloudflare Pages
+        shell: bash # = bash -eo pipefail: a failed wrangler fails the step despite the | tee
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BRANCH: ${{ github.head_ref || github.ref_name }} # main = production, any other branch = preview
+        run: |
+          npx wrangler pages deploy dist --project-name=abby-eyelash --branch="$BRANCH" --commit-hash="$GITHUB_SHA" | tee deploy.log
+          grep -o 'https://[^ ]*pages.dev[^ ]*' deploy.log | tail -1 | sed 's/^/Deployed: /' >> "$GITHUB_STEP_SUMMARY"
