@@ -211,6 +211,72 @@ if (mine()) {
   await noJunk('mobile');
 }
 
+// 7. Motion: a step change animates instead of swapping at once. Continue fills the line, then the new step's dot; going back
+// several steps empties them one by one from the bottom up; the old panel slides out, the new one's blocks slide in one
+// after another; and a
+// re-render that keeps the step (picking a time) leaves the rail alone instead of restarting it.
+if (mine()) {
+  await page.setViewportSize({ width: 1280, height: 900 }); // the rail is desktop-only
+  await open();
+  await tick('lash-lift');
+  const rail = () =>
+    page.$$eval('[data-stepper] li', (lis) =>
+      lis.map((li) => {
+        const q = (sel) => {
+          const e = li.querySelector(sel);
+          return e && { cls: String(e.getAttribute('class')), delay: parseFloat(getComputedStyle(e).animationDelay) * 1000 };
+        };
+        return { line: q('.rail-line'), dot: q('[data-dot]') };
+      }),
+    );
+  const panel = () => page.$eval('[data-view]', (v) => v.getAnimations({ subtree: true }).map((a) => a.effect.getTiming().delay));
+  await page.click('[data-action="to-date"]');
+  await page.waitForSelector('[data-stepper] li[aria-current="step"]:nth-child(2)'); // buttons act after a short press delay
+  let r = await rail();
+  check((await page.$eval('[data-view]', (v) => v.getAnimations().length)) === 1, 'motion: the step-1 panel should slide out before step 2 shows');
+  await page.waitForSelector('[data-grid]'); // the step-2 panel, drawn once step 1 has slid out
+  let p = await panel();
+  check(r[1].line?.cls.includes('rail-line-fill') && r[1].dot?.cls.includes('rail-dot-fill') && r[1].dot.delay > r[1].line.delay, 'motion: Continue should fill the line, then the step-2 dot');
+  check(p.length >= 2 && new Set(p).size >= 2, `motion: step-2 panel blocks should fade in one after another (delays ${p})`);
+  await page.waitForSelector('[data-grid] button[data-date]:not([aria-disabled])');
+  await page.click('[data-grid] button[data-date]:not([aria-disabled])');
+  await page.waitForSelector('[data-stepper] li[aria-current="step"]:nth-child(3)');
+  await page.$eval('[data-stepper] li:nth-child(3) .rail-line', (e) => (e.dataset.mark = '1'));
+  await page.click('button[data-time]');
+  await page.waitForSelector('[data-action="to-details"]:not([disabled])');
+  check(await page.$('[data-stepper] .rail-line[data-mark]'), 'motion: picking a time should not redraw (and restart) the rail');
+  await page.click('[data-action="to-details"]');
+  await page.waitForSelector('[data-stepper] li[aria-current="step"]:nth-child(4)');
+  await page.click('[data-stepper] button[data-goto="1"]');
+  await page.waitForSelector('[data-stepper] li[aria-current="step"]:nth-child(1)');
+  r = await rail();
+  const [d2, d3, d4] = [r[1].dot, r[2].dot, r[3].dot];
+  check([d2, d3, d4].every((d) => d?.cls.includes('rail-dot-empty')) && d4.delay < d3.delay && d3.delay < d2.delay, 'motion: back to step 1 should empty dots 4 → 3 → 2 in turn');
+  check(r[3].line.delay < r[2].line.delay && r[2].line.delay < r[1].line.delay, 'motion: back to step 1 should drain the lines bottom-up');
+  check((await page.$eval('[data-stepper] .rail-line-empty', (e) => getComputedStyle(e).transformOrigin)).endsWith(' 0px'), 'motion: going back should pull each line up (its top end stays put)');
+  await page.waitForSelector('input[name="bk-service"]');
+  check((await panel()).length >= 2, 'motion: the step-1 panel should slide in');
+}
+
+// 8. Motion on a phone: the progress bar's line grows to the right on Continue (then the dot fills) and shrinks back on Back.
+if (mine()) {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open();
+  await tick('lash-lift');
+  const bar = () => page.$$eval('[data-progress] ol > li', (lis) => lis.map((li) => String((li.querySelector('span') ?? li).getAttribute('class'))));
+  await page.click('[data-action="to-date"]');
+  await page.waitForSelector('[data-progress] .bar-line.is-on');
+  let b = await bar(); // dot 1, line 2, dot 2, …
+  check(b[1].includes('bar-line-fill') && b[2].includes('rail-dot-fill') && !b[3].includes('bar-line-fill'), `motion (phone): Continue should grow line 1→2, then fill dot 2 (${b.slice(0, 4)})`);
+  await page.waitForSelector('[data-grid] button[data-date]:not([aria-disabled])');
+  await page.click('[data-action="back"]');
+  await page.waitForSelector('[data-progress] .bar-line-empty');
+  b = await bar();
+  check(b[1].includes('bar-line-empty') && b[2].includes('rail-dot-empty'), 'motion (phone): Back should shrink line 1→2 and empty dot 2');
+  check((await page.$eval('[data-progress] .bar-line-empty', (e) => getComputedStyle(e).transformOrigin)).startsWith('0px'), 'motion (phone): Back should shrink the line to the left (its left end stays put)');
+  await page.setViewportSize({ width: 1280, height: 900 });
+}
+
 check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
 await browser.close();
 console.log(`${cases} lash click-order cases, ${pass} checks passed, ${fails.length} failed`);
