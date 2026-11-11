@@ -305,6 +305,8 @@ label[data-pop]:has([data-radio])::after { inset: 0 -0.25rem; border-radius: 0.8
   transition-delay: calc(min(var(--i, 0), 8) * var(--stagger));
 }
 .js [data-reveal][data-stagger].is-visible > * { opacity: 1; transform: none; }
+/* Gallery rows: a bigger rise with a slight grow and a wider gap, so the stagger reads on photos. */
+.js [data-reveal][data-late] > * { --stagger: 120ms; transform: translateY(40px) scale(0.94); }
 
 /* Hero load sequence (home): lines rise in reading order, the photo settles from a slight zoom. Over by ~1.2 s. */
 @keyframes rise-in { from { opacity: 0.5; transform: translateY(0.6em); } }

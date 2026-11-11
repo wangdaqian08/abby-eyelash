@@ -38,7 +38,7 @@ const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };
     {parts.map((part) => {
       const count = part.groups.reduce((n, g) => n + g.items.length, 0);
       const tiles = (g: Group, ids: string[]) => (
-        <ul data-reveal data-stagger class={grid(part.id)}>
+        <ul data-reveal data-stagger data-late class={grid(part.id)}>
           {ids.map((id) => (
             <li class:list={['relative overflow-hidden rounded-field bg-surface', aspect[g.ratio]]}>
               {videos[id] ? (
