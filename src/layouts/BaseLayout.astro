@@ -85,7 +85,7 @@ const look = lookOf(Astro.url);
         );
         return io;
       };
-      const io = observer('-10%'), late = observer('-30%');
+      const io = observer('-10%'), late = observer('-20%');
       document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {
         if (el.hasAttribute('data-stagger')) Array.from(el.children).forEach((c, i) => (c as HTMLElement).style.setProperty('--i', String(i)));
         (el.hasAttribute('data-late') ? late : io).observe(el);
