@@ -88,8 +88,8 @@ const en = {
     photo3: 'Client’s hand on a towel during a manicure appointment',
   },
   gallery: {
-    eyebrow: 'Portfolio',
-    title: 'Lashes and nails,',
+    eyebrow: 'Abby’s work',
+    title: 'Lashes, nails and brows,',
     accent: 'all by Abby.',
     more: 'See more on Instagram',
     lashes: 'Lashes',
@@ -229,8 +229,8 @@ const zh: Strings = {
     photo3: '美甲时顾客的手放在毛巾上',
   },
   gallery: {
-    eyebrow: '作品集',
-    title: '睫毛与美甲，',
+    eyebrow: 'Abby 的作品',
+    title: '睫毛、美甲与眉毛，',
     accent: '都出自 Abby 之手。',
     more: '在 Instagram 查看更多',
     lashes: '睫毛作品',

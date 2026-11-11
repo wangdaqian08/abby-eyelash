@@ -305,6 +305,15 @@ label[data-pop]:has([data-radio])::after { inset: 0 -0.25rem; border-radius: 0.8
   transition-delay: calc(min(var(--i, 0), 8) * var(--stagger));
 }
 .js [data-reveal][data-stagger].is-visible > * { opacity: 1; transform: none; }
+/* Gallery rows: the tile frames stay in place (no blank band while waiting); the photo inside fades in and settles from a zoom. */
+.js [data-reveal][data-late] > * { opacity: 1; transform: none; }
+.js [data-reveal][data-late] :is(img, video) {
+  opacity: 0;
+  transform: scale(1.12);
+  transition: opacity var(--t-reveal) var(--ease-expo), transform 1.2s var(--ease-expo);
+  transition-delay: calc(min(var(--i, 0), 8) * 200ms);
+}
+.js [data-reveal][data-late].is-visible :is(img, video) { opacity: 1; transform: none; }
 
 /* Hero load sequence (home): lines rise in reading order, the photo settles from a slight zoom. Over by ~1.2 s. */
 @keyframes rise-in { from { opacity: 0.5; transform: translateY(0.6em); } }
@@ -332,7 +341,7 @@ label[data-pop]:has([data-radio])::after { inset: 0 -0.25rem; border-radius: 0.8
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
-  .js [data-reveal], .js [data-reveal][data-stagger] > * { opacity: 1; transform: none; transition: none; }
+  .js [data-reveal], .js [data-reveal][data-stagger] > *, .js [data-reveal][data-late] :is(img, video) { opacity: 1; transform: none; transition: none; }
   @view-transition { navigation: none; }
 }
 
