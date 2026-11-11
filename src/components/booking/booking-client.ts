@@ -126,23 +126,29 @@ export function start(root: HTMLElement) {
   };
 
   // --- rail stepper (desktop) + progress bar (mobile) ---
+  // railFrom → railTo is the last step change: only the dots and lines it touched animate (global.css "Booking rail").
+  let railFrom = st.step, railTo = st.step, railHtml = '', barHtml = '';
   function renderChrome() {
+    if (st.step !== railTo) [railFrom, railTo] = [railTo, st.step];
+    const changed = (n: number) => (n > railFrom && n <= railTo ? 'fill' : n > railTo && n <= railFrom ? 'empty' : '');
+    // --k orders the steps a change touches: forward top-down, back bottom-up, so a long jump runs as one wave.
+    const k = (n: number) => (changed(n) ? `style="--k:${railTo > railFrom ? n - railFrom - 1 : railFrom - n}"` : '');
     const values = [
       ready() && label(),
       st.date && shortDate(st.date),
       st.date && st.time && fmtTime(st.date, st.time),
       st.step === 5 ? st.details.name.trim() : undefined,
     ];
-    $('[data-stepper]')!.innerHTML = t.steps
+    const rail = t.steps
       .map((label, i) => {
         const n = i + 1;
         const done = n < st.step;
         const current = n === st.step;
         const text = done && values[i] ? values[i]! : label;
-        const inner = `<span class="flex size-9 shrink-0 items-center justify-center rounded-full border ${done || current ? 'border-primary/30 bg-surface-2 text-primary' : 'border-border text-muted'}">${STEP_ICONS[i]}</span>
+        const inner = `<span data-dot ${k(n)} class="flex size-9 shrink-0 items-center justify-center rounded-full border transition-shadow duration-300 ${done || current ? 'border-primary bg-primary text-on-primary' : 'border-border text-muted'} ${current ? 'ring-4 ring-primary/15' : ''} ${changed(n) && `rail-dot-${changed(n)}`}">${STEP_ICONS[i]}</span>
           <span class="text-sm ${done ? 'font-medium text-primary' : current ? 'text-fg' : 'text-muted'}">${esc(text)}</span>`;
         return `<li ${current ? 'aria-current="step"' : ''}>
-          ${i ? '<span aria-hidden="true" class="ml-[17px] block h-7 border-l border-dashed border-muted/40"></span>' : ''}
+          ${i ? `<span aria-hidden="true" class="relative ml-[17px] block h-7 border-l border-dashed border-muted/40"><span ${k(n)} class="rail-line ${n <= st.step ? 'is-on' : ''} ${changed(n) && `rail-line-${changed(n)}`}"></span></span>` : ''}
           ${current ? `<p class="mb-1 flex items-center gap-2 text-xs font-medium text-primary"><span class="size-2 rounded-full bg-primary"></span>${fill(t.stepN, { n })}</p><p class="mb-3 text-sm text-fg">${t.prompts[i]}</p>` : ''}
           ${
             done
@@ -152,18 +158,19 @@ export function start(root: HTMLElement) {
         </li>`;
       })
       .join('');
+    if (rail !== railHtml) $('[data-stepper]')!.innerHTML = railHtml = rail; // unchanged re-renders (slots loading, typing) must not restart the fill
 
-    const progress = $('[data-progress]')!;
-    progress.innerHTML = `<div class="mb-3 flex min-h-11 items-center justify-between gap-4">
+    const bar = `<div class="mb-3 flex min-h-11 items-center justify-between gap-4">
         ${st.step > 1 ? `<button type="button" data-action="back" class="-ml-2 inline-flex min-h-11 items-center gap-1 px-2 text-sm text-muted hover:text-fg">${ICON.prev}${t.back}</button>` : '<span></span>'}
         <span class="text-xs text-muted">${fill(t.stepOf, { n: st.step })} · ${t.steps[st.step - 1]}</span>
       </div>
       <ol class="mb-8 flex items-center" aria-hidden="true">${[1, 2, 3, 4, 5]
         .map(
           (n) =>
-            `${n > 1 ? `<li class="h-px flex-1 ${n <= st.step ? 'bg-primary' : 'bg-border'}"></li>` : ''}<li class="size-2.5 rounded-full ${n <= st.step ? 'bg-primary' : 'border border-muted/50'}"></li>`,
+            `${n > 1 ? `<li class="relative h-px flex-1 bg-border"><span ${k(n)} class="bar-line ${n <= st.step ? 'is-on' : ''} ${changed(n) && `bar-line-${changed(n)}`}"></span></li>` : ''}<li data-dot ${k(n)} class="size-2.5 rounded-full ${n <= st.step ? 'bg-primary' : 'border border-muted/50'} ${changed(n) && `rail-dot-${changed(n)}`}"></li>`,
         )
         .join('')}</ol>`;
+    if (bar !== barHtml) $('[data-progress]')!.innerHTML = barHtml = bar; // same rule as the rail: redraw only on change
   }
 
   // --- step 1 ---
@@ -473,6 +480,7 @@ export function start(root: HTMLElement) {
 
   // --- render + navigation ---
   function render() {
+    if (exiting) return renderChrome(); // the old panel is sliding out; go() draws the new one when it has gone
     const active = document.activeElement as HTMLElement | null;
     const hadGridFocus = gridFocusPending || !!active?.closest('[data-grid]');
     const action = view.contains(active) ? active?.dataset.action : undefined;
@@ -485,6 +493,7 @@ export function start(root: HTMLElement) {
         <div class="${st.step === 3 ? 'max-lg:hidden' : ''}">${calendarView()}</div>
         <div class="${st.step === 2 ? 'max-lg:hidden' : ''} lg:border-l lg:border-dashed lg:border-muted/30 lg:pl-10">${slotsView()}</div>
       </div>`;
+    enter();
     if (hadGridFocus) {
       const b = view.querySelector<HTMLElement>('[data-grid] button[tabindex="0"]');
       gridFocusPending = !b;
@@ -495,11 +504,44 @@ export function start(root: HTMLElement) {
     }
   }
 
+  // Step change: the old panel slides out and fades (left going forward, right going back), then the new panel's blocks slide
+  // in from the other side one after another. A re-render inside that second (free times arriving, a first click) redraws
+  // the blocks, so the slide resumes where it was instead of vanishing. The rail animates at once, alongside.
+  let enteredAt = -1e9, dir = 1;
+  let exiting: Animation | undefined;
+  const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  function enter() {
+    const t = performance.now() - enteredAt;
+    if (reduced.matches || t > 1200) return;
+    let box: Element = view;
+    while (box.children.length === 1) box = box.children[0];
+    [...box.children].slice(0, 8).forEach((el, i) => {
+      const a = el.animate([{ opacity: 0, translate: `${40 * dir}px 0` }, { opacity: 1, translate: '0 0' }], { duration: 520, delay: i * 90, easing: EASE, fill: 'backwards' });
+      a.currentTime = t;
+    });
+  }
+
   function go(step: Step, focus = true) {
+    const from = st.step;
     st.step = step;
+    dir = step < from ? -1 : 1;
     if (step === 2 || step === 3) void load();
+    exiting?.cancel();
+    exiting = undefined;
+    if (reduced.matches || step === from || !view.children.length) return show(step, focus);
+    renderChrome();
+    const out = (exiting = view.animate([{ opacity: 1, translate: '0 0' }, { opacity: 0, translate: `${-32 * dir}px 0` }], { duration: 200, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' }));
+    out.onfinish = () => {
+      if (exiting !== out) return;
+      exiting = undefined;
+      out.cancel();
+      show(step, focus);
+    };
+  }
+
+  function show(step: Step, focus: boolean) {
+    enteredAt = performance.now();
     render();
-    if (!reduced.matches) view.animate([{ opacity: 0, translate: '0 10px' }, { opacity: 1, translate: '0 0' }], { duration: 260, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
     if (!focus) return;
     const top = root.getBoundingClientRect().top;
     if (top < 0) window.scrollBy(0, top - 96);
