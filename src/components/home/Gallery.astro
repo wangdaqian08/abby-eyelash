@@ -40,7 +40,7 @@ const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };
       const tiles = (g: Group, ids: string[]) => (
         <ul data-reveal data-stagger data-late class={grid(part.id)}>
           {ids.map((id) => (
-            <li class:list={['relative overflow-hidden rounded-field bg-surface', aspect[g.ratio]]}>
+            <li class:list={['relative overflow-hidden rounded-field bg-fg/5', aspect[g.ratio]]}>
               {videos[id] ? (
                 <>
                   <video muted loop playsinline preload="none" poster={posterUrl[id]} width="480" height="640" class="aspect-[3/4] size-full object-cover" aria-label={videos[id].alt[lang]} data-video>
