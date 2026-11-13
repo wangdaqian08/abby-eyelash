@@ -12,6 +12,7 @@ export function sortable(grid: HTMLElement, item: string, onMove: (from: number,
 
   const place = () => {
     if (!drag) return;
+    if (!drag.el.isConnected) return drop(); // the screen was redrawn under the finger: this tile is gone, end the drag
     drag.ghost.style.translate = `${x - drag.dx}px ${y - drag.dy}px`;
     if (y < EDGE) scrollBy(0, -10); else if (y > innerHeight - EDGE) scrollBy(0, 10);
     const over = document.elementFromPoint(x, y)?.closest<HTMLElement>(item);
@@ -40,8 +41,8 @@ export function sortable(grid: HTMLElement, item: string, onMove: (from: number,
     const { el, ghost, from } = drag;
     drag = undefined;
     ghost.remove(); delete grid.dataset.dragging; delete el.dataset.placeholder;
-    const to = items().indexOf(el);
-    if (to !== from) onMove(from, to);
+    const to = items().indexOf(el); // -1: the screen was redrawn under the finger and this tile is gone; move nothing
+    if (to >= 0 && to !== from) onMove(from, to);
   };
 
   grid.addEventListener('pointerdown', (e) => {

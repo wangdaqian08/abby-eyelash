@@ -7,7 +7,6 @@ export const OUT: Record<AdminRatio, [number, number]> = { '4:3': [1600, 1200], 
 export const JPEG_QUALITY = 0.82;
 export const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
 export const MAX_BLOB_BASE64 = 2_000_000; // characters; a 1600 × 1200 JPEG at 0.82 is far below this
-export const MAX_NEW_PER_PUBLISH = 20;
 export const UPLOAD_ID = /^u-[a-z0-9]{10}$/;
 export const ADMIN_JSON = 'src/data/photo-admin.json';
 
@@ -40,7 +39,7 @@ for (const [id, v] of Object.entries(videos)) legacy.set(id, { ...legacy.get(v.p
 
 const isRecord = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
-/** null when `next` may be published over `prev`; else 'groups' | 'item' | 'duplicate' | 'slot' | 'upload' | 'label' | 'too-many'. */
+/** null when `next` may be published over `prev`; else 'groups' | 'item' | 'duplicate' | 'slot' | 'upload' | 'label'. */
 export function validateAdmin(next: AdminData, prev: AdminData, newBlobs: ReadonlySet<string>): string | null {
   if (!isRecord(next) || !isRecord(next.groups) || !isRecord(next.slots) || !isRecord(next.uploads) || !isRecord(next.labels)) return 'groups';
   if (Object.keys(next.groups).sort().join() !== adminGroups.map((g) => g.id).sort().join()) return 'groups';
@@ -51,7 +50,6 @@ export function validateAdmin(next: AdminData, prev: AdminData, newBlobs: Readon
     if (was ? was.dir !== u.dir || was.ratio !== u.ratio || newBlobs.has(id) : !newBlobs.has(id)) return 'upload';
   }
   for (const id of newBlobs) if (!next.uploads[id] || prev.uploads[id]) return 'upload';
-  if (newBlobs.size > MAX_NEW_PER_PUBLISH) return 'too-many';
 
   // An id is usable in a group or place when it is a real (non-AI) legacy photo or video, or an upload, of that dir and ratio.
   const fits = (id: unknown, dir: Dir, ratio: AdminRatio) => {

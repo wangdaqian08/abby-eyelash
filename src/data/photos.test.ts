@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { bookableWith, findOption, mainOptions, priceText, services } from './services.ts';
-import { adminData, adminGroups, adminSlots, browGroups, browVideo, homeHero, lashCards, lashGroups, lashLooks, lookName, nailGroups, nailVideo, photo, photos, servicePhotos, styleGuide, styledLooks, uploadAlt, videos } from './photos.ts';
+import { adminData, adminGroups, adminLabels, adminSlots, browGroups, browVideo, homeHero, lashCards, lashGroups, lashLooks, lookName, nailGroups, nailVideo, photo, photos, servicePhotos, styleGuide, styledLooks, uploadAlt, videos } from './photos.ts';
 
 test('every lash card points at a bookable main option', () => {
   assert.equal(lashCards.length, 6);
@@ -44,7 +44,8 @@ test('an upload is a photo with a generated alt; a place override wins and drops
   assert.deepEqual({ en: uploadAlt(u, 'look:mermaid').en, zh: uploadAlt(u, 'look:mermaid').zh }, { en: 'Mermaid – lash extensions by Abby, Burwood', zh: '人鱼，Abby 嫁接睫毛，Burwood' });
   assert.equal(uploadAlt(u, undefined).en, 'Styled sets – lash extensions by Abby, Burwood');
   assert.equal(uploadAlt({ dir: 'nails', ratio: '3:4', where: 'page:gel-nails:hero' }, undefined).zh, '凝胶美甲，Abby 美甲，Burwood');
-  assert.equal(lookName('styled-fairy')!.en, 'Fairy');
+  // the name it had before the admin, unless a style name has been chosen for it in the admin since
+  assert.equal(lookName('styled-fairy')!.en, adminLabels.find((l) => l.key === adminData.labels['styled-fairy'])?.name.en ?? 'Fairy');
   assert.equal(lookName('hero-mirror'), undefined);
 });
 test('ids are unique ASCII and every alt is filled in both languages', () => {

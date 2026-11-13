@@ -58,7 +58,11 @@ export async function publish(env: AdminEnv, demo: boolean, email: string, body:
   return guarded(async () => {
     const head: string = (await gh(env, fetcher, 'GET', 'git/ref/heads/main')).object.sha;
     const file = await gh(env, fetcher, 'GET', `contents/${ADMIN_JSON}?ref=${head}`);
-    if (file.sha !== body.base) return reply(409, { error: 'conflict' }); // someone published since this draft was started
+    if (file.sha !== body.base) {
+      // The repository already holds exactly this data: this publish was sent before and its reply was lost. Say yes again.
+      if (file.sha === await gitBlobSha(text(data))) return reply(200, { commit: head, base: file.sha });
+      return reply(409, { error: 'conflict' }); // someone published since this draft was started
+    }
     const prevText = new TextDecoder().decode(Uint8Array.from(atob(file.content.replace(/\s/g, '')), (c) => c.charCodeAt(0)));
     const prev = JSON.parse(prevText) as AdminData;
     const bad = check(prev);
@@ -74,7 +78,8 @@ export async function publish(env: AdminEnv, demo: boolean, email: string, body:
         ...removedMasters(prev, data).map((path) => entry(path, { sha: null })), // sha null = delete
       ],
     });
-    const commit = await gh(env, fetcher, 'POST', 'git/commits', { message: `Photos: published from the admin by ${email}`, tree: tree.sha, parents: [head] });
+    const commit = await gh(env, fetcher, 'POST', 'git/commits', { message: 'Photos: published from the admin', tree: tree.sha, parents: [head] });
+    console.log(`admin: ${email} published ${commit.sha}`); // who published: in the Functions log, not in the repository's history
     try {
       await gh(env, fetcher, 'PATCH', 'git/refs/heads/main', { sha: commit.sha }); // not forced: fails if main moved meanwhile
     } catch (e) {
@@ -101,8 +106,12 @@ export async function buildState(env: AdminEnv, demo: boolean, commit: string, r
 }
 
 /** Every admin endpoint: sign-in first, then the work; JSON out, never cached. */
-export async function respond(request: Request, env: AdminEnv, work: (email: string, demo: boolean) => Promise<Reply>): Promise<Response> {
-  const email = await adminEmail(request, env);
-  const { status, body } = email ? await work(email, adminDemo(env, request.url)) : reply(401, { error: 'signin' });
+export async function respond(request: Request, env: AdminEnv, work: (email: string, demo: boolean) => Promise<Reply>, signIn = adminEmail): Promise<Response> {
+  const email = await signIn(request, env);
+  const demo = adminDemo(env, request.url);
+  // A write must come from the admin page itself. Without this, any site Abby visits while signed in could make her
+  // browser post a publish (the Access cookie travels with it); browsers always state the Origin of a POST.
+  const foreign = request.method !== 'GET' && !demo && request.headers.get('origin') !== new URL(request.url).origin;
+  const { status, body } = !email ? reply(401, { error: 'signin' }) : foreign ? reply(403, { error: 'origin' }) : await work(email, demo);
   return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
 }

@@ -1,9 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { adminData, type AdminData } from '../data/photos.ts';
+import type { AdminData } from '../data/photos.ts';
+import { fixture } from '../data/photo-admin.fixture.ts';
 import { ADMIN_JSON, gitBlobSha } from './photo-admin.ts';
 import { buildState, publish, putBlob, respond } from './admin-api.ts';
 
+const adminData = fixture(); // never the live file: Abby's publishes change it
 const env = { ADMIN_GITHUB_TOKEN: 'ghp_x', ADMIN_REPO: 'o/r', ACCESS_TEAM_DOMAIN: 't', ACCESS_AUD: 'a' };
 const HEAD = 'a'.repeat(40), TREE = 'b'.repeat(40), BLOB = 'c'.repeat(40), NEWTREE = 'e'.repeat(40), COMMIT = 'f'.repeat(40);
 const text = (d: AdminData) => JSON.stringify(d, null, 2) + '\n';
@@ -49,12 +51,18 @@ test('publish: one commit with the JSON, the new master and the removed master',
   ]);
   const commit = gh.calls.find((c) => c.path === 'git/commits')!.body;
   assert.deepEqual([commit.tree, commit.parents], [NEWTREE, [HEAD]]);
-  assert.match(commit.message, /abby@example\.com/);
+  assert.doesNotMatch(commit.message, /@/); // the repository may be public: no email address in its history
   assert.deepEqual(gh.calls.at(-1), { method: 'PATCH', path: 'git/refs/heads/main', body: { sha: COMMIT } });
 });
 test('publish: the repository moved on → 409 conflict, nothing written', async () => {
-  const gh = github(await repo(adminData)); // the file in the repository is not the one the draft started from
+  const other = fixture(); other.groups.face.reverse();
+  const gh = github(await repo(other)); // the file in the repository is not the one the draft started from
   assert.deepEqual(await publish(env, false, 'a@b.c', await body(), gh.fetcher), { status: 409, body: { error: 'conflict' } });
+  assert.deepEqual(gh.writes(), []);
+});
+test('publish: sent again after its reply was lost → accepted, nothing written twice', async () => {
+  const gh = github(await repo(next)); // the repository already holds exactly this data
+  assert.deepEqual(await publish(env, false, 'a@b.c', await body(), gh.fetcher), { status: 200, body: { commit: HEAD, base: await gitBlobSha(text(next)) } });
   assert.deepEqual(gh.writes(), []);
 });
 test('publish: main moved between read and write (PATCH 422) → 409 conflict', async () => {
@@ -118,6 +126,19 @@ test('buildState: no run yet and running → building; success → live; failure
   assert.deepEqual((await state([{ id: 7, status: 'completed', conclusion: 'success' }], true)).gh.writes(), []); // nothing to re-run
   assert.deepEqual(await buildState(env, false, 'main; rm -rf', false, runs([]).fetcher), { status: 400, body: { error: 'bad-request' } });
   assert.deepEqual(await buildState({}, true, 'demo', false, runs([]).fetcher), { status: 200, body: { state: 'live' } });
+});
+test('respond: a write that another site made the browser send is refused', async () => {
+  const signedIn = { ADMIN_DEMO: '0' };
+  const ask = async (headers: Record<string, string>, method = 'POST') => {
+    let ran = false;
+    // signed in (stubbed): what is tested here is the origin rule
+    const out = await respond(new Request('https://www.abbyeyelashes.com/api/admin/publish', { method, headers }), signedIn, async () => { ran = true; return { status: 200, body: {} }; }, async () => 'abby@example.com');
+    return [out.status, ran];
+  };
+  assert.deepEqual(await ask({ origin: 'https://evil.example' }), [403, false]);
+  assert.deepEqual(await ask({}), [403, false]); // browsers always send Origin on a POST
+  assert.deepEqual(await ask({ origin: 'https://www.abbyeyelashes.com' }), [200, true]);
+  assert.deepEqual(await ask({}, 'GET'), [200, true]); // reading the build status changes nothing
 });
 test('respond: no sign-in → 401 and the work never runs; replies are JSON and never cached', async () => {
   let ran = false;

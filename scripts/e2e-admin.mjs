@@ -5,11 +5,22 @@ import { chromium } from 'playwright';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { cropRect } from '../src/lib/photo-admin.ts';
+import { fixture as fixedData } from '../src/data/photo-admin.fixture.ts';
 
 const BASE = process.env.BASE ?? 'http://localhost:8788';
 const fixture = (name) => fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url));
 const browser = await chromium.launch();
-const context = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true, isMobile: true }); // iPhone X
+// The admin starts from /admin/state.json, which is the live photo data: Abby's publishes change it, and this test runs on
+// each of them. So the test puts fixed data into it (and keeps the thumbnails, names and base of the build under test).
+const phone = async () => {
+  const c = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true, isMobile: true }); // iPhone X
+  await c.route('**/admin/state.json', async (route) => {
+    const res = await route.fetch();
+    await route.fulfill({ response: res, json: { ...(await res.json()), data: fixedData() } });
+  });
+  return c;
+};
+const context = await phone();
 const page = await context.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
@@ -68,6 +79,15 @@ let moved = await tiles();
 check(moved[0] === now[2] && moved[1] === now[0] && moved[2] === now[1] && moved.length === 13, `4: the third tile is now first (got ${moved.slice(0, 3)})`);
 await holdAndDrag(`[data-tile="${moved[5]}"]`, `[data-tile="${moved[4]}"]`, 60); // a short press is not a drag
 check((await tiles()).join() === moved.join(), '4: a short press moves nothing');
+// the screen redrawn under a lifted tile (a build-status update arrives): the tile must not jump
+{
+  const [x, y] = await centre(`[data-tile="${moved[4]}"]`);
+  await page.mouse.move(x, y); await page.mouse.down(); await page.waitForTimeout(450);
+  await page.evaluate(() => dispatchEvent(new HashChangeEvent('hashchange')));
+  await page.waitForTimeout(120); // several frames pass with the finger still down
+  await page.mouse.up(); await page.waitForTimeout(150);
+  check((await tiles()).join() === moved.join(), `4: a redraw during a drag moves nothing (got ${(await tiles()).slice(0, 3)})`);
+}
 await page.reload(); await view('group');
 check((await tiles()).join() === moved.join(), '4: order and upload are still there after a reload');
 check(await page.$eval(`[data-tile="${upload}"] img`, (img) => img.complete && img.naturalWidth > 0), '4: the upload still shows its picture after a reload');
@@ -211,7 +231,7 @@ check((await tiles())[0] === tall && !(await tiles()).includes(victim), '11: a r
 await page.unroute('**/api/admin/status*');
 
 // 12 — refused publishes (Review Focus 5), and 13 — discard, on a second phone
-const phone2 = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true, isMobile: true });
+const phone2 = await phone();
 const p2 = await phone2.newPage();
 p2.on('pageerror', (e) => errors.push(e.message));
 const open2 = async (hash) => { await p2.goto(`${BASE}/admin/${hash}`); await p2.waitForSelector('[data-view]'); };
@@ -243,6 +263,24 @@ await p2.click('[data-action="discard"]'); await p2.waitForSelector('[data-view=
 check(!(await text2('[data-banner]')).includes('草稿'), '13: 放棄全部更改 clears the draft');
 await open2('#/g/styled');
 check((await tiles2()).join() === untouched.join() && !(await p2.$('[data-action="restore"]')), '13: and the group is the live one again');
+// Cloudflare Access answers an expired session with a redirect to its sign-in page, not with a 401
+await p2.unroute('**/api/admin/publish');
+await p2.route('**/api/admin/publish', (r) => r.fulfill({ status: 302, headers: { location: 'https://abby.cloudflareaccess.com/cdn-cgi/access/login' } }));
+await p2.click(`[data-tile="${untouched[3]}"] [data-action="remove"]`);
+await tryPublish();
+check((await text2('[data-notice]')).includes('登入已過期，請重新整理頁面'), `12: a sign-in redirect is read as signed out (got "${await text2('[data-notice]')}")`);
+await p2.unroute('**/api/admin/publish');
+// while photos are being sent, the screen stays on the publish view: an edit made now would be lost
+await open2('#/g/styled'); await p2.click('[data-action="add"]');
+await p2.setInputFiles('[data-file]', fixture('admin-landscape.jpg')); await p2.waitForTimeout(250);
+await p2.route('**/api/admin/blob', async (r) => { await new Promise((done) => setTimeout(done, 900)); await r.continue(); });
+await open2('#/x'); await p2.click('[data-action="confirm"]');
+await p2.evaluate(() => { location.hash = '#/g/styled'; });
+await p2.waitForTimeout(250);
+check(!!(await p2.$('[data-view="publish"]')) && !(await p2.$('[data-tile]')), '11: no editing while a publish is being sent');
+check((await text2('[data-action="confirm"]')).includes('上傳中 1 / 1'), `11: the button shows the progress (got "${await text2('[data-action="confirm"]')}")`);
+await p2.waitForSelector('[data-view="list"]');
+check((await text2('[data-banner]')).includes('已上線') || (await text2('[data-banner]')).includes('發佈中'), '11: and the publish completes');
 await phone2.close();
 
 // nothing on the page may read as a bug, and every control must be large enough for a thumb

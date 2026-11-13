@@ -5,7 +5,7 @@ import { admin as t } from '../../i18n/admin';
 import { MAX_SOURCE_BYTES, OUT, type AdminState } from '../../lib/photo-admin';
 import { sortable } from './admin-drag';
 import { render as renderJpeg } from './admin-image';
-import { addToGroup, afterPublish, changeCount, changes, finalData, kv, move, newId, replaceSlot, resetSlot, resume, setFocus, setLabel, toggleRemoved, unpublished, type Draft } from './admin-store';
+import { addToGroup, afterPublish, building, changeCount, changes, finalData, kv, move, newId, replaceSlot, resetSlot, resume, setFocus, setLabel, toggleRemoved, unpublished, type Draft } from './admin-store';
 
 type Group = AdminState['groups'][number];
 type Slot = AdminState['slots'][number];
@@ -91,7 +91,7 @@ const noticeBox = () => notice && `
 const off = (yes: boolean) => (yes ? 'aria-disabled="true" tabindex="-1"' : '');
 const OFF = 'pointer-events-none opacity-40';
 /** Publishing is possible: there are changes, nobody else changed the site, and the last publish has finished building. */
-const canPublish = () => changeCount(draft) > 0 && !stale && draft.pending?.state !== 'building';
+const canPublish = () => changeCount(draft) > 0 && !stale && !building(draft);
 function bar() {
   const n = changeCount(draft);
   return `
@@ -364,11 +364,13 @@ function publishView() {
       <h1 class="mt-1 font-sans text-2xl leading-tight font-bold">${t.publishTitle(n)}</h1>
       ${stale ? banner() : ''}${noticeBox()}
       <ul class="mt-4 overflow-hidden rounded-card bg-surface shadow-sm">${rows.join('')}</ul>
-      <p class="mt-3 text-sm text-muted">${draft.pending?.state === 'building' ? t.waitBuild : t.publishNote}</p>
+      <p class="mt-3 text-sm text-muted">${building(draft) ? t.waitBuild : t.publishNote}</p>
       <button type="button" data-action="confirm" ${ready ? '' : 'disabled'} class="${pill} mt-4 min-h-13 w-full bg-primary text-base text-on-primary disabled:opacity-40">${busy || t.confirm}</button>
       <button type="button" data-action="discard" ${busy ? 'disabled' : ''} class="${pill} mt-1 w-full text-base text-danger disabled:opacity-40">${t.discard}</button>
     </div>`;
 }
+/** Cloudflare Access answers an expired session with a redirect to its sign-in page, not a 401; fetch must not follow it. */
+const signedIn = (res: Response) => (res.type === 'opaqueredirect' ? new Response(null, { status: 401 }) : res);
 /** A publish the server refused, or that never reached it. The draft is untouched. */
 function refused(status: number) {
   busy = '';
@@ -377,24 +379,25 @@ function refused(status: number) {
 }
 async function publishNow() {
   if (busy || !canPublish()) return;
-  const data = finalData(draft);
-  const fresh = Object.keys(data.uploads).filter((id) => !(id in draft.clean.uploads));
-  const post = (path: string, body: string) => fetch(path, { method: 'POST', body, headers: { 'content-type': 'text/plain' } });
+  const sent = draft; // exactly what is published; the screen is locked meanwhile (render), so nothing else can change
+  const data = finalData(sent);
+  const fresh = Object.keys(data.uploads).filter((id) => !(id in sent.clean.uploads));
+  const post = async (path: string, body: string) => signedIn(await fetch(path, { method: 'POST', body, headers: { 'content-type': 'text/plain' }, redirect: 'manual' }));
   const blobs: Record<string, string> = {};
   try {
     for (const [i, id] of fresh.entries()) { // one photo per request: each stays small, and a weak connection loses one photo's work at most
       busy = t.uploading(i + 1, fresh.length); render();
       const source = await (await fetch(sources.get(id)!)).blob();
-      const res = await post('/api/admin/blob', await renderJpeg(source, data.uploads[id].ratio, draft.focus[id] ?? { x: 0.5, y: 0.5 }));
+      const res = await post('/api/admin/blob', await renderJpeg(source, data.uploads[id].ratio, sent.focus[id] ?? { x: 0.5, y: 0.5 }));
       if (!res.ok) return refused(res.status);
       blobs[id] = (await res.json()).sha;
     }
     busy = t.sending; render();
-    const res = await post('/api/admin/publish', JSON.stringify({ base: draft.base, data, blobs }));
+    const res = await post('/api/admin/publish', JSON.stringify({ base: sent.base, data, blobs }));
     if (!res.ok) return refused(res.status);
     const done = await res.json();
     busy = '';
-    save(afterPublish(draft, done.commit, done.base)); // the sources stay on the phone until the rebuilt site shows these photos
+    save(afterPublish(sent, done.commit, done.base)); // the sources stay on the phone until the rebuilt site shows these photos
     location.hash = '#/';
     void poll();
   } catch {
@@ -407,10 +410,11 @@ async function poll(rerun = false) {
   const p = draft.pending;
   if (!p || document.hidden || (p.state !== 'building' && !rerun)) return;
   try {
-    const res = await fetch(`/api/admin/status?commit=${p.commit}`, { method: rerun ? 'POST' : 'GET', cache: 'no-store' });
+    const res = signedIn(await fetch(`/api/admin/status?commit=${p.commit}`, { method: rerun ? 'POST' : 'GET', cache: 'no-store', redirect: 'manual' }));
+    if (res.status === 401 && route().view !== 'edit') say(t.signedOut);
     const now = res.ok ? (await res.json()).state : undefined;
     if (now && draft.pending?.commit === p.commit && now !== draft.pending.state) {
-      save({ ...draft, pending: { commit: p.commit, state: now } });
+      save({ ...draft, pending: { ...draft.pending, state: now } });
       if (route().view !== 'edit') render();
     }
   } catch { /* offline: ask again later */ }
@@ -433,6 +437,7 @@ async function dropAndReload() {
 function render() {
   const r = route();
   const group = state.groups.find((g) => g.id === r.id);
+  if (busy) { root.innerHTML = publishView(); return; } // a publish is being sent: no editing until it has an answer
   if (r.view === 'edit') {
     if (editing?.id !== r.id) { void openEditor(r.id); return; } // comes back here once the photo's size is known
     root.innerHTML = editView();
@@ -469,7 +474,7 @@ async function picked() {
 
 function clicked(e: MouseEvent) {
   const el = (e.target as Element).closest<HTMLElement>('[data-action]');
-  if (!el) return;
+  if (!el || busy) return;
   const groupId = route().id;
   const tile = el.closest<HTMLElement>('[data-tile]')?.dataset.tile;
   const slot = state.slots.find((s) => s.key === el.closest<HTMLElement>('[data-slot]')?.dataset.slot);

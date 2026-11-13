@@ -1,0 +1,24 @@
+// A fixed, valid AdminData for tests: the photo lists as they were when the admin was built (2026-11-14).
+// The live file (photo-admin.json) is edited by Abby in the admin and CI runs on each of her publishes, so a test that
+// reads a count or an id from the live file would turn her publish red. Tests take their data from here instead.
+import type { AdminData } from './photos.ts';
+
+const FIXTURE: AdminData = {
+  groups: {
+    face: ['face-natural', 'selfie', 'face-smile', 'styled-half-face', 'styled-mermaid-selfie'],
+    'natural-full': ['classic-natural-2', 'hybrid-full-eye', 'classic-natural-colour', 'hybrid-full-bottom'],
+    styled: ['styled-fairy', 'styled-layered', 'styled-mermaid', 'styled-manga', 'styled-liner', 'styled-liner-2', 'styled-liner-bottom', 'styled-sunflower', 'styled-pompom', 'styled-bottom', 'styled-bottom-2', 'styled-close'],
+    'nude-french': ['nail-6920', 'nail-3406', 'nail-4067', 'nail-2112', 'nail-2441', 'nail-2223'],
+    'gold-mirror': ['nail-fc1a', 'nail-4915', 'nail-2020', 'nail-9011'],
+    'warm-floral': ['nail-video', 'nail-b029', 'nail-6e6c'],
+    'wine-navy': ['nail-8353', 'nail-1848', 'nail-3029'],
+    'mono-art': ['nail-9024', 'nail-2473', 'nail-8351', 'nail-7334', 'nail-4630', 'nail-9264', 'nail-7242'],
+    'before-after': ['brow-video', 'brow-8979', 'brow-8645'],
+    'close-ups': ['brow-3166', 'brow-6069'],
+  },
+  slots: {},
+  uploads: {},
+  labels: {},
+};
+/** A fresh copy each time, so one test cannot change another's data. */
+export const fixture = (): AdminData => structuredClone(FIXTURE);

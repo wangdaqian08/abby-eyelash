@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { adminData, type AdminData } from '../data/photos.ts';
+import { fixture } from '../data/photo-admin.fixture.ts';
 import { cropRect, gitBlobSha, removedMasters, validateAdmin } from './photo-admin.ts';
 
 test('cropRect covers the ratio and the focus chooses the kept part', () => {
@@ -14,8 +15,11 @@ test('cropRect covers the ratio and the focus chooses the kept part', () => {
 test('gitBlobSha matches git hash-object', async () => {
   assert.equal(await gitBlobSha('hello\n'), 'ce013625030ba8dba906f756967f9e9ca394464a');
 });
-test('validateAdmin accepts the live data and every single admin action', () => {
-  const live = structuredClone(adminData);
+test('the live photo-admin.json is publishable as it is', () => {
+  assert.equal(validateAdmin(adminData, adminData, new Set()), null);
+});
+test('validateAdmin accepts every single admin action', () => {
+  const live = fixture();
   assert.equal(validateAdmin(live, live, new Set()), null);
   const add = structuredClone(live); add.uploads['u-abcdefghij'] = { dir: 'lash', ratio: '4:3', where: 'styled' }; add.groups.styled.unshift('u-abcdefghij'); add.labels['u-abcdefghij'] = 'look:mermaid';
   assert.equal(validateAdmin(add, live, new Set(['u-abcdefghij'])), null);
@@ -27,7 +31,7 @@ test('validateAdmin accepts the live data and every single admin action', () => 
   assert.equal(validateAdmin(reorder, live, new Set()), null);
 });
 test('validateAdmin names what is wrong', () => {
-  const live = structuredClone(adminData);
+  const live = fixture();
   const bad = (edit: (d: AdminData) => void, blobs: string[] = []) => { const d = structuredClone(live); edit(d); return validateAdmin(d, live, new Set(blobs)); };
   assert.equal(bad((d) => { delete d.groups.styled; }), 'groups');
   assert.equal(bad((d) => { d.groups.styled.push('nail-6920'); }), 'item'); // wrong dir and ratio
@@ -41,14 +45,14 @@ test('validateAdmin names what is wrong', () => {
   assert.equal(bad((d) => { d.uploads['U-../../etc'] = { dir: 'lash', ratio: '4:3', where: 'styled' }; d.groups.styled.push('U-../../etc'); }, ['U-../../etc']), 'upload'); // id shape
   assert.equal(bad((d) => { d.labels['classic-natural-2'] = 'look:mermaid'; }), 'label'); // a styled-only name outside the styled group
   assert.equal(bad((d) => { d.labels['nail-6920'] = 'option:powder-brows/powder'; }), 'label'); // a brows name on a nail photo
-  assert.equal(bad((d) => {
-    for (let i = 0; i < 21; i++) { const id = `u-${String(i).padStart(10, '0')}`; d.uploads[id] = { dir: 'lash', ratio: '4:3', where: 'styled' }; d.groups.styled.push(id); }
-  }, Array.from({ length: 21 }, (_, i) => `u-${String(i).padStart(10, '0')}`)), 'too-many');
+  assert.equal(bad((d) => { // no limit on how many photos one publish adds: each is uploaded on its own
+    for (let i = 0; i < 40; i++) { const id = `u-${String(i).padStart(10, '0')}`; d.uploads[id] = { dir: 'lash', ratio: '4:3', where: 'styled' }; d.groups.styled.push(id); }
+  }, Array.from({ length: 40 }, (_, i) => `u-${String(i).padStart(10, '0')}`)), null);
   assert.equal(validateAdmin({ groups: live.groups } as AdminData, live, new Set()), 'groups'); // a body with missing parts
 });
 test('removedMasters: only uploads that nothing refers to any more', () => {
-  const prev = structuredClone(adminData); prev.uploads['u-abcdefghij'] = { dir: 'lash', ratio: '4:3', where: 'styled' }; prev.groups.styled.unshift('u-abcdefghij');
-  const next = structuredClone(adminData);
+  const prev = fixture(); prev.uploads['u-abcdefghij'] = { dir: 'lash', ratio: '4:3', where: 'styled' }; prev.groups.styled.unshift('u-abcdefghij');
+  const next = fixture();
   assert.deepEqual(removedMasters(prev, next), ['src/assets/photos/lash/u-abcdefghij.jpg']);
   next.groups.styled = next.groups.styled.filter((id) => id !== 'styled-fairy'); // a legacy photo: its master stays
   assert.deepEqual(removedMasters(prev, next), ['src/assets/photos/lash/u-abcdefghij.jpg']);

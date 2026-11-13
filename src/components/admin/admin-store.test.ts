@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { adminData } from '../../data/photos.ts';
+import { fixture } from '../../data/photo-admin.fixture.ts';
 import { UPLOAD_ID, validateAdmin, type AdminState } from '../../lib/photo-admin.ts';
-import { addToGroup, afterPublish, changeCount, changes, finalData, fromState, isDirty, kv, move, newId, replaceSlot, resetSlot, resume, setFocus, setLabel, toggleRemoved } from './admin-store.ts';
+import { BUILD_TIMEOUT_MS, addToGroup, afterPublish, building, changeCount, changes, finalData, fromState, isDirty, kv, move, newId, replaceSlot, resetSlot, resume, setFocus, setLabel, toggleRemoved } from './admin-store.ts';
 
+const adminData = fixture(); // never the live file: Abby's publishes change it
 const state = (base = 'base-0', data = adminData): AdminState => ({ base, data: structuredClone(data), groups: [], slots: [], labels: [], photos: {} });
 const LASH = { dir: 'lash', ratio: '4:3', where: 'styled' } as const;
 const HERO = { dir: 'lash', ratio: '3:4', where: 'home-hero' } as const;
@@ -78,8 +79,12 @@ test('changes lists what a publish will do', () => {
 test('afterPublish: the published data becomes the clean state on the new base, building', () => {
   let d = toggleRemoved(addToGroup(fresh(), 'styled', 'u-aaaaaaaaaa', LASH), 'styled', styled[1]);
   const final = finalData(d);
-  d = afterPublish(d, 'c'.repeat(40), 'base-1');
-  assert.deepEqual([d.base, d.data, d.clean, d.removed, d.pending], ['base-1', final, final, [], { commit: 'c'.repeat(40), state: 'building' }]);
+  d = afterPublish(d, 'c'.repeat(40), 'base-1', 1000);
+  assert.deepEqual([d.base, d.data, d.clean, d.removed, d.pending], ['base-1', final, final, [], { commit: 'c'.repeat(40), state: 'building', at: 1000 }]);
+  assert.equal(building(d, 1000 + 60_000), true); // a second publish waits for the build…
+  assert.equal(building(d, 1000 + BUILD_TIMEOUT_MS), false); // …but not for ever, if the build status never arrives
+  assert.equal(building({ ...d, pending: { ...d.pending!, state: 'live' } }, 2000), false);
+  assert.equal(building(fresh(), 2000), false);
   assert.equal(isDirty(d), false);
   assert.deepEqual(d.focus['u-aaaaaaaaaa'], { x: 0.5, y: 0.5 }); // its thumbnail is still drawn from the source until the site has it
 });
@@ -89,7 +94,7 @@ test('resume: a second visit while the first publish is still building keeps the
   assert.deepEqual([again.draft, again.stale], [published, false]);
   const edited = move(published, 'styled', 0, 1); // and it can be edited and published again on base-1
   assert.deepEqual(resume(edited, state('base-0')), { draft: edited, stale: false });
-  const failed = { ...published, pending: { commit: 'c'.repeat(40), state: 'failed' as const } };
+  const failed = { ...published, pending: { ...published.pending!, state: 'failed' as const } };
   assert.deepEqual(resume(failed, state('base-0')).draft, failed); // a failed build: the site never gets it; keep it for "try again"
 });
 test('resume: once the snapshot has caught up it is the truth again', () => {
@@ -106,7 +111,7 @@ test('resume: the site was changed by someone else — a clean phone follows it,
   assert.deepEqual(resume(fresh(), state('base-9', other)), { draft: fromState(state('base-9', other)), stale: false });
   const dirty = move(fresh(), 'styled', 0, 1);
   assert.deepEqual(resume(dirty, state('base-9', other)), { draft: dirty, stale: true });
-  const live = { ...afterPublish(fresh(), 'c'.repeat(40), 'base-1'), pending: { commit: 'c'.repeat(40), state: 'live' as const } };
+  const live = { ...afterPublish(fresh(), 'c'.repeat(40), 'base-1'), pending: { commit: 'c'.repeat(40), state: 'live' as const, at: 0 } };
   assert.deepEqual(resume(live, state('base-9', other)).draft, fromState(state('base-9', other))); // ours went live, then theirs
 });
 test('kv falls back to memory when IndexedDB is missing (private browsing)', async () => {
