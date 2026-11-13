@@ -25,7 +25,7 @@ const t = serviceStrings[lang];
           loading="lazy"
           class="aspect-[4/3] w-full object-cover"
         />
-        <figcaption class="p-3 text-sm font-medium sm:p-4">{l.name[lang]}</figcaption>
+        {l.name && <figcaption class="p-3 text-sm font-medium sm:p-4">{l.name[lang]}</figcaption>}
       </figure>
     ))}
   </div>

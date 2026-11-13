@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { bookableWith, findOption, mainOptions, priceText, services } from './services.ts';
-import { browGroups, browVideo, homeHero, lashCards, lashGroups, lashLooks, nailGroups, nailVideo, NAIL_VISIBLE, photo, photos, servicePhotos, styleGuide, styledLooks } from './photos.ts';
+import { adminData, adminGroups, adminSlots, browGroups, browVideo, homeHero, lashCards, lashGroups, lashLooks, lookName, nailGroups, nailVideo, photo, photos, servicePhotos, styleGuide, styledLooks, uploadAlt, videos } from './photos.ts';
 
 test('every lash card points at a bookable main option', () => {
   assert.equal(lashCards.length, 6);
@@ -11,19 +11,41 @@ test('every lash card points at a bookable main option', () => {
     assert.ok(mainOptions(s).some((o) => o.id === c.optionId), c.optionId);
   }
 });
-test('nail groups use each of the 22 nail photos exactly once, plus the video', () => {
-  const items = nailGroups.flatMap((g) => g.items);
-  assert.equal(new Set(items).size, items.length);
-  assert.equal(items.filter((i) => i === 'nail-video').length, 1);
-  assert.equal(items.filter((i) => i !== 'nail-video').length, 22);
-  assert.equal(nailGroups.flatMap((g) => g.items.slice(0, NAIL_VISIBLE)).length, 15);
-});
-test('every referenced id exists, with the right ratio', () => {
-  for (const c of lashCards) assert.equal(photo(c.photo).ratio, '4:3');
-  for (const l of styledLooks) assert.equal(photo(l.photo).ratio, '4:3');
-  for (const i of nailGroups.flatMap((g) => g.items)) if (i !== 'nail-video') assert.equal(photo(i).ratio, '3:4');
+// The admin (/admin/) edits src/data/photo-admin.json, so no test may pin a count or an id that it can change.
+test('photo-admin.json: the ten groups, no unknown place, every id known with the right dir and ratio', () => {
+  assert.deepEqual(Object.keys(adminData.groups).sort(), adminGroups.map((g) => g.id).sort());
+  assert.equal(adminGroups.length, 10);
+  assert.equal(adminSlots.length, 18);
+  for (const g of adminGroups) {
+    const ids = adminData.groups[g.id];
+    assert.equal(new Set(ids).size, ids.length, g.id);
+    for (const id of ids) {
+      const p = videos[id] ? photo(videos[id].poster) : photo(id);
+      assert.equal(p.dir, g.dir, id); assert.equal(p.ratio, g.ratio, id);
+      assert.ok(!/^AI-generated/.test(p.alt.en), id);
+    }
+  }
+  for (const [key, id] of Object.entries(adminData.slots)) {
+    const s = adminSlots.find((x) => x.key === key)!;
+    assert.ok(s, key); assert.equal(photo(id).ratio, s.ratio, key); assert.equal(photo(id).dir, s.dir, key);
+  }
   photo(nailVideo.poster); photo(browVideo.poster); photo(homeHero);
-  assert.equal(styledLooks.length, 12);
+});
+test('the site lists are built from photo-admin.json', () => {
+  assert.deepEqual(styledLooks.map((l) => l.photo), adminData.groups.styled);
+  const cards = new Set(lashCards.map((c) => c.photo));
+  assert.deepEqual(lashGroups.find((g) => g.id === 'styled')!.items, adminData.groups.styled.filter((id) => !cards.has(id)));
+  assert.deepEqual(nailGroups.map((g) => g.items), nailGroups.map((g) => adminData.groups[g.id]));
+  assert.deepEqual(browGroups.map((g) => g.items), browGroups.map((g) => adminData.groups[g.id]));
+  for (const c of lashCards) assert.equal(photo(c.photo).ratio, '4:3');
+});
+test('an upload is a photo with a generated alt; a place override wins and drops the old position tweak', () => {
+  const u = { dir: 'lash', ratio: '4:3', where: 'styled' } as const;
+  assert.deepEqual({ en: uploadAlt(u, 'look:mermaid').en, zh: uploadAlt(u, 'look:mermaid').zh }, { en: 'Mermaid – lash extensions by Abby, Burwood', zh: '人鱼，Abby 嫁接睫毛，Burwood' });
+  assert.equal(uploadAlt(u, undefined).en, 'Styled sets – lash extensions by Abby, Burwood');
+  assert.equal(uploadAlt({ dir: 'nails', ratio: '3:4', where: 'page:gel-nails:hero' }, undefined).zh, '凝胶美甲，Abby 美甲，Burwood');
+  assert.equal(lookName('styled-fairy')!.en, 'Fairy');
+  assert.equal(lookName('hero-mirror'), undefined);
 });
 test('ids are unique ASCII and every alt is filled in both languages', () => {
   assert.equal(new Set(photos.map((p) => p.id)).size, photos.length);
@@ -62,28 +84,4 @@ test('AI style-guide images are labelled as AI in both languages and never used 
     ...nailGroups.flatMap((g) => g.items), ...lashGroups.flatMap((g) => g.items), ...Object.values(servicePhotos).flatMap((s) => [s.hero, s.detail])];
   for (const id of ai) assert.ok(!used.includes(id), id);
   for (const g of styleGuide) assert.ok(findOption('lash-extensions', g.optionId), g.optionId);
-});
-
-test('lash portfolio: uniform ratio per group, real work only, no repeats of the cards above it', () => {
-  const ids = lashGroups.flatMap((g) => g.items);
-  assert.equal(new Set(ids).size, ids.length);
-  for (const g of lashGroups) for (const id of g.items) assert.equal(photo(id).ratio, g.ratio, id);
-  for (const id of ids) {
-    assert.equal(photo(id).dir, 'lash', id);
-    assert.ok(!/^AI-generated/.test(photo(id).alt.en), id);
-    assert.ok(!lashCards.some((c) => c.photo === id) && id !== homeHero, id);
-  }
-  // every real lash photo is shown somewhere on the home page or a service page
-  const shown = new Set([...ids, ...lashCards.map((c) => c.photo), homeHero, ...styledLooks.map((l) => l.photo), ...Object.values(servicePhotos).flatMap((s) => [s.hero, s.detail])]);
-  const unused = photos.filter((p) => p.dir === 'lash' && p.ratio !== 'original' && !shown.has(p.id)).map((p) => p.id);
-  assert.deepEqual(unused, []);
-});
-
-test('brows portfolio: uniform ratio per group, every brow photo shown once (gallery or brows page)', () => {
-  const ids = browGroups.flatMap((g) => g.items).filter((id) => id !== 'brow-video');
-  for (const g of browGroups) for (const id of g.items) assert.equal(id === 'brow-video' ? photo(browVideo.poster).ratio : photo(id).ratio, g.ratio, id);
-  const page = [servicePhotos['powder-brows'].hero, servicePhotos['powder-brows'].detail];
-  const shown = [...ids, ...page, browVideo.poster];
-  assert.equal(new Set(shown).size, shown.length);
-  assert.deepEqual(photos.filter((p) => p.dir === 'brows').map((p) => p.id).sort(), [...shown].sort());
 });
