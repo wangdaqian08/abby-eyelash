@@ -1,6 +1,264 @@
-// The photo admin (vanilla TS). Spec: docs/superpowers/specs/2026-11-14-admin-photos-design.md
+// The photo admin (vanilla TS), for a phone: lists → group / fixed places → editor → preview → publish.
+// Every change goes into a draft kept on the phone (admin-store.ts); nothing reaches the site before "發佈".
+// Spec: docs/superpowers/specs/2026-11-14-admin-photos-design.md
 import { admin as t } from '../../i18n/admin';
+import { MAX_SOURCE_BYTES, type AdminState } from '../../lib/photo-admin';
+import { sortable } from './admin-drag';
+import { addToGroup, changeCount, changes, kv, move, newId, replaceSlot, resetSlot, resume, toggleRemoved, unpublished, type Draft } from './admin-store';
 
-export async function start(root: HTMLElement): Promise<void> {
-  root.innerHTML = `<h1 class="text-2xl font-bold">${t.title}</h1>`;
+type Group = AdminState['groups'][number];
+type Slot = AdminState['slots'][number];
+
+let root: HTMLElement;
+let state: AdminState;
+let draft: Draft;
+let stale = false; // the site was changed by someone else since this draft was started
+let notice = '';
+let picking: { group?: Group; slot?: Slot } = {};
+const sources = new Map<string, string>(); // upload id → object URL of its source file, while that is still on this phone
+const fileInput = Object.assign(document.createElement('input'), { type: 'file', accept: 'image/jpeg,image/png', hidden: true });
+
+const esc = (s: string) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+const route = () => {
+  const [, view = '', id = ''] = location.hash.replace(/\?.*$/, '').split('/');
+  return { view: ({ g: 'group', s: 'slots', e: 'edit', p: 'preview', x: 'publish' } as Record<string, string>)[view] ?? 'list', id: decodeURIComponent(id) };
+};
+const aspect = (ratio: string) => (ratio === '4:3' ? 'aspect-[4/3]' : 'aspect-[3/4]');
+const slotNow = (s: Slot) => draft.data.slots[s.key] ?? s.def;
+const removed = (g: string, id: string) => draft.removed.includes(`${g}/${id}`);
+const nameOf = (id: string) => state.labels.find((l) => l.key === draft.data.labels[id])?.name ?? state.photos[id]?.name ?? '';
+
+function picture(id: string, cls = 'size-full object-cover') {
+  const f = draft.focus[id] ?? { x: 0.5, y: 0.5 };
+  const src = sources.get(id) ?? state.photos[id]?.thumb ?? '';
+  return `<img src="${esc(src)}" alt="" draggable="false" class="${cls}" style="object-position:${f.x * 100}% ${f.y * 100}%">`;
+}
+const icon = (d: string, cls = 'size-4') => `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="${cls}"><path d="${d}"/></svg>`;
+const CHEVRON = 'M9 6l6 6-6 6', BACK = 'M15 6l-6 6 6 6', PLUS = 'M12 5v14M5 12h14', CROSS = 'M6 6l12 12M18 6L6 18', UNDO = 'M4 9h10a5 5 0 0 1 0 10H8M8 5L4 9l4 4';
+const pill = 'inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-bold whitespace-nowrap active:scale-[0.97]';
+
+// ── Saving ──
+function commit(next: Draft) {
+  draft = next;
+  kv.set('draft', draft).catch(() => { kv.persistent = false; }); // storage full: the draft lives for this visit only
+  render();
+}
+function forgetSource(id: string) {
+  const url = sources.get(id);
+  if (url) URL.revokeObjectURL(url);
+  sources.delete(id);
+  kv.del(`src:${id}`).catch(() => {});
+}
+const say = (text: string) => { notice = text; render(); };
+
+// ── Shared pieces ──
+function top(tab: 'groups' | 'slots') {
+  const on = 'bg-surface-3 font-bold text-fg shadow-sm', off = 'font-medium text-muted';
+  return `
+    <header class="flex items-end justify-between">
+      <div><p class="text-xs tracking-[0.12em] text-muted">${t.brand}</p><h1 class="font-sans text-[1.75rem] leading-tight font-bold">${t.title}</h1></div>
+      <a href="/cdn-cgi/access/logout" class="inline-flex min-h-11 min-w-11 items-center justify-end text-sm text-muted">${t.logout}</a>
+    </header>
+    <nav class="mt-4 grid grid-cols-2 gap-1 rounded-full bg-surface-2 p-1">
+      <a data-tab="groups" href="#/" ${tab === 'groups' ? 'aria-current="page"' : ''} class="flex min-h-11 items-center justify-center rounded-full ${tab === 'groups' ? on : off}">${t.tabGroups}</a>
+      <a data-tab="slots" href="#/s" ${tab === 'slots' ? 'aria-current="page"' : ''} class="flex min-h-11 items-center justify-center rounded-full ${tab === 'slots' ? on : off}">${t.tabSlots}</a>
+    </nav>`;
+}
+function banner() {
+  const n = changeCount(draft), p = draft.pending;
+  const card = (cls: string, title: string, note: string, action = '') =>
+    `<div class="flex items-center justify-between gap-3 rounded-card px-4 py-3 ${cls}"><p class="min-w-0"><span class="block font-bold">${title}</span>${note && `<span class="block text-sm opacity-90">${note}</span>`}</p>${action}</div>`;
+  const parts = [
+    stale && card('bg-danger/10 text-danger', t.stale, t.staleNote, `<button type="button" data-action="drop-reload" class="${pill} shrink-0 bg-surface-3 text-fg">${t.dropAndReload}</button>`),
+    p?.state === 'building' && card('bg-surface text-fg shadow-sm', t.building, t.buildingNote),
+    p?.state === 'live' && card('bg-surface text-fg shadow-sm', t.live, t.liveNote),
+    p?.state === 'failed' && card('bg-danger/10 text-danger', t.failed, t.failedNote, `<button type="button" data-action="retry" class="${pill} shrink-0 bg-surface-3 text-fg">${t.retry}</button>`),
+    n > 0 && !stale && `<a href="#/x" class="flex items-center justify-between gap-3 rounded-card bg-primary px-4 py-3 text-on-primary"><span class="font-bold">${t.draft(n)}</span><span class="${pill} min-h-9 shrink-0 bg-bg text-primary">${t.view}</span></a>`,
+    !kv.persistent && `<p class="rounded-card bg-surface-2 px-4 py-3 text-sm text-muted">${t.notSaved}</p>`,
+  ].filter(Boolean);
+  return `<div data-banner class="mt-4 space-y-2 empty:hidden">${parts.join('')}</div>`;
+}
+const noticeBox = () => notice && `
+  <p data-notice role="alert" class="mt-3 flex items-center justify-between gap-2 rounded-card bg-danger/10 py-1 pr-1 pl-4 text-sm font-medium text-danger">
+    <span>${esc(notice)}</span><button type="button" data-action="close-notice" aria-label="${t.close}" class="flex size-11 shrink-0 items-center justify-center">${icon(CROSS)}</button>
+  </p>`;
+function bar() {
+  const n = changeCount(draft);
+  const idle = n === 0 || stale ? 'pointer-events-none opacity-40' : '';
+  return `
+    <div class="sticky bottom-0 -mx-4 mt-6 grid grid-cols-2 gap-2 bg-bg/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-sm">
+      <a data-action="preview" href="#/p" ${idle && 'aria-disabled="true" tabindex="-1"'} class="${pill} min-h-13 bg-surface-2 text-base text-fg ${idle}">${t.preview}</a>
+      <a data-action="publish" href="#/x" ${idle && 'aria-disabled="true" tabindex="-1"'} class="${pill} min-h-13 bg-primary text-base text-on-primary ${idle}">${n ? t.publishN(n) : t.noChanges}</a>
+    </div>`;
+}
+const countText = (g: Group, ids: string[]) => {
+  const v = ids.filter((id) => state.photos[id]?.video).length;
+  return `${t.photos(ids.length - v)}${v ? t.videos(v) : ''} · ${t.ratio[g.ratio]}`;
+};
+
+// ── Portfolio groups: the list ──
+function listView() {
+  const c = changes(draft);
+  const touched = (g: Group) => c.reordered.includes(g.id) || c.removed.some((m) => m.startsWith(`${g.id}/`)) || draft.data.groups[g.id].some((id) => c.added.includes(id) || c.relabelled.includes(id));
+  const row = (g: Group) => {
+    const ids = draft.data.groups[g.id].filter((id) => !removed(g.id, id));
+    return `
+      <li><a data-group="${g.id}" href="#/g/${g.id}" class="flex min-h-16 items-center gap-3 px-3">
+        <span class="size-11 shrink-0 overflow-hidden rounded-field bg-surface-2">${ids[0] ? picture(ids[0]) : ''}</span>
+        <span class="min-w-0 flex-1"><span class="block font-medium">${esc(g.name)}</span><span class="block text-sm text-muted">${countText(g, ids)}</span></span>
+        ${touched(g) ? `<span class="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold whitespace-nowrap text-primary">${t.draftChip}</span>` : ''}
+        <span class="shrink-0 text-muted">${icon(CHEVRON)}</span>
+      </a></li>`;
+  };
+  const part = (id: Group['part']) => `
+    <section class="mt-5">
+      <h2 class="px-1 font-sans text-sm font-medium text-muted">${t.parts[id]}</h2>
+      <ul class="mt-2 overflow-hidden rounded-card bg-surface shadow-sm">${state.groups.filter((g) => g.part === id).map(row).join('')}</ul>
+    </section>`;
+  return `<div data-view="list">${top('groups')}${banner()}${noticeBox()}${(['lashes', 'nails', 'brows'] as const).map(part).join('')}</div>`;
+}
+
+// ── One group: add, delete, restore, reorder ──
+function groupView(g: Group) {
+  const ids = draft.data.groups[g.id];
+  const onCard = new Set(g.id === 'styled' ? state.slots.filter((s) => s.section === 'cards').map(slotNow) : []); // the home portfolio does not repeat a lash card's photo
+  let shown = 0;
+  const tile = (id: string, i: number) => {
+    const gone = removed(g.id, id), isNew = unpublished(draft, id), video = state.photos[id]?.video, name = nameOf(id);
+    if (!gone && !onCard.has(id)) shown++;
+    const last = shown === g.visible && !gone && !onCard.has(id) && ids.slice(i + 1).some((x) => !removed(g.id, x) && !onCard.has(x));
+    const chipCls = 'absolute top-1.5 left-1.5 rounded-full px-2 py-0.5 text-xs font-bold whitespace-nowrap';
+    return `
+      <li data-tile="${id}" class="relative touch-manipulation overflow-hidden rounded-field bg-surface-2 select-none [-webkit-touch-callout:none] data-[placeholder]:opacity-30 ${aspect(g.ratio)} ${isNew ? 'outline-3 -outline-offset-3 outline-primary' : ''}">
+        ${picture(id, `size-full object-cover ${gone ? 'opacity-25 grayscale' : ''}`)}
+        ${gone ? `
+          <div class="absolute inset-0 flex flex-col items-center justify-center gap-1">
+            <span class="text-xs font-medium">${t.removedNote}</span>
+            <button type="button" data-action="restore" class="${pill} gap-1.5 bg-surface-3 text-fg shadow-sm">${icon(UNDO)}${t.restore}</button>
+          </div>` : `
+          ${isNew ? `<span class="${chipCls} bg-primary text-on-primary">${t.isNew}</span>` : video ? `<span class="${chipCls} bg-fg/75 text-bg">${t.video}</span>` : onCard.has(id) ? `<span class="${chipCls} bg-fg/75 text-bg">${t.onCard}</span>` : ''}
+          <div class="group-data-[dragging]/admin:hidden">
+            ${name ? `<span class="absolute bottom-1.5 left-1.5 max-w-[55%] truncate rounded-full bg-fg/75 px-2 py-0.5 text-xs text-bg">${esc(name)}</span>` : ''}
+            ${video ? '' : `<a data-action="edit" href="#/e/${id}?g=${g.id}" class="absolute right-0 bottom-0 flex min-h-11 min-w-11 items-end justify-end p-1.5"><span class="rounded-full bg-surface-3 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap text-fg">${t.edit}</span></a>`}
+            <button type="button" data-action="remove" aria-label="${t.remove(esc(name))}" class="absolute top-0 right-0 flex size-11 items-start justify-end p-1.5"><span class="flex size-6.5 items-center justify-center rounded-full bg-fg/75 text-bg">${icon(CROSS, 'size-3.5')}</span></button>
+          </div>`}
+      </li>
+      ${last ? `<li aria-hidden="true" class="col-span-full flex items-center gap-2 py-1 text-xs text-muted"><span class="h-0.5 flex-1 rounded bg-fg/10"></span>${t.firstRow}<span class="h-0.5 flex-1 rounded bg-fg/10"></span></li>` : ''}`;
+  };
+  return `
+    <div data-view="group">
+      <a href="#/" class="inline-flex min-h-11 items-center gap-1 text-muted">${icon(BACK)}${t.back}</a>
+      <h1 class="mt-1 font-sans text-2xl leading-tight font-bold">${esc(g.name)}</h1>
+      <p class="mt-1 text-sm text-muted">${t.parts[g.part]} · ${countText(g, ids.filter((id) => !removed(g.id, id)))}${g.id === 'styled' ? ` · ${t.sharedOrder}` : ''}</p>
+      ${noticeBox()}
+      <button type="button" data-action="add" class="${pill} mt-3 min-h-12 w-full gap-2 bg-primary/10 text-base text-primary">${icon(PLUS, 'size-4.5')}${t.add}</button>
+      <p class="mt-3 text-sm text-muted">${ids.length ? t.groupHint : t.empty}</p>
+      <ul data-grid class="mt-3 grid gap-2 ${g.cols === 2 ? 'grid-cols-2' : 'grid-cols-3'}">${ids.map(tile).join('')}</ul>
+      ${bar()}
+    </div>`;
+}
+
+// ── Fixed places: replace only ──
+function slotsView() {
+  const row = (s: Slot) => {
+    const changed = draft.data.slots[s.key] !== draft.clean.slots[s.key];
+    return `
+      <li data-slot="${s.key}" class="flex min-h-17 items-center gap-3 px-3 py-2 ${changed ? 'bg-primary/5' : ''}">
+        <span class="w-14 shrink-0 overflow-hidden rounded-field bg-surface-2 ${aspect(s.ratio)} ${changed ? 'outline-3 -outline-offset-3 outline-primary' : ''}">${picture(slotNow(s))}</span>
+        <span class="min-w-0 flex-1"><span class="block font-medium">${esc(s.section === 'hero' ? t.heroName : s.name)}</span>
+          <span class="block text-sm ${changed ? 'font-bold text-primary' : 'text-muted'}">${changed ? t.replaced : t.ratio[s.ratio]}</span></span>
+        ${changed
+          ? `<a data-action="edit" href="#/e/${slotNow(s)}?s=${encodeURIComponent(s.key)}" class="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-sm font-bold text-primary">${t.edit}</a>
+             <button type="button" data-action="reset" class="${pill} shrink-0 bg-surface-3 text-fg shadow-sm">${t.restore}</button>`
+          : `<button type="button" data-action="replace" class="${pill} shrink-0 bg-surface-2 text-fg">${t.replace}</button>`}
+      </li>`;
+  };
+  const sections = [...new Set(state.slots.map((s) => s.section))];
+  const title = (s: string) => (s === 'hero' ? t.sectionHero : s === 'cards' ? t.sectionCards : t.sectionPage(esc(s)));
+  return `
+    <div data-view="slots">${top('slots')}${banner()}${noticeBox()}
+      <p class="mt-4 px-1 text-sm text-muted">${t.slotsIntro(state.slots.length)}</p>
+      ${sections.map((sec) => `
+        <section class="mt-5">
+          <h2 class="px-1 font-sans text-sm font-medium text-muted">${title(sec)}</h2>
+          <ul class="mt-2 overflow-hidden rounded-card bg-surface shadow-sm">${state.slots.filter((s) => s.section === sec).map(row).join('')}</ul>
+        </section>`).join('')}
+      ${bar()}
+    </div>`;
+}
+
+// ── Rendering and events ──
+function render() {
+  const r = route();
+  const group = state.groups.find((g) => g.id === r.id);
+  root.innerHTML = r.view === 'group' && group ? groupView(group) : r.view === 'slots' ? slotsView() : listView();
+}
+
+async function picked() {
+  const file = fileInput.files?.[0];
+  const { group, slot } = picking;
+  fileInput.value = ''; picking = {}; notice = '';
+  if (!file || (!group && !slot)) return;
+  if (file.size > MAX_SOURCE_BYTES) return say(t.tooBig);
+  const url = URL.createObjectURL(file);
+  try {
+    await Object.assign(new Image(), { src: url }).decode(); // can this phone's browser read it?
+  } catch {
+    URL.revokeObjectURL(url);
+    return say(t.unreadable);
+  }
+  const id = newId();
+  await kv.set(`src:${id}`, file).catch(() => { kv.persistent = false; });
+  sources.set(id, url);
+  if (group) return commit(addToGroup(draft, group.id, id, { dir: group.dir, ratio: group.ratio, where: group.id }));
+  const old = draft.data.slots[slot!.key];
+  if (old && unpublished(draft, old)) forgetSource(old);
+  commit(replaceSlot(draft, slot!.key, id, { dir: slot!.dir, ratio: slot!.ratio, where: slot!.key }));
+}
+
+function clicked(e: MouseEvent) {
+  const el = (e.target as Element).closest<HTMLElement>('[data-action]');
+  if (!el) return;
+  const groupId = route().id;
+  const tile = el.closest<HTMLElement>('[data-tile]')?.dataset.tile;
+  const slot = state.slots.find((s) => s.key === el.closest<HTMLElement>('[data-slot]')?.dataset.slot);
+  switch (el.dataset.action) {
+    case 'add': picking = { group: state.groups.find((g) => g.id === groupId) }; fileInput.click(); break;
+    case 'replace': picking = { slot }; fileInput.click(); break;
+    case 'remove': case 'restore':
+      if (!tile) break;
+      if (unpublished(draft, tile)) forgetSource(tile);
+      commit(toggleRemoved(draft, groupId, tile));
+      break;
+    case 'reset':
+      if (!slot) break;
+      if (unpublished(draft, slotNow(slot))) forgetSource(slotNow(slot));
+      commit(resetSlot(draft, slot.key));
+      break;
+    case 'close-notice': notice = ''; render(); break;
+  }
+}
+
+export async function start(el: HTMLElement): Promise<void> {
+  root = el;
+  try {
+    const res = await fetch('/admin/state.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error(String(res.status));
+    state = await res.json();
+  } catch {
+    root.innerHTML = `<p role="alert" class="text-danger">${t.loadFailed}</p>`;
+    return;
+  }
+  ({ draft, stale } = resume(await kv.get<Draft>('draft').catch(() => undefined), state));
+  for (const id of Object.keys(draft.data.uploads)) { // photos added on this phone that the site does not have yet
+    const file = state.photos[id] ? undefined : await kv.get<Blob>(`src:${id}`).catch(() => undefined);
+    if (file) sources.set(id, URL.createObjectURL(file));
+  }
+  document.body.append(fileInput);
+  fileInput.dataset.file = '';
+  fileInput.addEventListener('change', picked);
+  root.addEventListener('click', clicked);
+  sortable(root, '[data-tile]', (from, to) => commit(move(draft, route().id, from, to)));
+  addEventListener('hashchange', () => { notice = ''; render(); scrollTo(0, 0); });
+  render();
 }
