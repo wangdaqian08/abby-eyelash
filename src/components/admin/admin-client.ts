@@ -2,9 +2,9 @@
 // Every change goes into a draft kept on the phone (admin-store.ts); nothing reaches the site before "發佈".
 // Spec: docs/superpowers/specs/2026-11-14-admin-photos-design.md
 import { admin as t } from '../../i18n/admin';
-import { MAX_SOURCE_BYTES, type AdminState } from '../../lib/photo-admin';
+import { MAX_SOURCE_BYTES, OUT, type AdminState } from '../../lib/photo-admin';
 import { sortable } from './admin-drag';
-import { addToGroup, changeCount, changes, kv, move, newId, replaceSlot, resetSlot, resume, toggleRemoved, unpublished, type Draft } from './admin-store';
+import { addToGroup, changeCount, changes, kv, move, newId, replaceSlot, resetSlot, resume, setFocus, setLabel, toggleRemoved, unpublished, type Draft } from './admin-store';
 
 type Group = AdminState['groups'][number];
 type Slot = AdminState['slots'][number];
@@ -15,6 +15,8 @@ let draft: Draft;
 let stale = false; // the site was changed by someone else since this draft was started
 let notice = '';
 let picking: { group?: Group; slot?: Slot } = {};
+// The photo open in the editor. w, h: its source size (0 = already on the site, cannot be re-cropped). Saved only by 完成.
+let editing: { id: string; x: number; y: number; w: number; h: number; back: string; ctx: Group | Slot; grab?: { px: number; py: number; x: number; y: number } } | undefined;
 const sources = new Map<string, string>(); // upload id → object URL of its source file, while that is still on this phone
 const fileInput = Object.assign(document.createElement('input'), { type: 'file', accept: 'image/jpeg,image/png', hidden: true });
 
@@ -31,18 +33,18 @@ const nameOf = (id: string) => state.labels.find((l) => l.key === draft.data.lab
 function picture(id: string, cls = 'size-full object-cover') {
   const f = draft.focus[id] ?? { x: 0.5, y: 0.5 };
   const src = sources.get(id) ?? state.photos[id]?.thumb ?? '';
-  return `<img src="${esc(src)}" alt="" draggable="false" class="${cls}" style="object-position:${f.x * 100}% ${f.y * 100}%">`;
+  return `<img src="${esc(src)}" alt="" draggable="false" class="${cls}" style="object-position:${Math.round(f.x * 100)}% ${Math.round(f.y * 100)}%">`;
 }
 const icon = (d: string, cls = 'size-4') => `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="${cls}"><path d="${d}"/></svg>`;
 const CHEVRON = 'M9 6l6 6-6 6', BACK = 'M15 6l-6 6 6 6', PLUS = 'M12 5v14M5 12h14', CROSS = 'M6 6l12 12M18 6L6 18', UNDO = 'M4 9h10a5 5 0 0 1 0 10H8M8 5L4 9l4 4';
 const pill = 'inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-bold whitespace-nowrap active:scale-[0.97]';
 
 // ── Saving ──
-function commit(next: Draft) {
+function save(next: Draft) {
   draft = next;
   kv.set('draft', draft).catch(() => { kv.persistent = false; }); // storage full: the draft lives for this visit only
-  render();
 }
+function commit(next: Draft) { save(next); render(); }
 function forgetSource(id: string) {
   const url = sources.get(id);
   if (url) URL.revokeObjectURL(url);
@@ -187,10 +189,115 @@ function slotsView() {
     </div>`;
 }
 
+// ── Editor: drag the photo behind a frame of the fixed ratio; optional style name ──
+/** Sizes on screen: the frame, the photo scaled to cover it, and how far the photo can move (spare). */
+function layout() {
+  const e = editing!, wide = e.ctx.ratio === '4:3';
+  const stageW = root.clientWidth - 32; // the content width (px-4 on both sides)
+  const fw = wide ? stageW : Math.round(stageW * 0.75), fh = Math.round(wide ? fw * 0.75 : (fw * 4) / 3);
+  const scale = e.w ? Math.max(fw / e.w, fh / e.h) : 0;
+  const dw = e.w ? e.w * scale : fw, dh = e.h ? e.h * scale : fh;
+  const spareX = Math.max(0, Math.round(dw - fw)), spareY = Math.max(0, Math.round(dh - fh));
+  const stageH = Math.min(Math.max(fh, Math.round(dh)), 460);
+  return { fw, fh, dw, dh, spareX, spareY, stageH, left: (stageW - fw) / 2, top: (stageH - fh) / 2 };
+}
+/** Moves the photo to the editor's current position, without redrawing the screen (called while a finger drags). */
+function placePhoto() {
+  const e = editing!, l = layout();
+  const img = root.querySelector<HTMLElement>('[data-photo]');
+  if (img) Object.assign(img.style, { left: `${l.left - e.x * l.spareX}px`, top: `${l.top - e.y * l.spareY}px` });
+  const readout = root.querySelector('[data-readout]');
+  if (readout) readout.textContent = l.spareY ? t.posV(Math.round(e.y * 100)) : t.posH(Math.round(e.x * 100));
+}
+function editView() {
+  const e = editing!, l = layout(), movable = l.spareX + l.spareY > 0;
+  const inStyled = draft.data.groups.styled.includes(e.id);
+  const options = state.labels.filter((x) => x.dir === e.ctx.dir && (inStyled ? x.styledOnly || x.key === 'option:lash-extensions/styled' : !x.styledOnly));
+  const label = draft.data.labels[e.id] ?? '';
+  const legacy = !label && state.photos[e.id]?.name;
+  const line = 'absolute bg-surface-3/40';
+  return `
+    <div data-view="edit">
+      <header class="flex items-center justify-between">
+        <button type="button" data-action="cancel" class="${pill} -ml-4 font-medium text-muted">${t.cancel}</button>
+        <h1 class="font-sans text-lg font-bold">${t.editTitle}</h1>
+        <button type="button" data-action="done" class="${pill} bg-primary text-on-primary">${t.done}</button>
+      </header>
+      <div data-stage class="relative mt-3 overflow-hidden rounded-card bg-fg select-none ${movable ? 'cursor-grab touch-none' : ''}" style="height:${l.stageH}px">
+        ${e.w
+          ? `<img data-photo src="${esc(sources.get(e.id) ?? '')}" alt="" draggable="false" class="pointer-events-none absolute max-w-none" style="width:${l.dw}px;height:${l.dh}px">`
+          : picture(e.id, 'pointer-events-none absolute object-cover').replace('style="', `style="left:${l.left}px;top:${l.top}px;width:${l.fw}px;height:${l.fh}px;`)}
+        <div aria-hidden="true" class="pointer-events-none absolute rounded-[4px] shadow-[0_0_0_9999px_color-mix(in_oklch,var(--fg)_72%,transparent)] outline-2 outline-surface-3" style="left:${l.left}px;top:${l.top}px;width:${l.fw}px;height:${l.fh}px">
+          <span class="${line} inset-y-0 left-1/3 w-px"></span><span class="${line} inset-y-0 left-2/3 w-px"></span>
+          <span class="${line} inset-x-0 top-1/3 h-px"></span><span class="${line} inset-x-0 top-2/3 h-px"></span>
+        </div>
+        <span class="pointer-events-none absolute rounded-full bg-fg/75 px-2 py-0.5 text-xs whitespace-nowrap text-bg" style="left:${l.left + 8}px;top:${l.top + 8}px">${t.ratio[e.ctx.ratio]} · ${t.fixedRatio}</span>
+      </div>
+      ${movable ? `
+        <p class="mt-2 text-center text-sm text-muted">${l.spareY ? t.dragV : t.dragH}</p>
+        <div class="mt-3 flex items-center justify-between gap-3">
+          <p><span data-readout class="block font-bold tabular-nums"></span><span class="block text-xs text-muted">${t.output(...OUT[e.ctx.ratio])}</span></p>
+          <button type="button" data-action="recentre" class="${pill} bg-surface-2 text-fg">${t.recentre}</button>
+        </div>` : `<p class="mt-3 text-sm text-muted">${e.w ? t.fits : t.locked}</p>`}
+      <label for="look-name" class="mt-5 block font-bold">${t.labelTitle}</label>
+      <select id="look-name" data-label class="mt-1.5 h-12 w-full rounded-field bg-surface-3 px-3 text-base shadow-sm outline-1 outline-primary/20">
+        <option value="">${t.labelNone}</option>
+        ${options.map((o) => `<option value="${o.key}" ${o.key === label ? 'selected' : ''}>${esc(o.name)}</option>`).join('')}
+      </select>
+      <p class="mt-1.5 text-xs leading-relaxed text-muted">${legacy ? `${t.currentName(esc(legacy))}。` : ''}${inStyled ? t.labelShown : t.labelHidden}</p>
+    </div>`;
+}
+/** Opens the editor for the photo in the address (#/e/<id>?g=<group> or ?s=<place>); reads the source's size first. */
+async function openEditor(id: string) {
+  const q = new URLSearchParams(location.hash.split('?')[1] ?? '');
+  const ctx = state.slots.find((s) => s.key === q.get('s')) ?? state.groups.find((g) => g.id === q.get('g'));
+  const known = ctx && ('key' in ctx ? slotNow(ctx) === id : draft.data.groups[ctx.id].includes(id));
+  if (!known) { location.hash = '#/'; return; }
+  const next: NonNullable<typeof editing> = { id, ...(draft.focus[id] ?? { x: 0.5, y: 0.5 }), w: 0, h: 0, back: 'key' in ctx ? '#/s' : `#/g/${ctx.id}`, ctx };
+  if (unpublished(draft, id) && sources.has(id)) {
+    const img = Object.assign(new Image(), { src: sources.get(id)! });
+    await img.decode().catch(() => {});
+    next.w = img.naturalWidth; next.h = img.naturalHeight;
+  }
+  editing = next;
+  render();
+}
+function closeEditor(keep: boolean) {
+  const e = editing!;
+  if (keep) {
+    let next = setLabel(draft, e.id, root.querySelector<HTMLSelectElement>('select[data-label]')!.value);
+    if (e.w) next = setFocus(next, e.id, Math.round(e.x * 100) / 100, Math.round(e.y * 100) / 100);
+    save(next);
+  }
+  location.hash = e.back;
+}
+function grabbed(ev: PointerEvent) {
+  const stage = (ev.target as Element).closest<HTMLElement>('[data-stage]');
+  if (!stage || !editing?.w || !ev.isPrimary) return;
+  editing.grab = { px: ev.clientX, py: ev.clientY, x: editing.x, y: editing.y };
+  stage.setPointerCapture(ev.pointerId);
+}
+function dragged(ev: PointerEvent) {
+  const e = editing, g = e?.grab;
+  if (!e || !g) return;
+  const l = layout(), clamp = (n: number) => Math.min(1, Math.max(0, n));
+  // the photo follows the finger: pulling it down brings its top into the frame
+  if (l.spareX) e.x = clamp(g.x - (ev.clientX - g.px) / l.spareX);
+  if (l.spareY) e.y = clamp(g.y - (ev.clientY - g.py) / l.spareY);
+  placePhoto();
+}
+
 // ── Rendering and events ──
 function render() {
   const r = route();
   const group = state.groups.find((g) => g.id === r.id);
+  if (r.view === 'edit') {
+    if (editing?.id !== r.id) { void openEditor(r.id); return; } // comes back here once the photo's size is known
+    root.innerHTML = editView();
+    placePhoto();
+    return;
+  }
+  editing = undefined;
   root.innerHTML = r.view === 'group' && group ? groupView(group) : r.view === 'slots' ? slotsView() : listView();
 }
 
@@ -236,6 +343,9 @@ function clicked(e: MouseEvent) {
       commit(resetSlot(draft, slot.key));
       break;
     case 'close-notice': notice = ''; render(); break;
+    case 'done': closeEditor(true); break;
+    case 'cancel': closeEditor(false); break;
+    case 'recentre': if (editing) { editing.x = editing.y = 0.5; placePhoto(); } break;
   }
 }
 
@@ -258,6 +368,9 @@ export async function start(el: HTMLElement): Promise<void> {
   fileInput.dataset.file = '';
   fileInput.addEventListener('change', picked);
   root.addEventListener('click', clicked);
+  root.addEventListener('pointerdown', grabbed);
+  root.addEventListener('pointermove', dragged);
+  for (const end of ['pointerup', 'pointercancel'] as const) root.addEventListener(end, () => { if (editing) delete editing.grab; });
   sortable(root, '[data-tile]', (from, to) => commit(move(draft, route().id, from, to)));
   addEventListener('hashchange', () => { notice = ''; render(); scrollTo(0, 0); });
   render();

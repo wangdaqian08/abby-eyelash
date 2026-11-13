@@ -87,6 +87,60 @@ check((await page.$eval(`${hero} img`, (i) => i.src)) !== liveThumb, '6: and sho
 await page.click(`${hero} [data-action="reset"]`);
 check((await page.$eval(`${hero} img`, (i) => i.src)) === liveThumb && !(await text(hero)).includes('已更換'), '6: 還原 brings the live photo back');
 
+// 7 — the editor: position by dragging, optional style name
+const position = (id) => page.$eval(`[data-tile="${id}"] img`, (i) => i.style.objectPosition);
+const dragStage = async (dx, dy) => {
+  const [x, y] = await centre('[data-stage]');
+  await page.mouse.move(x, y); await page.mouse.down(); await page.mouse.move(x + dx, y + dy, { steps: 6 }); await page.mouse.up();
+};
+await go('#/g/styled'); await view('group');
+await page.click(`[data-tile="${upload}"] [data-action="edit"]`); await view('edit'); // 2000 × 1500 into 4:3: nothing to move
+check(!(await page.$('[data-readout]')), '7: a photo that already has the ratio shows no position read-out');
+await dragStage(0, 80); await page.click('[data-action="done"]'); await view('group');
+check((await position(upload)) === '50% 50%', `7: and dragging it changes nothing (got ${await position(upload)})`);
+await page.click('[data-action="add"]'); await pick('admin-portrait.jpg');
+const tall = (await tiles())[0];
+await page.click(`[data-tile="${tall}"] [data-action="edit"]`); await view('edit');
+check((await text('[data-readout]')).includes('垂直位置 50%'), `7: a tall photo starts centred (got "${await text('[data-readout]')}")`);
+await dragStage(0, 60);
+const pct = Number((await text('[data-readout]')).match(/(\d+)%/)?.[1]);
+check(pct < 50 && pct >= 0, `7: dragging the photo down shows more of its top (got ${pct}%)`);
+const options = await page.$$eval('select[data-label] option', (o) => o.map((x) => x.textContent));
+check(options.join('|') === '不選擇|仙子|單根層次|人魚|漫畫|眼線加濃|太陽花|小絨花|造型款', `7: the styled group offers its eight names (got ${options.join('|')})`);
+await page.selectOption('select[data-label]', { label: '人魚' });
+await page.click('[data-action="done"]'); await view('group');
+check((await text(`[data-tile="${tall}"]`)).includes('人魚'), '7: 完成 keeps the style name');
+check((await position(tall)) === `50% ${pct}%`, `7: 完成 keeps the position (got ${await position(tall)})`);
+await page.click(`[data-tile="${tall}"] [data-action="edit"]`); await view('edit');
+check((await text('[data-readout]')).includes(`${pct}%`) && (await page.$eval('select[data-label]', (s) => s.selectedOptions[0].textContent)) === '人魚', '7: the editor reopens where it was left');
+await dragStage(0, -200); await page.selectOption('select[data-label]', { label: '不選擇' });
+await page.click('[data-action="cancel"]'); await view('group');
+check((await position(tall)) === `50% ${pct}%` && (await text(`[data-tile="${tall}"]`)).includes('人魚'), '7: 取消 changes nothing');
+await page.reload(); await view('group');
+check((await position(tall)) === `50% ${pct}%`, '7: the position survives a reload');
+
+// 9 — a published photo: no re-crop, the style name can change
+const live = moved.find((id) => !id.startsWith('u-') && id !== 'styled-fairy');
+await page.click(`[data-tile="${live}"] [data-action="edit"]`); await view('edit');
+check((await text('[data-view]')).includes('已上線的圖片不能重新裁切'), '9: a published photo says it cannot be re-cropped');
+check(!(await page.$('[data-readout]')), '9: and has no position read-out');
+await page.selectOption('select[data-label]', { label: '仙子' });
+await page.click('[data-action="done"]'); await view('group');
+check((await text(`[data-tile="${live}"]`)).includes('仙子'), '9: its style name can still be changed');
+await go('#/g/nude-french'); await view('group');
+await page.click('[data-tile] [data-action="edit"]'); await view('edit');
+check((await page.$$eval('select[data-label] option', (o) => o.map((x) => x.textContent))).join('|') === '不選擇|單色|貓眼|極光|法式|定製款', '9: a nail group offers the nail names');
+await page.click('[data-action="cancel"]'); await view('group');
+// a wide photo into a 3:4 place moves sideways
+await go('#/s'); await view('slots');
+await page.click(`${hero} [data-action="replace"]`); await pick('admin-landscape.jpg');
+await page.click(`${hero} [data-action="edit"]`); await view('edit');
+check((await text('[data-readout]')).includes('水平位置 50%'), `9: a wide photo in a tall place moves sideways (got "${await text('[data-readout]')}")`);
+await dragStage(-40, 0);
+check(Number((await text('[data-readout]')).match(/(\d+)%/)?.[1]) > 50, '9: dragging left shows more of its right side');
+await page.click('[data-action="done"]'); await view('slots');
+check((await text(hero)).includes('已更換 · 未發佈'), '9: 完成 returns to the fixed places');
+
 // nothing on the page may read as a bug, and every control must be large enough for a thumb
 check(!/undefined|NaN|null|\[object/.test(await text('[data-admin]')), 'the page shows undefined / NaN / null');
 await go('#/g/styled');
