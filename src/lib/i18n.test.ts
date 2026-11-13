@@ -69,8 +69,8 @@ test('crawlers, link previews and requests without Accept-Language are never mov
   assert.equal(isBot(IPHONE), false);
 });
 
-test('only pages are routed: API, calendar links, files and look-B paths pass through', () => {
-  for (const p of ['/api/availability', '/c/k7hq2x9p', '/_astro/a.js', '/media/v.mp4', '/robots.txt', '/sitemap-index.xml', '/look-b/zh/']) {
+test('only pages are routed: API, calendar links, files, look-B paths and the admin pass through', () => {
+  for (const p of ['/api/availability', '/c/k7hq2x9p', '/_astro/a.js', '/media/v.mp4', '/robots.txt', '/sitemap-index.xml', '/look-b/zh/', '/admin/', '/admin/state.json']) {
     assert.equal(routable(p), false, p);
     assert.equal(req(p, { al: 'zh-TW' }), null, p);
   }

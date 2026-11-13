@@ -38,6 +38,8 @@ test('out-of-range percent is clamped', () => {
 
 test('the booking API never splits; pages and assets do', () => {
   assert.ok(neverSplit('/api/availability'));
+  assert.ok(neverSplit('/admin/') && neverSplit('/admin/state.json')); // the photo admin has one look
+  assert.ok(!neverSplit('/administration/'));
   assert.ok(!neverSplit('/zh/book/'));
   assert.ok(!neverSplit('/_astro/BaseLayout.x.css'));
 });

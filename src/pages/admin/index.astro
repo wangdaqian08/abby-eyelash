@@ -1,0 +1,26 @@
+---
+// The photo admin: for the administrator and Abby only, on a phone, in Traditional Chinese.
+// Cloudflare Access guards /admin and /api/admin (docs/OWNER-ACTIONS.md). Not a public page: no header, footer, analytics,
+// language versions or look B; kept out of search by the noindex below, robots.txt and the sitemap filter.
+import '../../styles/global.css';
+import { admin as t } from '../../i18n/admin';
+---
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{t.title} · Abby</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="min-h-dvh bg-bg font-sans text-fg antialiased">
+    <main data-admin class="mx-auto max-w-md px-4 pt-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+      <p class="text-muted">{t.loading}</p>
+    </main>
+    <script>
+      import { start } from '../../components/admin/admin-client';
+      start(document.querySelector<HTMLElement>('[data-admin]')!);
+    </script>
+  </body>
+</html>
