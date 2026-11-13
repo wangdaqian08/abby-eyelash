@@ -10,6 +10,7 @@ export interface Draft {
   removed: string[]; // `${groupId}/${id}`: deleted at publish, restorable until then
   focus: Record<string, { x: number; y: number }>; // crop position of uploads whose source is still on this phone
   pending?: { commit: string; state: 'building' | 'live' | 'failed'; at: number }; // the last publish from this phone; at: when (ms)
+  behind?: string[]; // older bases the deployed site may still show: the ones this phone published over
 }
 
 const copy = <T>(v: T): T => structuredClone(v);
@@ -92,7 +93,7 @@ export const isDirty = (d: Draft) => changeCount(d) > 0;
 /** After a 200 from /api/admin/publish: the published data is the clean state, on the new base, while CI builds it. */
 export function afterPublish(d: Draft, commit: string, base: string, now = Date.now()): Draft {
   const data = finalData(d);
-  return { base, data, clean: copy(data), removed: [], focus: Object.fromEntries(Object.entries(d.focus).filter(([id]) => id in data.uploads)), pending: { commit, state: 'building', at: now } };
+  return { base, data, clean: copy(data), removed: [], focus: Object.fromEntries(Object.entries(d.focus).filter(([id]) => id in data.uploads)), pending: { commit, state: 'building', at: now }, behind: [...(d.behind ?? []), d.base] };
 }
 
 export const BUILD_TIMEOUT_MS = 15 * 60_000;
@@ -109,10 +110,12 @@ export function resume(stored: Draft | undefined, s: AdminState): { draft: Draft
   const dirty = isDirty(stored);
   if (stored.base === s.base) { // the site is what this draft was started on (or has caught up with our publish)
     if (!dirty) return { draft: fromState(s), stale: false };
-    const { pending: _over, ...draft } = stored;
+    const { pending: _over, behind: _seen, ...draft } = stored;
     return { draft, stale: false };
   }
-  if (stored.pending && stored.pending.state !== 'live') return { draft: stored, stale: false }; // our publish is building, or failed
+  // The site still shows a version this phone published over: it has not caught up (building, failed, or CI is done but
+  // the new files are not served yet). Only a version this phone has never seen means someone else published.
+  if (stored.behind?.includes(s.base)) return { draft: stored, stale: false };
   return dirty ? { draft: stored, stale: true } : { draft: fromState(s), stale: false };
 }
 

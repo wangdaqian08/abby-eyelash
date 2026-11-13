@@ -97,6 +97,18 @@ test('resume: a second visit while the first publish is still building keeps the
   const failed = { ...published, pending: { ...published.pending!, state: 'failed' as const } };
   assert.deepEqual(resume(failed, state('base-0')).draft, failed); // a failed build: the site never gets it; keep it for "try again"
 });
+test('resume: CI says live but the old snapshot is still served for a few seconds — keep the published state', () => {
+  const published = afterPublish(addToGroup(fresh(), 'styled', 'u-aaaaaaaaaa', LASH), 'c'.repeat(40), 'base-1');
+  const live = { ...published, pending: { ...published.pending!, state: 'live' as const } };
+  assert.deepEqual(resume(live, state('base-0')), { draft: live, stale: false }); // not a false "網站已被更新"
+  const edited = move(live, 'styled', 0, 1);
+  assert.deepEqual(resume(edited, state('base-0')), { draft: edited, stale: false });
+  // two publishes in a row: the site may still show either older version
+  const twice = afterPublish(edited, 'd'.repeat(40), 'base-2');
+  assert.equal(resume(twice, state('base-0')).draft, twice);
+  assert.equal(resume(twice, state('base-1')).draft, twice);
+  assert.deepEqual(resume(twice, state('base-2', twice.data)).draft, fromState(state('base-2', twice.data)));
+});
 test('resume: once the snapshot has caught up it is the truth again', () => {
   const published = afterPublish(addToGroup(fresh(), 'styled', 'u-aaaaaaaaaa', LASH), 'c'.repeat(40), 'base-1');
   const caughtUp = state('base-1', published.data);
