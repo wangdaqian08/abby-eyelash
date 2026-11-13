@@ -143,4 +143,5 @@ export const kv = {
   get: <T>(k: string) => run<T | undefined>('readonly', (s) => s.get(k), () => memory.get(k) as T | undefined),
   set: (k: string, v: unknown) => run('readwrite', (s) => s.put(v, k), () => { memory.set(k, v); return k as IDBValidKey; }).then(() => {}),
   del: (k: string) => run('readwrite', (s) => s.delete(k), () => { memory.delete(k); return undefined; }).then(() => {}),
+  keys: () => run<IDBValidKey[]>('readonly', (s) => s.getAllKeys(), () => [...memory.keys()]).then((list) => list.map(String)),
 };

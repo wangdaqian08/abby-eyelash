@@ -3,6 +3,8 @@
 // `npm run test:e2e` runs it once, next to the booking and layout shards.
 import { chromium } from 'playwright';
 import { fileURLToPath } from 'node:url';
+import sharp from 'sharp';
+import { cropRect } from '../src/lib/photo-admin.ts';
 
 const BASE = process.env.BASE ?? 'http://localhost:8788';
 const fixture = (name) => fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url));
@@ -140,6 +142,108 @@ await dragStage(-40, 0);
 check(Number((await text('[data-readout]')).match(/(\d+)%/)?.[1]) > 50, '9: dragging left shows more of its right side');
 await page.click('[data-action="done"]'); await view('slots');
 check((await text(hero)).includes('已更換 · 未發佈'), '9: 完成 returns to the fixed places');
+
+// 10 — preview: the draft in the site's layout
+await go('#/g/styled'); await view('group');
+const order = await tiles();
+const doomed = order.find((id) => !id.startsWith('u-') && id !== live && id !== 'styled-fairy');
+await page.click(`[data-tile="${doomed}"] [data-action="remove"]`);
+await page.click('[data-action="preview"]'); await view('preview');
+const home = await page.$$eval('[data-preview-group="styled"] [data-photo-id]', (els) => els.map((e) => e.dataset.photoId));
+check(home.length === 4 && home[0] === tall, `10: the home preview shows the first row, the newest upload first (got ${home})`);
+check(!home.includes('styled-fairy'), '10: the home preview leaves out the lash card photo');
+const lashPage = await page.$$eval('[data-preview-page="styled"] [data-photo-id]', (els) => els.map((e) => e.dataset.photoId));
+check(lashPage.join() === order.filter((id) => id !== doomed).join(), '10: the lash-page preview has every photo in order, without the deleted one');
+check((await text('[data-preview-page="styled"]')).includes('人魚'), '10: with its style names');
+check(!!(await page.$('[data-preview-slot="home-hero"] img')), '10: a replaced place is previewed too');
+check((await text('[data-view]')).includes('尚未發佈'), '10: the preview says it is not published');
+
+// 8 + 11 — publish: the cropped photos and one publish request; then the site state
+const posts = [];
+page.on('request', (r) => { if (r.method() === 'POST' && r.url().includes('/api/admin/')) posts.push({ path: new URL(r.url()).pathname, body: r.postData() }); });
+await page.click('[data-action="publish"]'); await view('publish');
+check((await page.$$('[data-change]')).length === 7, `11: the publish screen lists the seven changes (got ${(await page.$$('[data-change]')).length})`);
+await page.click('[data-action="confirm"]'); await view('list');
+await page.waitForFunction(() => document.querySelector('[data-banner]')?.textContent.includes('已上線'), null, { timeout: 15000 }).catch(() => {});
+check((await text('[data-banner]')).includes('已上線'), `11: after publishing the banner says 已上線 (got "${await text('[data-banner]')}")`);
+check(!(await text('[data-banner]')).includes('草稿'), '11: and the draft is gone');
+const blobs = posts.filter((p) => p.path === '/api/admin/blob').map((p) => Buffer.from(p.body, 'base64'));
+const sent = JSON.parse(posts.find((p) => p.path === '/api/admin/publish')?.body ?? '{}');
+const sizes = (await Promise.all(blobs.map((b) => sharp(b).metadata()))).map((m) => `${m.format} ${m.width}x${m.height}`).sort();
+check(sizes.join() === 'jpeg 1200x1600,jpeg 1600x1200,jpeg 1600x1200,jpeg 1600x1200', `8: four masters at the output sizes (got ${sizes})`);
+const corner = await Promise.all(blobs.map((b) => sharp(b).extract({ left: 4, top: 4, width: 1, height: 1 }).raw().toBuffer()));
+check(corner.some((px) => px[0] > 245 && px[1] > 245 && px[2] > 245), '8: the transparent PNG was put on white');
+// the tall photo was cropped where the editor left it, not at the centre
+const tiny = (input) => (Buffer.isBuffer(input) ? sharp(input) : input).resize(160, 120, { fit: 'fill' }).greyscale().raw().toBuffer(); // a JPEG buffer or a sharp pipeline
+const expected = (fy) => { const c = cropRect(1500, 2000, '4:3', 0.5, fy); return tiny(sharp(fixture('admin-portrait.jpg')).extract({ left: c.sx, top: c.sy, width: c.sw, height: c.sh })); };
+const distance = (a, b) => a.reduce((n, v, i) => n + Math.abs(v - b[i]), 0) / a.length;
+const [atFocus, atCentre, tinies] = [await expected(pct / 100), await expected(0.5), await Promise.all(blobs.map(tiny))];
+const best = Math.min(...tinies.map((b) => distance(b, atFocus)));
+check(best < 4 && best < Math.min(...tinies.map((b) => distance(b, atCentre))) / 2, `8: the crop follows the editor's position (distance ${best.toFixed(1)})`);
+const ups = Object.keys(sent.data?.uploads ?? {});
+check(ups.length === 4 && ups.sort().join() === Object.keys(sent.blobs ?? {}).sort().join(), `11: the publish names its four new photos and their blobs (got ${ups.length})`);
+check(sent.data?.groups.styled[0] === tall && !sent.data.groups.styled.includes(doomed) && sent.data.labels[tall] === 'look:mermaid' && sent.data.labels[live] === 'look:fairy', '11: with the new order, the deletion and the style names');
+check(ups.includes(sent.data?.slots['home-hero']), '11: and the replaced place');
+const snapshot = await (await page.request.get(`${BASE}/admin/state.json`)).json();
+check(sent.base === snapshot.base, '11: on the base the draft was started from');
+check(Object.values(sent.blobs ?? {}).every((sha) => /^[0-9a-f]{40}$/.test(sha)), '11: every blob id is a git id');
+
+// Review Focus 1 — a second publish while the first is still building
+await page.route('**/api/admin/status*', (r) => r.fulfill({ json: { state: 'building' } }));
+await go('#/g/styled'); await view('group');
+check((await tiles())[0] === tall && await page.$eval(`[data-tile="${tall}"] img`, (i) => i.complete && i.naturalWidth > 0), '11: after publishing, this phone still shows the published state (the site is not rebuilt yet)');
+check(!(await text(`[data-tile="${tall}"]`)).includes('新增'), '11: and the upload is no longer marked new');
+await page.click(`[data-tile="${tall}"] [data-action="edit"]`); await view('edit');
+check((await text('[data-view]')).includes('已上線的圖片不能重新裁切'), '11: a published upload cannot be re-cropped');
+await page.click('[data-action="cancel"]'); await view('group');
+const victim = (await tiles()).at(-1);
+await page.click(`[data-tile="${victim}"] [data-action="remove"]`);
+posts.length = 0;
+await page.click('[data-action="publish"]'); await view('publish'); await page.click('[data-action="confirm"]'); await view('list');
+const second = JSON.parse(posts.find((p) => p.path === '/api/admin/publish')?.body ?? '{}');
+check(second.base && second.base !== snapshot.base && Object.keys(second.blobs).length === 0, '11: the second publish is based on the first, not on the old site');
+check((await text('[data-banner]')).includes('發佈中'), `11: while the site is building the banner says 發佈中 (got "${await text('[data-banner]')}")`);
+await go('#/g/styled'); await view('group');
+await page.click(`[data-tile="${(await tiles()).at(-1)}"] [data-action="remove"]`);
+check(await page.$eval('[data-action="publish"]', (a) => a.getAttribute('aria-disabled') === 'true'), '11: publishing again waits for the build; editing goes on');
+await page.reload(); await view('group');
+check((await tiles())[0] === tall && !(await tiles()).includes(victim), '11: a reload during the build keeps what was published');
+await page.unroute('**/api/admin/status*');
+
+// 12 — refused publishes (Review Focus 5), and 13 — discard, on a second phone
+const phone2 = await browser.newContext({ viewport: { width: 375, height: 812 }, hasTouch: true, isMobile: true });
+const p2 = await phone2.newPage();
+p2.on('pageerror', (e) => errors.push(e.message));
+const open2 = async (hash) => { await p2.goto(`${BASE}/admin/${hash}`); await p2.waitForSelector('[data-view]'); };
+const tiles2 = () => p2.$$eval('[data-tile]', (els) => els.map((e) => e.dataset.tile));
+const text2 = (sel) => p2.$eval(sel, (e) => e.innerText).catch(() => '');
+const tryPublish = async () => { await open2('#/x'); await p2.click('[data-action="confirm"]'); await p2.waitForSelector('[data-notice], [data-banner] [data-action="drop-reload"]'); };
+await open2('#/g/styled');
+const untouched = await tiles2();
+await p2.click(`[data-tile="${untouched[3]}"] [data-action="remove"]`);
+await p2.route('**/api/admin/publish', (r) => r.fulfill({ status: 401, json: { error: 'signin' } }));
+await tryPublish();
+check((await text2('[data-notice]')).includes('登入已過期，請重新整理頁面'), `12: a publish without sign-in says so (got "${await text2('[data-notice]')}")`);
+await p2.reload(); await p2.waitForSelector('[data-view]');
+await open2('#/');
+check((await text2('[data-banner]')).includes('草稿：1 項更改尚未發佈'), '12: and the draft is kept');
+await p2.unroute('**/api/admin/publish');
+await p2.route('**/api/admin/publish', (r) => r.fulfill({ status: 409, json: { error: 'conflict' } }));
+await tryPublish();
+check((await text2('[data-banner]')).includes('網站已被更新，請重新整理後再修改'), `12: a publish over someone else's says so (got "${await text2('[data-banner]')}")`);
+await Promise.all([p2.waitForEvent('load'), p2.click('[data-action="drop-reload"]')]); await p2.waitForSelector('[data-view]'); // the page reloads itself
+check(!(await text2('[data-banner]')).includes('草稿') && !(await text2('[data-banner]')).includes('網站已被更新'), '12: its button drops the draft and starts again');
+await p2.unroute('**/api/admin/publish');
+await p2.route('**/api/admin/publish', (r) => r.fulfill({ status: 502, json: { error: 'github' } }));
+await open2('#/g/styled'); await p2.click(`[data-tile="${untouched[3]}"] [data-action="remove"]`);
+await tryPublish();
+check((await text2('[data-notice]')).includes('發佈沒有成功，草稿仍然保留'), '12: any other failure keeps the draft and says so');
+p2.on('dialog', (d) => d.accept());
+await p2.click('[data-action="discard"]'); await p2.waitForSelector('[data-view="list"]');
+check(!(await text2('[data-banner]')).includes('草稿'), '13: 放棄全部更改 clears the draft');
+await open2('#/g/styled');
+check((await tiles2()).join() === untouched.join() && !(await p2.$('[data-action="restore"]')), '13: and the group is the live one again');
+await phone2.close();
 
 // nothing on the page may read as a bug, and every control must be large enough for a thumb
 check(!/undefined|NaN|null|\[object/.test(await text('[data-admin]')), 'the page shows undefined / NaN / null');

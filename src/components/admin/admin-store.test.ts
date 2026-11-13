@@ -114,6 +114,8 @@ test('kv falls back to memory when IndexedDB is missing (private browsing)', asy
   assert.equal(await kv.get('draft'), undefined);
   await kv.set('draft', { a: 1 });
   assert.deepEqual(await kv.get('draft'), { a: 1 });
+  await kv.set('src:u-aaaaaaaaaa', 'a photo');
+  assert.deepEqual((await kv.keys()).sort(), ['draft', 'src:u-aaaaaaaaaa']); // so sources nothing needs any more can be cleared
   await kv.del('draft');
   assert.equal(await kv.get('draft'), undefined);
   assert.equal(kv.persistent, false);

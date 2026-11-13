@@ -49,7 +49,9 @@ export async function publish(env: AdminEnv, demo: boolean, email: string, body:
   const text = (d: AdminData) => JSON.stringify(d, null, 2) + '\n';
 
   if (demo) { // local preview and E2E: same checks, nothing is written
-    const bad = check(adminData);
+    // There is no repository to compare with: an upload that comes without a blob counts as published by an earlier demo publish.
+    const earlier = Object.fromEntries(Object.entries(isRecord(data.uploads) ? data.uploads : {}).filter(([id]) => !(id in blobs)));
+    const bad = check({ ...adminData, uploads: { ...adminData.uploads, ...earlier } });
     return bad ? reply(400, { error: bad }) : reply(200, { commit: 'demo', base: await gitBlobSha(text(data)) });
   }
   if (!configured(env)) return reply(503, { error: 'not-configured' });

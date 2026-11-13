@@ -4,7 +4,8 @@
 import { admin as t } from '../../i18n/admin';
 import { MAX_SOURCE_BYTES, OUT, type AdminState } from '../../lib/photo-admin';
 import { sortable } from './admin-drag';
-import { addToGroup, changeCount, changes, kv, move, newId, replaceSlot, resetSlot, resume, setFocus, setLabel, toggleRemoved, unpublished, type Draft } from './admin-store';
+import { render as renderJpeg } from './admin-image';
+import { addToGroup, afterPublish, changeCount, changes, finalData, kv, move, newId, replaceSlot, resetSlot, resume, setFocus, setLabel, toggleRemoved, unpublished, type Draft } from './admin-store';
 
 type Group = AdminState['groups'][number];
 type Slot = AdminState['slots'][number];
@@ -15,6 +16,9 @@ let draft: Draft;
 let stale = false; // the site was changed by someone else since this draft was started
 let notice = '';
 let picking: { group?: Group; slot?: Slot } = {};
+let busy = ''; // while publishing: the progress text
+let pollTimer = 0;
+let lastEdit = '#/'; // where "返回編輯" goes: the list, group or fixed-places screen last shown
 // The photo open in the editor. w, h: its source size (0 = already on the site, cannot be re-cropped). Saved only by 完成.
 let editing: { id: string; x: number; y: number; w: number; h: number; back: string; ctx: Group | Slot; grab?: { px: number; py: number; x: number; y: number } } | undefined;
 const sources = new Map<string, string>(); // upload id → object URL of its source file, while that is still on this phone
@@ -84,15 +88,23 @@ const noticeBox = () => notice && `
   <p data-notice role="alert" class="mt-3 flex items-center justify-between gap-2 rounded-card bg-danger/10 py-1 pr-1 pl-4 text-sm font-medium text-danger">
     <span>${esc(notice)}</span><button type="button" data-action="close-notice" aria-label="${t.close}" class="flex size-11 shrink-0 items-center justify-center">${icon(CROSS)}</button>
   </p>`;
+const off = (yes: boolean) => (yes ? 'aria-disabled="true" tabindex="-1"' : '');
+const OFF = 'pointer-events-none opacity-40';
+/** Publishing is possible: there are changes, nobody else changed the site, and the last publish has finished building. */
+const canPublish = () => changeCount(draft) > 0 && !stale && draft.pending?.state !== 'building';
 function bar() {
   const n = changeCount(draft);
-  const idle = n === 0 || stale ? 'pointer-events-none opacity-40' : '';
   return `
     <div class="sticky bottom-0 -mx-4 mt-6 grid grid-cols-2 gap-2 bg-bg/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-sm">
-      <a data-action="preview" href="#/p" ${idle && 'aria-disabled="true" tabindex="-1"'} class="${pill} min-h-13 bg-surface-2 text-base text-fg ${idle}">${t.preview}</a>
-      <a data-action="publish" href="#/x" ${idle && 'aria-disabled="true" tabindex="-1"'} class="${pill} min-h-13 bg-primary text-base text-on-primary ${idle}">${n ? t.publishN(n) : t.noChanges}</a>
+      <a data-action="preview" href="#/p" ${off(!n)} class="${pill} min-h-13 bg-surface-2 text-base text-fg ${n ? '' : OFF}">${t.preview}</a>
+      <a data-action="publish" href="#/x" ${off(!canPublish())} class="${pill} min-h-13 bg-primary text-base text-on-primary ${canPublish() ? '' : OFF}">${n ? t.publishN(n) : t.noChanges}</a>
     </div>`;
 }
+/** Has this draft changed anything in the group? */
+const touched = (g: Group, c = changes(draft)) =>
+  c.reordered.includes(g.id) || c.removed.some((m) => m.startsWith(`${g.id}/`)) || draft.data.groups[g.id].some((id) => c.added.includes(id) || c.relabelled.includes(id));
+const cardPhotos = () => new Set(state.slots.filter((s) => s.section === 'cards').map(slotNow)); // the home portfolio does not repeat a lash card's photo
+const slotTitle = (s: Slot) => (s.section === 'hero' ? t.heroName : s.section === 'cards' ? `${t.sectionCards} · ${esc(s.name)}` : `${t.sectionPage(esc(s.section))} · ${esc(s.name)}`);
 const countText = (g: Group, ids: string[]) => {
   const v = ids.filter((id) => state.photos[id]?.video).length;
   return `${t.photos(ids.length - v)}${v ? t.videos(v) : ''} · ${t.ratio[g.ratio]}`;
@@ -101,14 +113,13 @@ const countText = (g: Group, ids: string[]) => {
 // ── Portfolio groups: the list ──
 function listView() {
   const c = changes(draft);
-  const touched = (g: Group) => c.reordered.includes(g.id) || c.removed.some((m) => m.startsWith(`${g.id}/`)) || draft.data.groups[g.id].some((id) => c.added.includes(id) || c.relabelled.includes(id));
   const row = (g: Group) => {
     const ids = draft.data.groups[g.id].filter((id) => !removed(g.id, id));
     return `
       <li><a data-group="${g.id}" href="#/g/${g.id}" class="flex min-h-16 items-center gap-3 px-3">
         <span class="size-11 shrink-0 overflow-hidden rounded-field bg-surface-2">${ids[0] ? picture(ids[0]) : ''}</span>
         <span class="min-w-0 flex-1"><span class="block font-medium">${esc(g.name)}</span><span class="block text-sm text-muted">${countText(g, ids)}</span></span>
-        ${touched(g) ? `<span class="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold whitespace-nowrap text-primary">${t.draftChip}</span>` : ''}
+        ${touched(g, c) ? `<span class="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold whitespace-nowrap text-primary">${t.draftChip}</span>` : ''}
         <span class="shrink-0 text-muted">${icon(CHEVRON)}</span>
       </a></li>`;
   };
@@ -287,6 +298,137 @@ function dragged(ev: PointerEvent) {
   placePhoto();
 }
 
+// ── Preview: the draft in the site's phone layout ──
+function previewView() {
+  const c = changes(draft), cards = cardPhotos();
+  const kept = (g: Group) => draft.data.groups[g.id].filter((id) => !removed(g.id, id));
+  const head = (text: string) => `<h2 class="font-sans text-sm font-medium text-muted">${text}</h2>`;
+  const home = (g: Group) => {
+    const ids = kept(g).filter((id) => g.id !== 'styled' || !cards.has(id));
+    return `
+      <section class="mt-6">${head(t.previewHome(esc(g.name)))}
+        <div class="mt-2 rounded-card bg-surface-2 p-3">
+          <ul data-preview-group="${g.id}" class="grid gap-2 ${g.cols === 2 ? 'grid-cols-2' : 'grid-cols-3'}">
+            ${ids.slice(0, g.visible).map((id) => `<li data-photo-id="${id}" class="overflow-hidden rounded-field bg-fg/5 ${aspect(g.ratio)}">${picture(id)}</li>`).join('')}
+          </ul>
+          ${ids.length > g.visible ? `<p class="mt-3 text-center"><span class="inline-block rounded-full bg-surface px-4 py-2 text-sm font-medium shadow-sm">${t.showAll(ids.length)}</span></p>` : ''}
+        </div>
+      </section>`;
+  };
+  const styled = state.groups.find((g) => g.id === 'styled')!;
+  const lashPage = () => `
+    <section class="mt-6">${head(t.previewPage)}
+      <ul data-preview-page="styled" class="mt-2 grid grid-cols-2 gap-3">
+        ${kept(styled).map((id) => `<li data-photo-id="${id}" class="overflow-hidden rounded-card bg-surface shadow-sm"><div class="aspect-[4/3]">${picture(id)}</div>${nameOf(id) ? `<p class="p-3 text-sm font-medium">${esc(nameOf(id))}</p>` : ''}</li>`).join('')}
+      </ul>
+    </section>`;
+  const place = (s: Slot) => `
+    <section class="mt-6">${head(t.previewSlot(slotTitle(s)))}
+      <figure data-preview-slot="${s.key}" class="mx-auto mt-2 overflow-hidden rounded-card bg-surface-2 ${s.ratio === '4:3' ? 'w-full' : 'w-2/3'} ${aspect(s.ratio)}">${picture(slotNow(s))}</figure>
+    </section>`;
+  const groups = state.groups.filter((g) => touched(g, c));
+  const body = [...groups.map(home), ...(groups.includes(styled) ? [lashPage()] : []), ...state.slots.filter((s) => c.replaced.includes(s.key)).map(place)];
+  return `
+    <div data-view="preview">
+      <header class="-mx-4 -mt-5 flex items-center justify-between gap-3 bg-primary px-4 py-2 text-on-primary">
+        <p><span class="block font-bold">${t.previewTitle}</span><span class="block text-xs opacity-90">${t.previewNote}</span></p>
+        <a href="${esc(lastEdit)}" class="${pill} -mr-2">${t.backToEdit}</a>
+      </header>
+      ${body.join('') || `<p class="mt-6 text-muted">${t.nothingToPreview}</p>`}
+      <div class="sticky bottom-0 -mx-4 mt-6 bg-bg/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-sm">
+        <a data-action="publish" href="#/x" ${off(!canPublish())} class="${pill} min-h-13 w-full bg-primary text-base text-on-primary ${canPublish() ? '' : OFF}">${t.publishN(changeCount(draft))}</a>
+      </div>
+    </div>`;
+}
+
+// ── Publish: what will change, then send it ──
+function publishView() {
+  const c = changes(draft), n = changeCount(draft);
+  const groupName = (id: string) => esc(state.groups.find((g) => g.id === id)?.name ?? '');
+  const row = (photo: string | undefined, title: string, note: string, grey = false) => `
+    <li data-change class="flex min-h-16 items-center gap-3 px-3 py-2">
+      <span class="aspect-[4/3] w-14 shrink-0 overflow-hidden rounded-field bg-surface-2">${photo ? picture(photo, `size-full object-cover ${grey ? 'opacity-50 grayscale' : ''}`) : ''}</span>
+      <span class="min-w-0"><span class="block font-bold">${title}</span><span class="block text-sm text-muted">${note}</span></span>
+    </li>`;
+  const rows = [
+    ...c.added.map((id) => row(id, t.chAdded, groupName(state.groups.find((g) => draft.data.groups[g.id].includes(id))?.id ?? ''))),
+    ...c.removed.map((m) => { const [g, id] = [m.slice(0, m.indexOf('/')), m.slice(m.indexOf('/') + 1)]; return row(id, t.chRemoved, `${groupName(g)}${nameOf(id) ? `「${esc(nameOf(id))}」` : ''}`, true); }),
+    ...c.reordered.map((g) => row(draft.data.groups[g].find((id) => !removed(g, id)), t.chReordered, groupName(g))),
+    ...state.slots.filter((s) => c.replaced.includes(s.key)).map((s) => row(slotNow(s), t.chReplaced, slotTitle(s))),
+    ...c.relabelled.map((id) => row(id, t.chRelabelled, esc(nameOf(id)) || t.labelNone)),
+  ];
+  const ready = canPublish() && !busy;
+  return `
+    <div data-view="publish">
+      <a href="${esc(lastEdit)}" class="inline-flex min-h-11 items-center gap-1 text-muted">${icon(BACK)}${t.backToEdit}</a>
+      <h1 class="mt-1 font-sans text-2xl leading-tight font-bold">${t.publishTitle(n)}</h1>
+      ${stale ? banner() : ''}${noticeBox()}
+      <ul class="mt-4 overflow-hidden rounded-card bg-surface shadow-sm">${rows.join('')}</ul>
+      <p class="mt-3 text-sm text-muted">${draft.pending?.state === 'building' ? t.waitBuild : t.publishNote}</p>
+      <button type="button" data-action="confirm" ${ready ? '' : 'disabled'} class="${pill} mt-4 min-h-13 w-full bg-primary text-base text-on-primary disabled:opacity-40">${busy || t.confirm}</button>
+      <button type="button" data-action="discard" ${busy ? 'disabled' : ''} class="${pill} mt-1 w-full text-base text-danger disabled:opacity-40">${t.discard}</button>
+    </div>`;
+}
+/** A publish the server refused, or that never reached it. The draft is untouched. */
+function refused(status: number) {
+  busy = '';
+  if (status === 409) { stale = true; notice = ''; render(); return; } // someone else published since this draft was started
+  say(status === 401 ? t.signedOut : t.publishFailed);
+}
+async function publishNow() {
+  if (busy || !canPublish()) return;
+  const data = finalData(draft);
+  const fresh = Object.keys(data.uploads).filter((id) => !(id in draft.clean.uploads));
+  const post = (path: string, body: string) => fetch(path, { method: 'POST', body, headers: { 'content-type': 'text/plain' } });
+  const blobs: Record<string, string> = {};
+  try {
+    for (const [i, id] of fresh.entries()) { // one photo per request: each stays small, and a weak connection loses one photo's work at most
+      busy = t.uploading(i + 1, fresh.length); render();
+      const source = await (await fetch(sources.get(id)!)).blob();
+      const res = await post('/api/admin/blob', await renderJpeg(source, data.uploads[id].ratio, draft.focus[id] ?? { x: 0.5, y: 0.5 }));
+      if (!res.ok) return refused(res.status);
+      blobs[id] = (await res.json()).sha;
+    }
+    busy = t.sending; render();
+    const res = await post('/api/admin/publish', JSON.stringify({ base: draft.base, data, blobs }));
+    if (!res.ok) return refused(res.status);
+    const done = await res.json();
+    busy = '';
+    save(afterPublish(draft, done.commit, done.base)); // the sources stay on the phone until the rebuilt site shows these photos
+    location.hash = '#/';
+    void poll();
+  } catch {
+    refused(0); // offline, or the photo could not be prepared
+  }
+}
+/** Asks whether the last publish is live yet; again every 20 s while it is building and the page is in front. */
+async function poll(rerun = false) {
+  clearTimeout(pollTimer);
+  const p = draft.pending;
+  if (!p || document.hidden || (p.state !== 'building' && !rerun)) return;
+  try {
+    const res = await fetch(`/api/admin/status?commit=${p.commit}`, { method: rerun ? 'POST' : 'GET', cache: 'no-store' });
+    const now = res.ok ? (await res.json()).state : undefined;
+    if (now && draft.pending?.commit === p.commit && now !== draft.pending.state) {
+      save({ ...draft, pending: { commit: p.commit, state: now } });
+      if (route().view !== 'edit') render();
+    }
+  } catch { /* offline: ask again later */ }
+  if (draft.pending?.state === 'building') pollTimer = window.setTimeout(poll, 20_000);
+}
+/** 放棄全部更改: back to the live site (or to what this phone last published). */
+function discard() {
+  for (const id of Object.keys(draft.data.uploads)) if (unpublished(draft, id)) forgetSource(id);
+  save({ ...draft, data: structuredClone(draft.clean), removed: [], focus: Object.fromEntries(Object.entries(draft.focus).filter(([id]) => id in draft.clean.uploads)) });
+  location.hash = '#/';
+}
+/** The draft can never be published (the site moved on): forget everything on this phone and start from the site. */
+async function dropAndReload() {
+  for (const k of await kv.keys().catch(() => [])) await kv.del(k).catch(() => {});
+  history.replaceState(null, '', '#/');
+  location.reload();
+}
+
 // ── Rendering and events ──
 function render() {
   const r = route();
@@ -298,6 +440,8 @@ function render() {
     return;
   }
   editing = undefined;
+  if (r.view === 'preview' || r.view === 'publish') { root.innerHTML = r.view === 'preview' ? previewView() : publishView(); return; }
+  lastEdit = location.hash || '#/';
   root.innerHTML = r.view === 'group' && group ? groupView(group) : r.view === 'slots' ? slotsView() : listView();
 }
 
@@ -346,6 +490,10 @@ function clicked(e: MouseEvent) {
     case 'done': closeEditor(true); break;
     case 'cancel': closeEditor(false); break;
     case 'recentre': if (editing) { editing.x = editing.y = 0.5; placePhoto(); } break;
+    case 'confirm': void publishNow(); break;
+    case 'discard': if (confirm(t.discardAsk)) discard(); break;
+    case 'drop-reload': void dropAndReload(); break;
+    case 'retry': void poll(true); break;
   }
 }
 
@@ -364,6 +512,10 @@ export async function start(el: HTMLElement): Promise<void> {
     const file = state.photos[id] ? undefined : await kv.get<Blob>(`src:${id}`).catch(() => undefined);
     if (file) sources.set(id, URL.createObjectURL(file));
   }
+  for (const k of await kv.keys().catch(() => [])) // sources nothing needs any more: deleted uploads, photos the site now has
+    if (k.startsWith('src:') && (!(k.slice(4) in draft.data.uploads) || state.photos[k.slice(4)])) void kv.del(k).catch(() => {});
+  document.addEventListener('visibilitychange', () => void poll());
+  void poll();
   document.body.append(fileInput);
   fileInput.dataset.file = '';
   fileInput.addEventListener('change', picked);

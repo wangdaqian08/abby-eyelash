@@ -86,6 +86,14 @@ test('publish: demo mode validates and calls no fetch at all', async () => {
   assert.equal((await publish({}, true, 'demo@localhost', { base: 'whatever', data: d, blobs: {} }, gh.fetcher)).status, 400);
   assert.deepEqual(gh.calls, []);
 });
+test('publish: demo mode has no repository, so a later publish may keep the photos an earlier one added', async () => {
+  const first = await publish({}, true, 'demo@localhost', { base: 'x', data: next, blobs: { 'u-abcdefghij': BLOB } });
+  assert.equal(first.status, 200);
+  const later = structuredClone(next); later.groups.styled.reverse(); // the first publish's photo stays; nothing new
+  assert.equal((await publish({}, true, 'demo@localhost', { base: first.body.base, data: later, blobs: {} })).status, 200);
+  later.groups.styled.push('nail-6920');
+  assert.deepEqual(await publish({}, true, 'demo@localhost', { base: first.body.base, data: later, blobs: {} }), { status: 400, body: { error: 'item' } }); // still checked
+});
 test('putBlob: not a JPEG → 400; over the limit → 413; a JPEG → the blob sha', async () => {
   const gh = github({ 'POST git/blobs': { sha: BLOB } });
   assert.deepEqual(await putBlob(env, false, 'iVBORw0KGgo=', gh.fetcher), { status: 400, body: { error: 'not-jpeg' } });

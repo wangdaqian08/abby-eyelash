@@ -21,6 +21,15 @@ npm run check:layout  # the layout check alone, against a running site
 
 More documents are in `docs/`: `SPEC.md`, `SETUP-booking.md`, `DEPLOY-CHECKLIST.md` and `PRICES.md`.
 
+## Photo admin (decided 2026-11-14)
+
+`/admin/` is a phone page where Abby adds, deletes, reorders and replaces the site's photos (Traditional Chinese, two people
+only, behind Cloudflare Access). What it edits is one file, `src/data/photo-admin.json`; `src/data/photos.ts` builds the site's
+photo lists from it. A new photo is cropped in the browser to the sizes of `scripts/photos.mjs` (1600 × 1200 or 1200 × 1600, JPEG).
+"發佈" makes one commit to `main` through `functions/api/admin/`, and CI tests and deploys it like any other commit, so the
+site stays static and a bad change cannot go live. Locally (`npm run start`) the admin runs in demo mode: no sign-in, nothing is
+published. Setup and checks: `docs/DEPLOY-CHECKLIST.md`, part K. Design: `docs/superpowers/specs/2026-11-14-admin-photos-design.md`.
+
 ## Booking by message (decided 2026-11-08)
 
 1. The website does not take bookings. The customer picks the services, a date and a time.
