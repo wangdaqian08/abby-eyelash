@@ -36,7 +36,7 @@ Address: `/admin/`. Two tabs.
 
 ## Upload and editing
 
-- Accepted: photos only (JPEG, PNG, HEIC as the phone delivers them), source file at most 20 MB.
+- Accepted: photos only (JPEG, PNG, HEIC as the phone delivers them), source file at most 6 MB per photo (owner's decision, 2026-11-14; was 20 MB). Only the cropped JPEG (about 0.3 MB) is uploaded.
 - The ratio comes from the group or place and cannot be changed.
 - "編輯" opens the position screen: the photo sits behind a fixed frame of that ratio and is dragged with one finger.
 - Zoom (owner's decision, 2026-11-14; prototype screens 08 and 09): two-finger pinch or a slider, 1x to 3x, zoom in only (never white edges). The output size does not change: a zoomed crop takes a smaller part of the photo and enlarges it. Past the photo's sharp limit (the zoom at which the part used is as wide as the output, e.g. 1.9x for an iPhone X portrait photo in a 4:3 group) the slider turns orange and a warning says "放大過多，畫質可能變差" with the limit; it never blocks publishing. Like the position, the zoom can be changed only before the photo is published.

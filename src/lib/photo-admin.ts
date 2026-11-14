@@ -5,7 +5,7 @@ import { adminGroups, adminLabels, adminSlots, photos, videos, type AdminData, t
 /** Master size per ratio: the values of scripts/photos.mjs. */
 export const OUT: Record<AdminRatio, [number, number]> = { '4:3': [1600, 1200], '3:4': [1200, 1600] };
 export const JPEG_QUALITY = 0.82;
-export const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
+export const MAX_SOURCE_BYTES = 6 * 1024 * 1024; // the photo picked on the phone (owner's decision, 2026-11-14); only the cropped ~0.3 MB JPEG is uploaded
 export const MAX_BLOB_BASE64 = 2_000_000; // characters; a 1600 × 1200 JPEG at 0.82 is far below this
 export const UPLOAD_ID = /^u-[a-z0-9]{10}$/;
 export const ADMIN_JSON = 'src/data/photo-admin.json';

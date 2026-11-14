@@ -105,7 +105,7 @@ export const admin = {
   signedOut: '登入已過期，請重新整理頁面。',
   publishFailed: '發佈沒有成功，草稿仍然保留，請稍後再試。',
   // picking a file
-  tooBig: '圖片超過 20 MB，請選擇較小的圖片。',
+  tooBig: '圖片超過 6 MB，請選擇較小的圖片。',
   unreadable: '無法讀取這張圖片，請改用 JPG 或 PNG。',
   close: '關閉',
 };

@@ -98,6 +98,10 @@ check((await tiles()).length === 14, '5: a small transparent PNG is accepted');
 await page.click('[data-action="add"]'); await pick('admin-broken.jpg');
 check((await tiles()).length === 14, '5: a file that is not a picture adds nothing');
 check((await text('[data-notice]')).includes('無法讀取這張圖片'), '5: and says 無法讀取這張圖片');
+// a photo over the 6 MB limit (made here: the size is checked before the picture is read, so its content does not matter)
+await page.click('[data-action="add"]');
+await page.setInputFiles('[data-file]', { name: 'big.jpg', mimeType: 'image/jpeg', buffer: Buffer.alloc(6 * 1024 * 1024 + 1) }); await page.waitForTimeout(250);
+check((await tiles()).length === 14 && (await text('[data-notice]')).includes('圖片超過 6 MB'), `5: a photo over 6 MB is refused and says so (got "${await text('[data-notice]')}")`);
 
 // 6 — replace a fixed place, and take it back
 await go('#/s'); await view('slots');
