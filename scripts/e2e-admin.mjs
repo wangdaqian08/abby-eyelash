@@ -3,6 +3,7 @@
 // `npm run test:e2e` runs it once, next to the booking and layout shards.
 import { chromium } from 'playwright';
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import sharp from 'sharp';
 import { cropRect } from '../src/lib/photo-admin.ts';
 import { fixture as fixedData } from '../src/data/photo-admin.fixture.ts';
@@ -338,6 +339,27 @@ check(!!(await p2.$('[data-view="publish"]')) && !(await p2.$('[data-tile]')), '
 check((await text2('[data-action="confirm"]')).includes('上傳中 1 / 1'), `11: the button shows the progress (got "${await text2('[data-action="confirm"]')}")`);
 await p2.waitForSelector('[data-view="list"]');
 check((await text2('[data-banner]')).includes('已上線') || (await text2('[data-banner]')).includes('發佈中'), '11: and the publish completes');
+// several photos in one pick: at most 10, in the order picked; each checked on its own (a fresh group, nothing is published)
+await p2.unroute('**/api/admin/blob');
+await open2('#/g/nude-french');
+const before2 = await tiles2();
+const widths2 = () => p2.$$eval('[data-tile] img', (imgs) => imgs.map((i) => i.naturalWidth));
+check(await p2.$eval('[data-file]', (i) => i.multiple), '5b: 新增圖片 lets several photos be picked');
+await p2.click('[data-action="add"]');
+await p2.setInputFiles('[data-file]', [fixture('admin-landscape.jpg'), fixture('admin-portrait.jpg'), fixture('admin-small.png')]); await p2.waitForTimeout(400);
+check((await tiles2()).length === before2.length + 3, `5b: three photos picked, three tiles added (got ${(await tiles2()).length - before2.length})`);
+check((await widths2()).slice(0, 3).join() === '2000,1500,300', `5b: first in the group, in the order picked (got ${(await widths2()).slice(0, 3)})`);
+await p2.click('[data-action="add"]');
+await p2.setInputFiles('[data-file]', Array.from({ length: 12 }, () => fixture('admin-small.png'))); await p2.waitForTimeout(600);
+check((await tiles2()).length === before2.length + 13, `5b: twelve picked, ten added (got ${(await tiles2()).length - before2.length - 3})`);
+check((await text2('[data-notice]')).includes('一次最多 10 張'), `5b: and it says only ten are taken at once (got "${await text2('[data-notice]')}")`);
+await p2.click('[data-action="add"]');
+const inMemory = (name, mimeType) => ({ name, mimeType, buffer: readFileSync(fixture(name)) }); // Playwright cannot mix paths with in-memory files
+await p2.setInputFiles('[data-file]', [inMemory('admin-landscape.jpg', 'image/jpeg'), inMemory('admin-broken.jpg', 'image/jpeg'), { name: 'big.jpg', mimeType: 'image/jpeg', buffer: Buffer.alloc(6 * 1024 * 1024 + 1) }]); await p2.waitForTimeout(400);
+check((await tiles2()).length === before2.length + 14, '5b: the good photo of a mixed pick is added');
+check((await text2('[data-notice]')).includes('1 張超過 6 MB') && (await text2('[data-notice]')).includes('1 張無法讀取'), `5b: the others are named with the reason (got "${await text2('[data-notice]')}")`);
+await open2('#/s'); await p2.click('[data-slot="home-hero"] [data-action="replace"]');
+check(!(await p2.$eval('[data-file]', (i) => i.multiple)), '5b: replacing a fixed place takes one photo');
 await phone2.close();
 
 // nothing on the page may read as a bug, and every control must be large enough for a thumb

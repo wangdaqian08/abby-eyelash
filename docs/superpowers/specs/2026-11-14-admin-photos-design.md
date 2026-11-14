@@ -26,7 +26,7 @@ Address: `/admin/`. Two tabs.
 | Nails | `nude-french`, `gold-mirror`, `warm-floral`, `wine-navy`, `mono-art` | 3:4 |
 | Brows | `before-after`, `close-ups` | 3:4 |
 
-- Add: the "新增圖片" button. A new photo goes to position 1 of the group.
+- Add: the "新增圖片" button. Up to 10 photos can be picked at once (owner's decision, 2026-11-14); more are cut to the first 10 with a notice. They go to the top of the group in the order picked. Each is checked on its own; a photo over the size limit or unreadable is skipped and named in one notice. Replacing a fixed place takes one photo.
 - Delete: the cross at the top right of a photo. No confirmation dialog: the photo turns grey with a "還原" button and is removed at publish.
 - Reorder: press and hold a photo, then drag. Within one group only.
 - A group can be emptied; the site then hides that group's heading. No limit on the number of photos.

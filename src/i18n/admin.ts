@@ -107,5 +107,7 @@ export const admin = {
   // picking a file
   tooBig: '圖片超過 6 MB，請選擇較小的圖片。',
   unreadable: '無法讀取這張圖片，請改用 JPG 或 PNG。',
+  tooMany: (n: number) => `一次最多 ${n} 張，已加入前 ${n} 張。`,
+  skipped: (big: number, bad: number) => `${[big && `${big} 張超過 6 MB`, bad && `${bad} 張無法讀取`].filter(Boolean).join('、')}，未加入。`,
   close: '關閉',
 };

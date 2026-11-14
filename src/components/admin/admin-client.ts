@@ -24,7 +24,7 @@ let editing: { id: string; x: number; y: number; z: number; w: number; h: number
 const touches = new Map<number, { x: number; y: number }>(); // fingers on the editor's photo
 let pinchStart: { d: number; z: number } | undefined;
 const sources = new Map<string, string>(); // upload id → object URL of its source file, while that is still on this phone
-const fileInput = Object.assign(document.createElement('input'), { type: 'file', accept: 'image/jpeg,image/png', hidden: true });
+const fileInput = Object.assign(document.createElement('input'), { type: 'file', accept: 'image/jpeg,image/png', multiple: true, hidden: true });
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 const route = () => {
@@ -516,26 +516,44 @@ function render() {
   root.innerHTML = r.view === 'group' && group ? groupView(group) : r.view === 'slots' ? slotsView() : listView();
 }
 
-async function picked() {
-  const file = fileInput.files?.[0];
-  const { group, slot } = picking;
-  fileInput.value = ''; picking = {}; notice = '';
-  if (!file || (!group && !slot)) return;
-  if (file.size > MAX_SOURCE_BYTES) return say(t.tooBig);
+const MAX_PICK = 10; // photos added in one pick (owner's decision, 2026-11-14); pick again for more
+/** Reads a picked file: a tile-ready source, or why it cannot be used. */
+async function readPhoto(file: File): Promise<{ id: string; url: string } | 'big' | 'bad'> {
+  if (file.size > MAX_SOURCE_BYTES) return 'big';
   const url = URL.createObjectURL(file);
   try {
     await Object.assign(new Image(), { src: url }).decode(); // can this phone's browser read it?
   } catch {
     URL.revokeObjectURL(url);
-    return say(t.unreadable);
+    return 'bad';
   }
   const id = newId();
   await kv.set(`src:${id}`, file).catch(() => { kv.persistent = false; });
   sources.set(id, url);
-  if (group) return commit(addToGroup(draft, group.id, id, { dir: group.dir, ratio: group.ratio, where: group.id }));
-  const old = draft.data.slots[slot!.key];
-  if (old && unpublished(draft, old)) forgetSource(old);
-  commit(replaceSlot(draft, slot!.key, id, { dir: slot!.dir, ratio: slot!.ratio, where: slot!.key }));
+  return { id, url };
+}
+async function picked() {
+  const files = [...(fileInput.files ?? [])];
+  const { group, slot } = picking;
+  fileInput.value = ''; picking = {}; notice = '';
+  if (!files.length || (!group && !slot)) return;
+  if (slot) {
+    const r = await readPhoto(files[0]);
+    if (typeof r === 'string') return say(r === 'big' ? t.tooBig : t.unreadable);
+    const old = draft.data.slots[slot.key];
+    if (old && unpublished(draft, old)) forgetSource(old);
+    return commit(replaceSlot(draft, slot.key, r.id, { dir: slot.dir, ratio: slot.ratio, where: slot.key }));
+  }
+  const results = [];
+  for (const f of files.slice(0, MAX_PICK)) results.push(await readPhoto(f)); // one at a time: a phone has little memory
+  let next = draft;
+  // added last-picked first, so the first one picked ends up first in the group
+  for (const r of [...results].reverse()) if (typeof r !== 'string') next = addToGroup(next, group!.id, r.id, { dir: group!.dir, ratio: group!.ratio, where: group!.id });
+  const big = results.filter((r) => r === 'big').length, bad = results.filter((r) => r === 'bad').length;
+  const single = files.length === 1 && (big || bad);
+  const parts = [files.length > MAX_PICK && t.tooMany(MAX_PICK), single ? (big ? t.tooBig : t.unreadable) : (big || bad) && t.skipped(big, bad)].filter(Boolean);
+  notice = parts.join(' ');
+  commit(next);
 }
 
 function clicked(e: MouseEvent) {
@@ -545,8 +563,8 @@ function clicked(e: MouseEvent) {
   const tile = el.closest<HTMLElement>('[data-tile]')?.dataset.tile;
   const slot = state.slots.find((s) => s.key === el.closest<HTMLElement>('[data-slot]')?.dataset.slot);
   switch (el.dataset.action) {
-    case 'add': picking = { group: state.groups.find((g) => g.id === groupId) }; fileInput.click(); break;
-    case 'replace': picking = { slot }; fileInput.click(); break;
+    case 'add': picking = { group: state.groups.find((g) => g.id === groupId) }; fileInput.multiple = true; fileInput.click(); break;
+    case 'replace': picking = { slot }; fileInput.multiple = false; fileInput.click(); break; // one place, one photo
     case 'remove': case 'restore':
       if (!tile) break;
       if (unpublished(draft, tile)) forgetSource(tile);
