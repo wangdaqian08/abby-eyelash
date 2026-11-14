@@ -220,7 +220,9 @@ Redeploy after saving (GitHub → Actions → CI → Run workflow).
 Automated tests run in Chromium. These five need the real phone:
 
 - [ ] Pick a photo taken with the iPhone camera (HEIC in the library): a tile appears.
+- [ ] Pick three photos at once: three tiles appear, in the order picked.
 - [ ] Press and hold a tile, drag it two rows up while the page scrolls: it lands where released, and no "save image" menu appears.
 - [ ] In 編輯, the photo follows the finger; 完成 keeps the position.
+- [ ] In 編輯, pinching with two fingers zooms the photo, not the whole page; letting go of one finger does not make the photo jump.
 - [ ] Close Safari, open `/admin/` again: the draft is still there.
 - [ ] Every button can be hit with a thumb; nothing is hidden under the home indicator.

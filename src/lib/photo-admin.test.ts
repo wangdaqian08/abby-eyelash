@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { adminData, type AdminData } from '../data/photos.ts';
 import { fixture } from '../data/photo-admin.fixture.ts';
-import { cropRect, gitBlobSha, removedMasters, validateAdmin } from './photo-admin.ts';
+import { cropRect, gitBlobSha, removedMasters, sharpLimit, validateAdmin } from './photo-admin.ts';
 
 test('cropRect covers the ratio and the focus chooses the kept part', () => {
   assert.deepEqual(cropRect(4000, 3000, '4:3', 0.5, 0.5), { sx: 0, sy: 0, sw: 4000, sh: 3000 });
@@ -11,6 +11,21 @@ test('cropRect covers the ratio and the focus chooses the kept part', () => {
   assert.deepEqual(cropRect(3000, 4000, '4:3', 0.5, 1), { sx: 0, sy: 1750, sw: 3000, sh: 2250 });
   assert.deepEqual(cropRect(4000, 3000, '3:4', 1, 0.5), { sx: 1750, sy: 0, sw: 2250, sh: 3000 });
   assert.deepEqual(cropRect(300, 200, '4:3', 9, -3), { sx: 33, sy: 0, sw: 267, sh: 200 }); // focus clamped to 0..1; small sources allowed
+});
+test('cropRect with zoom takes a smaller part of the photo, still placed by the focus', () => {
+  assert.deepEqual(cropRect(4000, 3000, '4:3', 0.5, 0.5, 2), { sx: 1000, sy: 750, sw: 2000, sh: 1500 }); // the middle half
+  assert.deepEqual(cropRect(4000, 3000, '4:3', 0, 0, 2), { sx: 0, sy: 0, sw: 2000, sh: 1500 }); // top-left quarter
+  assert.deepEqual(cropRect(4000, 3000, '4:3', 1, 1, 2), { sx: 2000, sy: 1500, sw: 2000, sh: 1500 });
+  assert.deepEqual(cropRect(3000, 4000, '4:3', 0.5, 0, 1.5), { sx: 500, sy: 0, sw: 2000, sh: 1500 }); // a tall photo can now move sideways too
+  assert.deepEqual(cropRect(4000, 3000, '4:3', 0.5, 0.5, 1), cropRect(4000, 3000, '4:3', 0.5, 0.5));
+  assert.deepEqual(cropRect(4000, 3000, '4:3', 0.5, 0.5, 0.5), cropRect(4000, 3000, '4:3', 0.5, 0.5)); // never zooms out: no white edges
+  assert.deepEqual(cropRect(4000, 3000, '4:3', 0.5, 0.5, 9), cropRect(4000, 3000, '4:3', 0.5, 0.5, 3)); // at most 3x
+});
+test('sharpLimit: the zoom up to which the part used is still as wide as the output', () => {
+  assert.equal(sharpLimit(4032, 3024, '4:3'), 2.52); // iPhone X landscape into a 4:3 group (1600 wide)
+  assert.equal(sharpLimit(3024, 4032, '4:3'), 1.89); // portrait into 4:3
+  assert.equal(sharpLimit(3024, 4032, '3:4'), 2.52); // portrait into 3:4 (1200 wide)
+  assert.equal(sharpLimit(1280, 960, '4:3'), 0.8); // a small picture is stretched even at 1x
 });
 test('gitBlobSha matches git hash-object', async () => {
   assert.equal(await gitBlobSha('hello\n'), 'ce013625030ba8dba906f756967f9e9ca394464a');

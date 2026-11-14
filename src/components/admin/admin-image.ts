@@ -3,15 +3,15 @@
 import type { AdminRatio } from '../../data/photos.ts';
 import { JPEG_QUALITY, OUT, cropRect } from '../../lib/photo-admin.ts';
 
-/** The master as base64 (no data: prefix): the source cropped with cropRect and scaled to OUT[ratio], on white, JPEG at JPEG_QUALITY. */
-export async function render(source: Blob, ratio: AdminRatio, focus: { x: number; y: number }): Promise<string> {
+/** The master as base64 (no data: prefix): the source cropped with cropRect (position and zoom) and scaled to OUT[ratio], on white, JPEG at JPEG_QUALITY. */
+export async function render(source: Blob, ratio: AdminRatio, focus: { x: number; y: number; z?: number }): Promise<string> {
   const url = URL.createObjectURL(source);
   try {
     // An <img> (not createImageBitmap): every browser applies the phone's EXIF rotation to it, also when it is drawn.
     const img = Object.assign(new Image(), { src: url });
     await img.decode();
     const [w, h] = OUT[ratio];
-    const c = cropRect(img.naturalWidth, img.naturalHeight, ratio, focus.x, focus.y);
+    const c = cropRect(img.naturalWidth, img.naturalHeight, ratio, focus.x, focus.y, focus.z ?? 1);
     const canvas = Object.assign(document.createElement('canvas'), { width: w, height: h });
     const ctx = canvas.getContext('2d')!;
     ctx.fillStyle = '#fff'; // JPEG has no transparency: a transparent PNG would turn black

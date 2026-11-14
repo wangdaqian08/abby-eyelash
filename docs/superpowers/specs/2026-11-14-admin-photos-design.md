@@ -26,7 +26,7 @@ Address: `/admin/`. Two tabs.
 | Nails | `nude-french`, `gold-mirror`, `warm-floral`, `wine-navy`, `mono-art` | 3:4 |
 | Brows | `before-after`, `close-ups` | 3:4 |
 
-- Add: the "新增圖片" button. A new photo goes to position 1 of the group.
+- Add: the "新增圖片" button. Up to 10 photos can be picked at once (owner's decision, 2026-11-14); more are cut to the first 10 with a notice. They go to the top of the group in the order picked. Each is checked on its own; a photo over the size limit or unreadable is skipped and named in one notice. Replacing a fixed place takes one photo.
 - Delete: the cross at the top right of a photo. No confirmation dialog: the photo turns grey with a "還原" button and is removed at publish.
 - Reorder: press and hold a photo, then drag. Within one group only.
 - A group can be emptied; the site then hides that group's heading. No limit on the number of photos.
@@ -36,9 +36,10 @@ Address: `/admin/`. Two tabs.
 
 ## Upload and editing
 
-- Accepted: photos only (JPEG, PNG, HEIC as the phone delivers them), source file at most 20 MB.
+- Accepted: photos only (JPEG, PNG, HEIC as the phone delivers them), source file at most 6 MB per photo (owner's decision, 2026-11-14; was 20 MB). Only the cropped JPEG (about 0.3 MB) is uploaded.
 - The ratio comes from the group or place and cannot be changed.
-- "編輯" opens the position screen: the photo sits behind a fixed frame of that ratio and is dragged with one finger. No zoom.
+- "編輯" opens the position screen: the photo sits behind a fixed frame of that ratio and is dragged with one finger.
+- Zoom (owner's decision, 2026-11-14; prototype screens 08 and 09): two-finger pinch or a slider, 1x to 3x, zoom in only (never white edges). The output size does not change: a zoomed crop takes a smaller part of the photo and enlarges it. Past the photo's sharp limit (the zoom at which the part used is as wide as the output, e.g. 1.9x for an iPhone X portrait photo in a 4:3 group) the slider turns orange and a warning says "放大過多，畫質可能變差" with the limit; it never blocks publishing. Like the position, the zoom can be changed only before the photo is published.
 - Output, made by the program with no choice for the user: 1600 × 1200 (4:3) or 1200 × 1600 (3:4), JPEG quality 0.82, no metadata. These are the values of `scripts/photos.mjs`.
 - Position can be changed only before the photo is published. A published photo: reorder, delete, change the style name; to re-crop, delete and upload again (the site keeps only the cropped file).
 - Style name: an optional dropdown under the editor. Options are the existing names of that service; no free text.
@@ -68,7 +69,7 @@ Cloudflare Access (Zero Trust) in front of `/admin` and `/api/admin`: one-time c
 
 - Video upload, and the moving part of Live Photos: version 2. The two existing videos stay; in the admin they can be reordered and deleted, not added.
 - Tapping a portfolio photo to open booking: a separate site change.
-- Typing new style names; zoom in the editor; moving a photo between groups; merging two people's drafts; desktop layout.
+- Typing new style names; moving a photo between groups; merging two people's drafts; desktop layout.
 
 ## Open facts to verify before or during the build
 

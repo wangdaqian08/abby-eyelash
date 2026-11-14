@@ -5,7 +5,7 @@ import { adminGroups, adminLabels, adminSlots, photos, videos, type AdminData, t
 /** Master size per ratio: the values of scripts/photos.mjs. */
 export const OUT: Record<AdminRatio, [number, number]> = { '4:3': [1600, 1200], '3:4': [1200, 1600] };
 export const JPEG_QUALITY = 0.82;
-export const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
+export const MAX_SOURCE_BYTES = 6 * 1024 * 1024; // the photo picked on the phone (owner's decision, 2026-11-14); only the cropped ~0.3 MB JPEG is uploaded
 export const MAX_BLOB_BASE64 = 2_000_000; // characters; a 1600 × 1200 JPEG at 0.82 is far below this
 export const UPLOAD_ID = /^u-[a-z0-9]{10}$/;
 export const ADMIN_JSON = 'src/data/photo-admin.json';
@@ -21,13 +21,20 @@ export interface AdminState {
 }
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
-/** Source rectangle that covers the ratio; fx, fy in 0..1 choose which part is kept (0.5 = centre). */
-export function cropRect(sw: number, sh: number, ratio: AdminRatio, fx: number, fy: number) {
+export const MAX_ZOOM = 3;
+const cover = (sw: number, sh: number, ratio: AdminRatio) => {
   const target = OUT[ratio][0] / OUT[ratio][1];
-  const w = sw / sh > target ? Math.round(sh * target) : sw;
-  const h = sw / sh > target ? sh : Math.round(sw / target);
+  return sw / sh > target ? [sh * target, sh] : [sw, sw / target];
+};
+/** Source rectangle that covers the ratio, `zoom` (1–3) times smaller; fx, fy in 0..1 choose which part is kept (0.5 = centre). */
+export function cropRect(sw: number, sh: number, ratio: AdminRatio, fx: number, fy: number, zoom = 1) {
+  const z = Math.min(MAX_ZOOM, Math.max(1, zoom)); // never below 1: zooming out would leave white edges
+  const [cw, ch] = cover(sw, sh, ratio);
+  const w = Math.round(cw / z), h = Math.round(ch / z);
   return { sx: Math.round(clamp01(fx) * (sw - w)), sy: Math.round(clamp01(fy) * (sh - h)), sw: w, sh: h };
 }
+/** The zoom up to which the part used is at least as wide as the output; beyond it the photo is stretched (shown as a warning). */
+export const sharpLimit = (sw: number, sh: number, ratio: AdminRatio) => Math.round((cover(sw, sh, ratio)[0] / OUT[ratio][0]) * 100) / 100;
 
 export const masterPath = (id: string, dir: Dir) => `src/assets/photos/${dir}/${id}.jpg`;
 

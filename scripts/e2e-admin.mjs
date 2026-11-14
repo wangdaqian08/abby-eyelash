@@ -3,6 +3,7 @@
 // `npm run test:e2e` runs it once, next to the booking and layout shards.
 import { chromium } from 'playwright';
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import sharp from 'sharp';
 import { cropRect } from '../src/lib/photo-admin.ts';
 import { fixture as fixedData } from '../src/data/photo-admin.fixture.ts';
@@ -98,6 +99,10 @@ check((await tiles()).length === 14, '5: a small transparent PNG is accepted');
 await page.click('[data-action="add"]'); await pick('admin-broken.jpg');
 check((await tiles()).length === 14, '5: a file that is not a picture adds nothing');
 check((await text('[data-notice]')).includes('無法讀取這張圖片'), '5: and says 無法讀取這張圖片');
+// a photo over the 6 MB limit (made here: the size is checked before the picture is read, so its content does not matter)
+await page.click('[data-action="add"]');
+await page.setInputFiles('[data-file]', { name: 'big.jpg', mimeType: 'image/jpeg', buffer: Buffer.alloc(6 * 1024 * 1024 + 1) }); await page.waitForTimeout(250);
+check((await tiles()).length === 14 && (await text('[data-notice]')).includes('圖片超過 6 MB'), `5: a photo over 6 MB is refused and says so (got "${await text('[data-notice]')}")`);
 
 // 6 — replace a fixed place, and take it back
 await go('#/s'); await view('slots');
@@ -117,9 +122,45 @@ const dragStage = async (dx, dy) => {
 };
 await go('#/g/styled'); await view('group');
 await page.click(`[data-tile="${upload}"] [data-action="edit"]`); await view('edit'); // 2000 × 1500 into 4:3: nothing to move
-check(!(await page.$('[data-readout]')), '7: a photo that already has the ratio shows no position read-out');
+check((await text('[data-readout]')) === '', '7: a photo that already has the ratio shows no position read-out at 1x');
 await dragStage(0, 80); await page.click('[data-action="done"]'); await view('group');
 check((await position(upload)) === '50% 50%', `7: and dragging it changes nothing (got ${await position(upload)})`);
+
+// 7b — zoom: slider, sharpness warning, two-finger pinch (sent as real touch events)
+const zoomOf = (id) => page.$eval(`[data-tile="${id}"] img`, (i) => i.style.transform);
+const cdp = await context.newCDPSession(page);
+const pinch = async (from, to) => {
+  const [x, y] = await centre('[data-stage]');
+  const pts = (d) => [{ x: x - d / 2, y, id: 1 }, { x: x + d / 2, y, id: 2 }];
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: pts(from) });
+  for (let i = 1; i <= 8; i++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: pts(from + ((to - from) * i) / 8) });
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await page.waitForTimeout(100);
+};
+await page.click(`[data-tile="${upload}"] [data-action="edit"]`); await view('edit'); // 2000 × 1500 into 4:3 (1600 wide): sharp up to 1.25x
+check((await page.$eval('input[data-zoom]', (i) => i.value)) === '1' && (await text('[data-zoom-readout]')).includes('放大 1.0 倍'), '7b: the editor starts at 1x');
+check(!(await page.$('[data-sharp-warning]')), '7b: no warning at 1x');
+await page.fill('input[data-zoom]', '1.2');
+check((await text('[data-zoom-readout]')).includes('放大 1.2 倍') && !(await page.$('[data-sharp-warning]')), '7b: 1.2x is still sharp: no warning');
+check((await text('[data-readout]')).includes('垂直位置 50%'), `7b: once zoomed in, the photo can be moved (got "${await text('[data-readout]')}")`);
+await page.fill('input[data-zoom]', '2');
+check((await text('[data-sharp-warning]')).includes('放大過多，畫質可能變差') && (await text('[data-sharp-warning]')).includes('1.2 倍'), `7b: past 1.25x it warns, naming the sharp limit (got "${await text('[data-sharp-warning]')}")`);
+check(!(await page.$eval('[data-action="done"]', (b) => b.disabled)), '7b: the warning does not block 完成');
+await pinch(60, 180);
+check((await text('[data-zoom-readout]')).includes('放大 3.0 倍'), `7b: spreading two fingers zooms in, at most 3x (got "${await text('[data-zoom-readout]')}")`);
+await pinch(180, 90);
+check((await text('[data-zoom-readout]')).includes('放大 1.5 倍'), `7b: pinching two fingers zooms out (got "${await text('[data-zoom-readout]')}")`);
+check((await page.$eval('input[data-zoom]', (i) => i.value)) === '1.5', '7b: the slider follows the pinch');
+await page.click('[data-action="done"]'); await view('group');
+check((await zoomOf(upload)) === 'scale(1.5)', `7b: 完成 keeps the zoom, and the tile shows it (got "${await zoomOf(upload)}")`);
+await page.click(`[data-tile="${upload}"] [data-action="edit"]`); await view('edit');
+check((await page.$eval('input[data-zoom]', (i) => i.value)) === '1.5', '7b: the editor reopens at the saved zoom');
+await page.click('[data-action="recentre"]');
+check((await text('[data-zoom-readout]')).includes('放大 1.0 倍'), '7b: 重設 goes back to 1x');
+await page.click('[data-action="cancel"]'); await view('group');
+check((await zoomOf(upload)) === 'scale(1.5)', '7b: 取消 keeps the saved zoom');
+await page.click(`[data-tile="${upload}"] [data-action="edit"]`); await view('edit');
+await page.fill('input[data-zoom]', '2'); await page.click('[data-action="done"]'); await view('group'); // checked in the published crop (8)
 await page.click('[data-action="add"]'); await pick('admin-portrait.jpg');
 const tall = (await tiles())[0];
 await page.click(`[data-tile="${tall}"] [data-action="edit"]`); await view('edit');
@@ -145,7 +186,7 @@ check((await position(tall)) === `50% ${pct}%`, '7: the position survives a relo
 const live = moved.find((id) => !id.startsWith('u-') && id !== 'styled-fairy');
 await page.click(`[data-tile="${live}"] [data-action="edit"]`); await view('edit');
 check((await text('[data-view]')).includes('已上線的圖片不能重新裁切'), '9: a published photo says it cannot be re-cropped');
-check(!(await page.$('[data-readout]')), '9: and has no position read-out');
+check(!(await page.$('[data-readout]')) && !(await page.$('input[data-zoom]')), '9: and has no position read-out and no zoom');
 await page.selectOption('select[data-label]', { label: '仙子' });
 await page.click('[data-action="done"]'); await view('group');
 check((await text(`[data-tile="${live}"]`)).includes('仙子'), '9: its style name can still be changed');
@@ -200,6 +241,13 @@ const distance = (a, b) => a.reduce((n, v, i) => n + Math.abs(v - b[i]), 0) / a.
 const [atFocus, atCentre, tinies] = [await expected(pct / 100), await expected(0.5), await Promise.all(blobs.map(tiny))];
 const best = Math.min(...tinies.map((b) => distance(b, atFocus)));
 check(best < 4 && best < Math.min(...tinies.map((b) => distance(b, atCentre))) / 2, `8: the crop follows the editor's position (distance ${best.toFixed(1)})`);
+{ // the landscape upload was zoomed 2x at the centre: the middle half of the photo, enlarged to 1600 × 1200
+  const z = cropRect(2000, 1500, '4:3', 0.5, 0.5, 2);
+  const zoomed = await tiny(sharp(fixture('admin-landscape.jpg')).extract({ left: z.sx, top: z.sy, width: z.sw, height: z.sh }));
+  const whole = await tiny(sharp(fixture('admin-landscape.jpg')));
+  const near = Math.min(...tinies.map((b) => distance(b, zoomed)));
+  check(near < 4 && near < Math.min(...tinies.map((b) => distance(b, whole))) / 2, `8: the crop follows the editor's zoom (distance ${near.toFixed(1)})`);
+}
 const ups = Object.keys(sent.data?.uploads ?? {});
 check(ups.length === 4 && ups.sort().join() === Object.keys(sent.blobs ?? {}).sort().join(), `11: the publish names its four new photos and their blobs (got ${ups.length})`);
 check(sent.data?.groups.styled[0] === tall && !sent.data.groups.styled.includes(doomed) && sent.data.labels[tall] === 'look:mermaid' && sent.data.labels[live] === 'look:fairy', '11: with the new order, the deletion and the style names');
@@ -291,6 +339,27 @@ check(!!(await p2.$('[data-view="publish"]')) && !(await p2.$('[data-tile]')), '
 check((await text2('[data-action="confirm"]')).includes('上傳中 1 / 1'), `11: the button shows the progress (got "${await text2('[data-action="confirm"]')}")`);
 await p2.waitForSelector('[data-view="list"]');
 check((await text2('[data-banner]')).includes('已上線') || (await text2('[data-banner]')).includes('發佈中'), '11: and the publish completes');
+// several photos in one pick: at most 10, in the order picked; each checked on its own (a fresh group, nothing is published)
+await p2.unroute('**/api/admin/blob');
+await open2('#/g/nude-french');
+const before2 = await tiles2();
+const widths2 = () => p2.$$eval('[data-tile] img', (imgs) => imgs.map((i) => i.naturalWidth));
+check(await p2.$eval('[data-file]', (i) => i.multiple), '5b: 新增圖片 lets several photos be picked');
+await p2.click('[data-action="add"]');
+await p2.setInputFiles('[data-file]', [fixture('admin-landscape.jpg'), fixture('admin-portrait.jpg'), fixture('admin-small.png')]); await p2.waitForTimeout(400);
+check((await tiles2()).length === before2.length + 3, `5b: three photos picked, three tiles added (got ${(await tiles2()).length - before2.length})`);
+check((await widths2()).slice(0, 3).join() === '2000,1500,300', `5b: first in the group, in the order picked (got ${(await widths2()).slice(0, 3)})`);
+await p2.click('[data-action="add"]');
+await p2.setInputFiles('[data-file]', Array.from({ length: 12 }, () => fixture('admin-small.png'))); await p2.waitForTimeout(600);
+check((await tiles2()).length === before2.length + 13, `5b: twelve picked, ten added (got ${(await tiles2()).length - before2.length - 3})`);
+check((await text2('[data-notice]')).includes('一次最多 10 張'), `5b: and it says only ten are taken at once (got "${await text2('[data-notice]')}")`);
+await p2.click('[data-action="add"]');
+const inMemory = (name, mimeType) => ({ name, mimeType, buffer: readFileSync(fixture(name)) }); // Playwright cannot mix paths with in-memory files
+await p2.setInputFiles('[data-file]', [inMemory('admin-landscape.jpg', 'image/jpeg'), inMemory('admin-broken.jpg', 'image/jpeg'), { name: 'big.jpg', mimeType: 'image/jpeg', buffer: Buffer.alloc(6 * 1024 * 1024 + 1) }]); await p2.waitForTimeout(400);
+check((await tiles2()).length === before2.length + 14, '5b: the good photo of a mixed pick is added');
+check((await text2('[data-notice]')).includes('1 張超過 6 MB') && (await text2('[data-notice]')).includes('1 張無法讀取'), `5b: the others are named with the reason (got "${await text2('[data-notice]')}")`);
+await open2('#/s'); await p2.click('[data-slot="home-hero"] [data-action="replace"]');
+check(!(await p2.$eval('[data-file]', (i) => i.multiple)), '5b: replacing a fixed place takes one photo');
 await phone2.close();
 
 // nothing on the page may read as a bug, and every control must be large enough for a thumb

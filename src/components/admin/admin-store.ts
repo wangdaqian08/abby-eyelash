@@ -3,12 +3,16 @@
 import type { AdminData, Upload } from '../../data/photos.ts';
 import type { AdminState } from '../../lib/photo-admin.ts';
 
+/** Where the crop sits (x, y in 0..1, 0.5 = centre) and how far it is zoomed in (z, 1–3). */
+export interface Focus { x: number; y: number; z: number }
+const CENTRE: Focus = { x: 0.5, y: 0.5, z: 1 };
+
 export interface Draft {
   base: string; // git id of the photo-admin.json this draft changes
   data: AdminData; // includes not-yet-published uploads; still lists the items marked removed (shown grey)
   clean: AdminData; // the data without this draft's changes: the live site, or what was last published from this phone
   removed: string[]; // `${groupId}/${id}`: deleted at publish, restorable until then
-  focus: Record<string, { x: number; y: number }>; // crop position of uploads whose source is still on this phone
+  focus: Record<string, Focus>; // crop position and zoom of uploads whose source is still on this phone
   // The last publish from this phone: its pull request, and where it stands (review → building → live; or rejected, failed).
   pending?: { pr: number; state: 'review' | 'rejected' | 'building' | 'live' | 'failed' };
   behind?: string[]; // older bases the deployed site may still show: the ones this phone published over
@@ -29,13 +33,13 @@ export function newId(): string {
 }
 
 export const addToGroup = (d: Draft, groupId: string, id: string, u: Upload): Draft => edit(d, (n) => {
-  n.data.uploads[id] = u; n.data.groups[groupId].unshift(id); n.focus[id] = { x: 0.5, y: 0.5 };
+  n.data.uploads[id] = u; n.data.groups[groupId].unshift(id); n.focus[id] = { ...CENTRE };
 });
 
 export const replaceSlot = (d: Draft, key: string, id: string, u: Upload): Draft => edit(d, (n) => {
   const old = n.data.slots[key];
   if (old && unpublished(d, old)) forget(n, old);
-  n.data.uploads[id] = u; n.data.slots[key] = id; n.focus[id] = { x: 0.5, y: 0.5 };
+  n.data.uploads[id] = u; n.data.slots[key] = id; n.focus[id] = { ...CENTRE };
 });
 
 export const resetSlot = (d: Draft, key: string): Draft => edit(d, (n) => {
@@ -60,7 +64,7 @@ export const setLabel = (d: Draft, id: string, key: string): Draft => edit(d, (n
   if (key) n.data.labels[id] = key; else delete n.data.labels[id];
 });
 
-export const setFocus = (d: Draft, id: string, x: number, y: number): Draft => edit(d, (n) => { n.focus[id] = { x, y }; });
+export const setFocus = (d: Draft, id: string, x: number, y: number, z = 1): Draft => edit(d, (n) => { n.focus[id] = { x, y, z }; });
 
 /** What a publish sends: removals applied; uploads nothing shows any more, and their style names, dropped. */
 export function finalData(d: Draft): AdminData {
