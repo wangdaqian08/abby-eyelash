@@ -76,8 +76,8 @@ export const admin = {
   locked: '已上線的圖片不能重新裁切；要重新裁切請刪除後再上傳。',
   labelTitle: '款式名稱（選填）',
   labelNone: '不選擇',
-  labelShown: '只能選擇現有的名稱。選了會顯示在睫毛頁的圖片下方，不選也可以。',
-  labelHidden: '只能選擇現有的名稱。名稱只用於圖片的文字說明，網站上不會顯示。',
+  labelShown: '選了會顯示在作品照片上，顧客點照片會直接預約這一款。不選也可以：點照片只會選好服務。',
+  labelHidden: '眉毛只有一種款式，網站上不顯示名稱；名稱只用於圖片的文字說明。',
   currentName: (name: string) => `目前名稱：${name}`,
   // preview
   previewTitle: '預覽',

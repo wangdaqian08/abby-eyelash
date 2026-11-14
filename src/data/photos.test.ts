@@ -111,3 +111,10 @@ test('bookingHref', () => {
   assert.equal(bookingHref('zh', 'styled-mermaid', photoBooking('styled-mermaid', 'lash', {})), '/zh/book?service=lash-extensions&option=styled&look=styled-mermaid');
   assert.equal(bookingHref('en', 'nail-2020', photoBooking('nail-2020', 'nails', {})), '/book?service=gel-nails');
 });
+
+test('pre-filled labels are valid and keep Abby\'s own', async () => {
+  const { validateAdmin } = await import('../lib/photo-admin.ts');
+  assert.equal(validateAdmin(adminData, adminData, new Set()), null);
+  assert.equal(adminData.labels['nail-3406'], 'option:gel-nails/french');
+  assert.equal(adminData.labels['u-0w5i41u163'], 'option:lash-extensions/styled');
+});

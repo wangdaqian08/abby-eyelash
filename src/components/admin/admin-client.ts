@@ -297,7 +297,7 @@ function editView() {
         <option value="">${t.labelNone}</option>
         ${options.map((o) => `<option value="${o.key}" ${o.key === label ? 'selected' : ''}>${esc(o.name)}</option>`).join('')}
       </select>
-      <p class="mt-1.5 text-xs leading-relaxed text-muted">${legacy ? `${t.currentName(esc(legacy))}。` : ''}${inStyled ? t.labelShown : t.labelHidden}</p>
+      <p class="mt-1.5 text-xs leading-relaxed text-muted">${legacy ? `${t.currentName(esc(legacy))}。` : ''}${e.ctx.dir === 'brows' ? t.labelHidden : t.labelShown}</p>
     </div>`;
 }
 /** Opens the editor for the photo in the address (#/e/<id>?g=<group> or ?s=<place>); reads the source's size first. */
