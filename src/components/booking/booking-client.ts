@@ -46,7 +46,7 @@ const BTN_OUTLINE = LB ? `${BTN} btn-tinted` : `${BTN} btn-soft border border-pr
 const INPUT = 'block h-12 w-full appearance-none rounded-field bg-surface-2 px-4 text-base text-fg placeholder:text-muted aria-invalid:outline-2 aria-invalid:outline-danger';
 
 export function start(root: HTMLElement) {
-  const cfg = JSON.parse(root.dataset.config!) as { lang: Lang; hant?: string[] };
+  const cfg = JSON.parse(root.dataset.config!) as { lang: Lang; hant?: string[]; looks?: Record<string, string> };
   const lang = cfg.lang;
   if (cfg.hant) aliasHant(bookingText, convertWith(bookingText, cfg.hant));
   const t = bookingStrings[lang];
@@ -731,5 +731,8 @@ export function start(root: HTMLElement) {
     const solo = addonOptions(pre).find((o) => o.alone && o.id === q.get('option')); // e.g. &option=removal
     st.items = [{ service: pre, option: main.find((o) => o.id === q.get('option')) ?? (main.length === 1 ? main[0] : undefined), addons: solo ? { [solo.id]: 1 } : {} }];
   }
+  // From a look photo (?look=<photo id>): its name goes into the notes. Only ids the page knows, so the URL cannot inject text.
+  const look = q.get('look');
+  if (look && cfg.looks && Object.hasOwn(cfg.looks, look) && !st.details.notes) st.details.notes = t.notesLook + cfg.looks[look];
   go(1, false);
 }

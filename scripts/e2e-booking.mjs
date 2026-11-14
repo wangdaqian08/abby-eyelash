@@ -277,6 +277,26 @@ if (mine()) {
   await page.setViewportSize({ width: 1280, height: 900 });
 }
 
+// 9. A look photo's link (?look=<photo id>) pre-fills the notes with the look's name; an unknown id is ignored.
+if (mine()) {
+  const notesFor = async (look) => {
+    await open(`/book/?service=${L}&option=styled&look=${look}`);
+    check(await isChecked(`input[name="bk-option-${L}"][value="styled"]`), `look=${look}: styled should be chosen`);
+    await page.click('[data-action="to-date"]');
+    await page.waitForSelector('[data-grid] button[data-date]:not([aria-disabled])');
+    await page.click('[data-grid] button[data-date]:not([aria-disabled])');
+    await page.click('button[data-time]');
+    await page.click('[data-action="to-details"]');
+    return page.inputValue('#bk-notes');
+  };
+  const got = await notesFor('styled-mermaid');
+  check(got === 'Look I’d like: Mermaid', `look=styled-mermaid: notes should be "Look I’d like: Mermaid", got "${got}"`);
+  for (const bad of ['nope', '__proto__']) {
+    const v = await notesFor(bad);
+    check(v === '', `look=${bad}: notes should stay empty, got "${v}"`);
+  }
+}
+
 check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
 await browser.close();
 console.log(`${cases} lash click-order cases, ${pass} checks passed, ${fails.length} failed`);

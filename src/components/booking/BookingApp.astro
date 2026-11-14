@@ -2,6 +2,7 @@
 // Booking flow shell. The interactive steps are rendered by ./booking-client.ts.
 import { readdirSync } from 'node:fs';
 import { site } from '../../data/site';
+import { lookName, photoBooking, photos } from '../../data/photos';
 import type { Lang } from '../../data/services';
 import { bookingStrings } from '../../i18n/booking';
 import { lookOf } from '../../lib/ab-test';
@@ -23,7 +24,9 @@ try {
 } catch {}
 
 // Traditional page: hand the app the Simplified texts; they are converted with the rest of the page after the build.
-const config = { lang, ...(lang === 'zh-hant' && { hant: zhStrings(bookingText) }) };
+// Look names by photo id, for a look photo's link (?look=<id>): the app puts the name into the notes.
+const looks = Object.fromEntries(photos.filter((p) => photoBooking(p.id, p.dir).look).map((p) => [p.id, lookName(p.id)![lang]]));
+const config = { lang, looks, ...(lang === 'zh-hant' && { hant: zhStrings(bookingText) }) };
 ---
 
 <section class={lookB ? "bg-surface-2 tabular-nums pb-[calc(var(--tabbar-h)+3rem)] pt-[calc(var(--header-h)+40px)] lg:pb-24 lg:pt-[calc(var(--header-h)+64px)]" : "tabular-nums pb-16 pt-[calc(var(--header-h)+40px)] lg:pb-24 lg:pt-[calc(var(--header-h)+64px)]"}>
