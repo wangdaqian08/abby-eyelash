@@ -66,8 +66,12 @@ test('publish: sent again after its reply was lost → accepted, nothing written
   assert.deepEqual(gh.writes(), []);
 });
 test('publish: main moved between read and write (PATCH 422) → 409 conflict', async () => {
-  const gh = github(await repo(prev, { 'PATCH git/refs/heads/main': () => new Response('{}', { status: 422 }) }));
+  const gh = github(await repo(prev, { 'PATCH git/refs/heads/main': () => new Response('{"message":"Update is not a fast forward"}', { status: 422 }) }));
   assert.deepEqual(await publish(env, false, 'a@b.c', await body(), gh.fetcher), { status: 409, body: { error: 'conflict' } });
+});
+test('publish: a branch rule refuses the commit (PATCH 422 rule violation) → 502, not a false conflict', async () => {
+  const gh = github(await repo(prev, { 'PATCH git/refs/heads/main': () => new Response('{"message":"Repository rule violations found\\n\\nChanges must be made through a pull request."}', { status: 422 }) }));
+  assert.deepEqual(await publish(env, false, 'a@b.c', await body(), gh.fetcher), { status: 502, body: { error: 'github' } });
 });
 test('publish: invalid data → 400 with the validateAdmin code, nothing written', async () => {
   const gh = github(await repo(prev));

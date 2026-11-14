@@ -13,7 +13,8 @@ const isRecord = (v: unknown): v is Record<string, unknown> => !!v && typeof v =
 
 class GitHubError extends Error {
   status: number;
-  constructor(status: number, path: string) { super(`GitHub ${status} for ${path}`); this.status = status; }
+  detail: string;
+  constructor(status: number, path: string, detail: string) { super(`GitHub ${status} for ${path}: ${detail}`); this.status = status; this.detail = detail; }
 }
 async function gh<T = any>(env: AdminEnv, fetcher: typeof fetch, method: string, path: string, body?: unknown): Promise<T> {
   const r = await fetcher(`https://api.github.com/repos/${env.ADMIN_REPO}/${path}`, {
@@ -21,7 +22,7 @@ async function gh<T = any>(env: AdminEnv, fetcher: typeof fetch, method: string,
     headers: { Authorization: `Bearer ${env.ADMIN_GITHUB_TOKEN}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'abby-admin', 'Content-Type': 'application/json' },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  if (!r.ok) throw new GitHubError(r.status, path);
+  if (!r.ok) throw new GitHubError(r.status, path, (((await r.json().catch(() => ({}))) as { message?: string }).message ?? '').slice(0, 300));
   return (await r.json().catch(() => ({}))) as T;
 }
 /** A GitHub failure becomes 502 (and is logged); the site and the draft are untouched. */
@@ -83,7 +84,8 @@ export async function publish(env: AdminEnv, demo: boolean, email: string, body:
     try {
       await gh(env, fetcher, 'PATCH', 'git/refs/heads/main', { sha: commit.sha }); // not forced: fails if main moved meanwhile
     } catch (e) {
-      if (e instanceof GitHubError && e.status === 422) return reply(409, { error: 'conflict' });
+      // 422 is also a branch rule refusing the commit (e.g. "must go through a pull request"): that is not someone else's publish
+      if (e instanceof GitHubError && e.status === 422 && /fast.forward/i.test(e.detail)) return reply(409, { error: 'conflict' });
       throw e;
     }
     return reply(200, { commit: commit.sha, base: await gitBlobSha(text(data)) });
