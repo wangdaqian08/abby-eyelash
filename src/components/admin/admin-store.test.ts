@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { fixture } from '../../data/photo-admin.fixture.ts';
 import { UPLOAD_ID, validateAdmin, type AdminState } from '../../lib/photo-admin.ts';
-import { BUILD_TIMEOUT_MS, addToGroup, afterPublish, building, changeCount, changes, finalData, fromState, isDirty, kv, move, newId, replaceSlot, resetSlot, resume, setFocus, setLabel, toggleRemoved } from './admin-store.ts';
+import { addToGroup, afterPublish, changeCount, changes, finalData, fromState, isDirty, kv, move, newId, replaceSlot, resetSlot, resume, setFocus, setLabel, toggleRemoved } from './admin-store.ts';
 
 const adminData = fixture(); // never the live file: Abby's publishes change it
 const state = (base = 'base-0', data = adminData): AdminState => ({ base, data: structuredClone(data), groups: [], slots: [], labels: [], photos: {} });
@@ -76,20 +76,17 @@ test('changes lists what a publish will do', () => {
   assert.equal(isDirty(d), true);
   assert.deepEqual(changes(move(fresh(), 'styled', 0, 0)).reordered, []); // dropped where it was
 });
-test('afterPublish: the published data becomes the clean state on the new base, building', () => {
+test('afterPublish: the published data becomes the clean state on the new base, waiting for review', () => {
   let d = toggleRemoved(addToGroup(fresh(), 'styled', 'u-aaaaaaaaaa', LASH), 'styled', styled[1]);
   const final = finalData(d);
-  d = afterPublish(d, 'c'.repeat(40), 'base-1', 1000);
-  assert.deepEqual([d.base, d.data, d.clean, d.removed, d.pending], ['base-1', final, final, [], { commit: 'c'.repeat(40), state: 'building', at: 1000 }]);
-  assert.equal(building(d, 1000 + 60_000), true); // a second publish waits for the build…
-  assert.equal(building(d, 1000 + BUILD_TIMEOUT_MS), false); // …but not for ever, if the build status never arrives
-  assert.equal(building({ ...d, pending: { ...d.pending!, state: 'live' } }, 2000), false);
-  assert.equal(building(fresh(), 2000), false);
+  d = afterPublish(d, 42, 'base-1');
+  assert.deepEqual([d.base, d.data, d.clean, d.removed, d.pending], ['base-1', final, final, [], { pr: 42, state: 'review' }]);
+  assert.deepEqual(afterPublish(d, 0, 'base-1').pending, { pr: 0, state: 'live' }); // already on the site
   assert.equal(isDirty(d), false);
   assert.deepEqual(d.focus['u-aaaaaaaaaa'], { x: 0.5, y: 0.5 }); // its thumbnail is still drawn from the source until the site has it
 });
 test('resume: a second visit while the first publish is still building keeps the published state (the snapshot is older)', () => {
-  const published = afterPublish(addToGroup(fresh(), 'styled', 'u-aaaaaaaaaa', LASH), 'c'.repeat(40), 'base-1');
+  const published = afterPublish(addToGroup(fresh(), 'styled', 'u-aaaaaaaaaa', LASH), 42, 'base-1');
   const again = resume(published, state('base-0'));
   assert.deepEqual([again.draft, again.stale], [published, false]);
   const edited = move(published, 'styled', 0, 1); // and it can be edited and published again on base-1
@@ -98,19 +95,26 @@ test('resume: a second visit while the first publish is still building keeps the
   assert.deepEqual(resume(failed, state('base-0')).draft, failed); // a failed build: the site never gets it; keep it for "try again"
 });
 test('resume: CI says live but the old snapshot is still served for a few seconds — keep the published state', () => {
-  const published = afterPublish(addToGroup(fresh(), 'styled', 'u-aaaaaaaaaa', LASH), 'c'.repeat(40), 'base-1');
+  const published = afterPublish(addToGroup(fresh(), 'styled', 'u-aaaaaaaaaa', LASH), 42, 'base-1');
   const live = { ...published, pending: { ...published.pending!, state: 'live' as const } };
   assert.deepEqual(resume(live, state('base-0')), { draft: live, stale: false }); // not a false "網站已被更新"
   const edited = move(live, 'styled', 0, 1);
   assert.deepEqual(resume(edited, state('base-0')), { draft: edited, stale: false });
   // two publishes in a row: the site may still show either older version
-  const twice = afterPublish(edited, 'd'.repeat(40), 'base-2');
+  const twice = afterPublish(edited, 42, 'base-2');
   assert.equal(resume(twice, state('base-0')).draft, twice);
   assert.equal(resume(twice, state('base-1')).draft, twice);
   assert.deepEqual(resume(twice, state('base-2', twice.data)).draft, fromState(state('base-2', twice.data)));
 });
+test('resume: a turned-down PR — a clean phone goes back to the site; a draft built on it is flagged', () => {
+  const published = afterPublish(addToGroup(fresh(), 'styled', 'u-aaaaaaaaaa', LASH), 42, 'base-1');
+  const rejected = { ...published, pending: { ...published.pending!, state: 'rejected' as const } };
+  assert.deepEqual(resume(rejected, state('base-0')), { draft: fromState(state('base-0')), stale: false });
+  const edited = move(rejected, 'styled', 0, 1); // a draft built on the rejected version cannot be published either
+  assert.deepEqual(resume(edited, state('base-0')), { draft: edited, stale: true });
+});
 test('resume: once the snapshot has caught up it is the truth again', () => {
-  const published = afterPublish(addToGroup(fresh(), 'styled', 'u-aaaaaaaaaa', LASH), 'c'.repeat(40), 'base-1');
+  const published = afterPublish(addToGroup(fresh(), 'styled', 'u-aaaaaaaaaa', LASH), 42, 'base-1');
   const caughtUp = state('base-1', published.data);
   assert.deepEqual(resume(published, caughtUp), { draft: fromState(caughtUp), stale: false });
   const edited = move(published, 'styled', 0, 1);
@@ -123,7 +127,7 @@ test('resume: the site was changed by someone else — a clean phone follows it,
   assert.deepEqual(resume(fresh(), state('base-9', other)), { draft: fromState(state('base-9', other)), stale: false });
   const dirty = move(fresh(), 'styled', 0, 1);
   assert.deepEqual(resume(dirty, state('base-9', other)), { draft: dirty, stale: true });
-  const live = { ...afterPublish(fresh(), 'c'.repeat(40), 'base-1'), pending: { commit: 'c'.repeat(40), state: 'live' as const, at: 0 } };
+  const live = { ...afterPublish(fresh(), 42, 'base-1'), pending: { pr: 42, state: 'live' as const } };
   assert.deepEqual(resume(live, state('base-9', other)).draft, fromState(state('base-9', other))); // ours went live, then theirs
 });
 test('kv falls back to memory when IndexedDB is missing (private browsing)', async () => {

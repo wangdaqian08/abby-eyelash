@@ -50,8 +50,8 @@ Address: `/admin/`. Two tabs.
 
 - Every change is a draft kept on the phone; it survives closing the page. "放棄全部更改" drops it.
 - "預覽" shows the draft in the site's real phone layout, inside the admin. No preview URL.
-- "發佈" sends all changes at once. The site is static: publishing commits the new files to the repository, CI tests and rebuilds, and the new site is live a few minutes later.
-- After publishing the admin shows one of: 發佈中 / 已上線 / 發佈失敗，網站維持原樣 (with "再試一次"). While one publish is building, a second publish is refused; editing the draft continues.
+- "發佈" sends all changes at once, as a pull request (branch `admin/photos`) for the administrator to review (owner's decision, 2026-11-14). Merging it deploys the site a few minutes later; closing it unmerged turns the change down and the admin goes back to the site. While the PR is open, later publishes are added to it.
+- After publishing the admin shows one of: 已送出，等待管理員審核 / 管理員已確認，網站正在更新 / 已上線 / 管理員沒有採用上次的更改 / 發佈失敗，網站維持原樣 (with "再試一次").
 - If the repository changed since the draft was started (the other person published), the publish is refused with "網站已被更新，請重新整理後再修改". The draft must be redone.
 
 ## Sign-in

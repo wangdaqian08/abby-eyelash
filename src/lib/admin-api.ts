@@ -1,5 +1,6 @@
-// The photo admin's API (functions/api/admin/*): a publish is one commit to main, made with GitHub's Git Data API.
-// CI then tests, builds and deploys it, as for any other commit. In demo mode nothing here calls GitHub.
+// The photo admin's API (functions/api/admin/*): a publish is a commit on the branch admin/photos, opened as a pull request
+// to main. The administrator reviews it (CI gives it a preview address) and merges it; CI then deploys main.
+// While that PR is open, later publishes are added to it. In demo mode nothing here calls GitHub.
 // Docs: https://docs.github.com/en/rest/git · https://docs.github.com/en/rest/actions/workflow-runs
 import { adminData, type AdminData } from '../data/photos.ts';
 import { adminDemo, adminEmail, type AdminEnv } from './access.ts';
@@ -41,7 +42,10 @@ export async function putBlob(env: AdminEnv, demo: boolean, base64: string, fetc
   return guarded(async () => reply(200, { sha: (await gh(env, fetcher, 'POST', 'git/blobs', { content: base64, encoding: 'base64' })).sha }));
 }
 
-/** POST /api/admin/publish — { base, data, blobs } → one commit: the new photo-admin.json, the new masters, the removed masters. */
+const BRANCH = 'admin/photos';
+
+/** POST /api/admin/publish — { base, data, blobs } → { pr, base }: one commit (the new photo-admin.json, the new masters, the
+ * removed masters) on the admin PR. pr 0: the data is already on main (a repeated publish whose PR was merged meanwhile). */
 export async function publish(env: AdminEnv, demo: boolean, email: string, body: unknown, fetcher: typeof fetch = fetch): Promise<Reply> {
   if (!isRecord(body) || typeof body.base !== 'string' || !isRecord(body.data) || !isRecord(body.blobs)
     || !Object.values(body.blobs).every((s) => typeof s === 'string' && SHA.test(s))) return reply(400, { error: 'bad-request' });
@@ -53,15 +57,17 @@ export async function publish(env: AdminEnv, demo: boolean, email: string, body:
     // There is no repository to compare with: an upload that comes without a blob counts as published by an earlier demo publish.
     const earlier = Object.fromEntries(Object.entries(isRecord(data.uploads) ? data.uploads : {}).filter(([id]) => !(id in blobs)));
     const bad = check({ ...adminData, uploads: { ...adminData.uploads, ...earlier } });
-    return bad ? reply(400, { error: bad }) : reply(200, { commit: 'demo', base: await gitBlobSha(text(data)) });
+    return bad ? reply(400, { error: bad }) : reply(200, { pr: 1, base: await gitBlobSha(text(data)) });
   }
   if (!configured(env)) return reply(503, { error: 'not-configured' });
   return guarded(async () => {
-    const head: string = (await gh(env, fetcher, 'GET', 'git/ref/heads/main')).object.sha;
+    const openPr = async () => ((await gh(env, fetcher, 'GET', `pulls?state=open&head=${env.ADMIN_REPO!.split('/')[0]}:${BRANCH}`)) as { number: number; head: { sha: string } }[])[0];
+    const pr = await openPr(); // waiting for review: this publish builds on it
+    const head: string = pr ? pr.head.sha : (await gh(env, fetcher, 'GET', 'git/ref/heads/main')).object.sha;
     const file = await gh(env, fetcher, 'GET', `contents/${ADMIN_JSON}?ref=${head}`);
     if (file.sha !== body.base) {
       // The repository already holds exactly this data: this publish was sent before and its reply was lost. Say yes again.
-      if (file.sha === await gitBlobSha(text(data))) return reply(200, { commit: head, base: file.sha });
+      if (file.sha === await gitBlobSha(text(data))) return reply(200, { pr: pr?.number ?? 0, base: file.sha });
       return reply(409, { error: 'conflict' }); // someone published since this draft was started
     }
     const prevText = new TextDecoder().decode(Uint8Array.from(atob(file.content.replace(/\s/g, '')), (c) => c.charCodeAt(0)));
@@ -81,24 +87,48 @@ export async function publish(env: AdminEnv, demo: boolean, email: string, body:
     });
     const commit = await gh(env, fetcher, 'POST', 'git/commits', { message: 'Photos: published from the admin', tree: tree.sha, parents: [head] });
     console.log(`admin: ${email} published ${commit.sha}`); // who published: in the Functions log, not in the repository's history
-    try {
-      await gh(env, fetcher, 'PATCH', 'git/refs/heads/main', { sha: commit.sha }); // not forced: fails if main moved meanwhile
-    } catch (e) {
-      // 422 is also a branch rule refusing the commit (e.g. "must go through a pull request"): that is not someone else's publish
-      if (e instanceof GitHubError && e.status === 422 && /fast.forward/i.test(e.detail)) return reply(409, { error: 'conflict' });
-      throw e;
+    const done = (number: number) => reply(200, { pr: number, base: newBase });
+    const newBase = await gitBlobSha(text(data));
+    const is422 = (e: unknown, re: RegExp) => e instanceof GitHubError && e.status === 422 && re.test(e.detail);
+    if (pr) {
+      try {
+        await gh(env, fetcher, 'PATCH', `git/refs/heads/${BRANCH}`, { sha: commit.sha }); // not forced: fails if the branch moved meanwhile
+      } catch (e) {
+        // 422 is also a GitHub rule refusing the push: that is not someone else's publish
+        if (is422(e, /fast.forward/i)) return reply(409, { error: 'conflict' });
+        throw e;
+      }
+      return done(pr.number);
     }
-    return reply(200, { commit: commit.sha, base: await gitBlobSha(text(data)) });
+    try {
+      await gh(env, fetcher, 'POST', 'git/refs', { ref: `refs/heads/${BRANCH}`, sha: commit.sha });
+    } catch (e) {
+      if (!is422(e, /already exists/i)) throw e;
+      // shortcut: two publishes in the same second could both pass this check; fine for two people, use a lock if that changes
+      if (await openPr()) return reply(409, { error: 'conflict' }); // the other person just opened one: keep their work
+      await gh(env, fetcher, 'PATCH', `git/refs/heads/${BRANCH}`, { sha: commit.sha, force: true }); // left over from a merged or closed PR
+    }
+    const opened = await gh(env, fetcher, 'POST', 'pulls', {
+      title: 'Photos from the admin',
+      head: BRANCH,
+      base: 'main',
+      body: 'Published from the photo admin (/admin/). Check the photos under "Files changed" and on the Cloudflare preview in the checks below, then merge to put them on the site. Close without merging to turn them down: the admin goes back to the site as it is.',
+    });
+    return done(opened.number);
   });
 }
 
-/** GET /api/admin/status?commit= — has CI deployed that commit? `rerun` (POST) re-runs the failed jobs of a failed run. */
-export async function buildState(env: AdminEnv, demo: boolean, commit: string, rerun: boolean, fetcher: typeof fetch = fetch): Promise<Reply> {
+/** GET /api/admin/status?pr= — 'review' (open) | 'rejected' (closed unmerged) | after the merge: 'building' | 'live' | 'failed'.
+ * `rerun` (POST) re-runs the failed jobs of a failed build of the merge. */
+export async function buildState(env: AdminEnv, demo: boolean, prNumber: string, rerun: boolean, fetcher: typeof fetch = fetch): Promise<Reply> {
   if (demo) return reply(200, { state: 'live' });
-  if (!SHA.test(commit)) return reply(400, { error: 'bad-request' });
+  if (!/^[1-9]\d{0,8}$/.test(prNumber)) return reply(400, { error: 'bad-request' });
   if (!configured(env)) return reply(503, { error: 'not-configured' });
   return guarded(async () => {
-    const run = (await gh(env, fetcher, 'GET', `actions/runs?head_sha=${commit}&event=push&per_page=1`)).workflow_runs?.[0];
+    const pr = await gh(env, fetcher, 'GET', `pulls/${prNumber}`);
+    if (pr.state === 'open') return reply(200, { state: 'review' });
+    if (!pr.merged_at) return reply(200, { state: 'rejected' });
+    const run = (await gh(env, fetcher, 'GET', `actions/runs?head_sha=${pr.merge_commit_sha}&event=push&per_page=1`)).workflow_runs?.[0];
     if (!run || run.status !== 'completed') return reply(200, { state: 'building' }); // the deploy job is part of the run
     if (run.conclusion === 'success') return reply(200, { state: 'live' });
     if (!rerun) return reply(200, { state: 'failed' });

@@ -5,7 +5,7 @@ import { admin as t } from '../../i18n/admin';
 import { MAX_SOURCE_BYTES, OUT, type AdminState } from '../../lib/photo-admin';
 import { sortable } from './admin-drag';
 import { render as renderJpeg } from './admin-image';
-import { addToGroup, afterPublish, building, changeCount, changes, finalData, kv, move, newId, replaceSlot, resetSlot, resume, setFocus, setLabel, toggleRemoved, unpublished, type Draft } from './admin-store';
+import { addToGroup, afterPublish, changeCount, changes, finalData, fromState, isDirty, kv, move, newId, replaceSlot, resetSlot, resume, setFocus, setLabel, toggleRemoved, unpublished, type Draft } from './admin-store';
 
 type Group = AdminState['groups'][number];
 type Slot = AdminState['slots'][number];
@@ -76,7 +76,9 @@ function banner() {
     `<div class="flex items-center justify-between gap-3 rounded-card px-4 py-3 ${cls}"><p class="min-w-0"><span class="block font-bold">${title}</span>${note && `<span class="block text-sm opacity-90">${note}</span>`}</p>${action}</div>`;
   const parts = [
     stale && card('bg-danger/10 text-danger', t.stale, t.staleNote, `<button type="button" data-action="drop-reload" class="${pill} shrink-0 bg-surface-3 text-fg">${t.dropAndReload}</button>`),
+    p?.state === 'review' && card('bg-surface text-fg shadow-sm', t.review, t.reviewNote),
     p?.state === 'building' && card('bg-surface text-fg shadow-sm', t.building, t.buildingNote),
+    p?.state === 'rejected' && card('bg-surface text-fg shadow-sm', t.rejected, t.rejectedNote),
     p?.state === 'live' && card('bg-surface text-fg shadow-sm', t.live, t.liveNote),
     p?.state === 'failed' && card('bg-danger/10 text-danger', t.failed, t.failedNote, `<button type="button" data-action="retry" class="${pill} shrink-0 bg-surface-3 text-fg">${t.retry}</button>`),
     n > 0 && !stale && `<a href="#/x" class="flex items-center justify-between gap-3 rounded-card bg-primary px-4 py-3 text-on-primary"><span class="font-bold">${t.draft(n)}</span><span class="${pill} min-h-9 shrink-0 bg-bg text-primary">${t.view}</span></a>`,
@@ -90,8 +92,8 @@ const noticeBox = () => notice && `
   </p>`;
 const off = (yes: boolean) => (yes ? 'aria-disabled="true" tabindex="-1"' : '');
 const OFF = 'pointer-events-none opacity-40';
-/** Publishing is possible: there are changes, nobody else changed the site, and the last publish has finished building. */
-const canPublish = () => changeCount(draft) > 0 && !stale && !building(draft);
+/** Publishing is possible: there are changes and nobody else changed the site. A publish waiting for review takes more. */
+const canPublish = () => changeCount(draft) > 0 && !stale;
 function bar() {
   const n = changeCount(draft);
   return `
@@ -364,7 +366,7 @@ function publishView() {
       <h1 class="mt-1 font-sans text-2xl leading-tight font-bold">${t.publishTitle(n)}</h1>
       ${stale ? banner() : ''}${noticeBox()}
       <ul class="mt-4 overflow-hidden rounded-card bg-surface shadow-sm">${rows.join('')}</ul>
-      <p class="mt-3 text-sm text-muted">${building(draft) ? t.waitBuild : t.publishNote}</p>
+      <p class="mt-3 text-sm text-muted">${draft.pending?.state === 'review' ? t.publishMore : t.publishNote}</p>
       <button type="button" data-action="confirm" ${ready ? '' : 'disabled'} class="${pill} mt-4 min-h-13 w-full bg-primary text-base text-on-primary disabled:opacity-40">${busy || t.confirm}</button>
       <button type="button" data-action="discard" ${busy ? 'disabled' : ''} class="${pill} mt-1 w-full text-base text-danger disabled:opacity-40">${t.discard}</button>
     </div>`;
@@ -397,28 +399,31 @@ async function publishNow() {
     if (!res.ok) return refused(res.status);
     const done = await res.json();
     busy = '';
-    save(afterPublish(sent, done.commit, done.base)); // the sources stay on the phone until the rebuilt site shows these photos
+    save(afterPublish(sent, done.pr, done.base)); // the sources stay on the phone until the rebuilt site shows these photos
     location.hash = '#/';
     void poll();
   } catch {
     refused(0); // offline, or the photo could not be prepared
   }
 }
-/** Asks whether the last publish is live yet; again every 20 s while it is building and the page is in front. */
+/** Asks where the last publish stands; again while it waits for review (every minute) or builds (every 20 s), when the page is in front. */
 async function poll(rerun = false) {
   clearTimeout(pollTimer);
   const p = draft.pending;
-  if (!p || document.hidden || (p.state !== 'building' && !rerun)) return;
+  const waiting = (s?: string) => s === 'review' || s === 'building';
+  if (!p || !p.pr || document.hidden || (!waiting(p.state) && !rerun)) return;
   try {
-    const res = signedIn(await fetch(`/api/admin/status?commit=${p.commit}`, { method: rerun ? 'POST' : 'GET', cache: 'no-store', redirect: 'manual' }));
+    const res = signedIn(await fetch(`/api/admin/status?pr=${p.pr}`, { method: rerun ? 'POST' : 'GET', cache: 'no-store', redirect: 'manual' }));
     if (res.status === 401 && route().view !== 'edit') say(t.signedOut);
     const now = res.ok ? (await res.json()).state : undefined;
-    if (now && draft.pending?.commit === p.commit && now !== draft.pending.state) {
-      save({ ...draft, pending: { ...draft.pending, state: now } });
+    if (now && draft.pending?.pr === p.pr && now !== draft.pending.state) {
+      const pending = { ...draft.pending, state: now };
+      if (now === 'rejected' && isDirty(draft)) stale = true; // changes built on the turned-down version cannot be published
+      save(now === 'rejected' && !stale ? { ...fromState(state), pending } : { ...draft, pending }); // turned down: back to the site
       if (route().view !== 'edit') render();
     }
   } catch { /* offline: ask again later */ }
-  if (draft.pending?.state === 'building') pollTimer = window.setTimeout(poll, 20_000);
+  if (waiting(draft.pending?.state)) pollTimer = window.setTimeout(poll, draft.pending!.state === 'review' ? 60_000 : 20_000);
 }
 /** 放棄全部更改: back to the live site (or to what this phone last published). */
 function discard() {

@@ -1,4 +1,4 @@
-// POST /api/admin/publish — { base, data, blobs } → { commit, base } | 409 conflict | 400 <reason>. Rules: src/lib/admin-api.ts
+// POST /api/admin/publish — { base, data, blobs } → { pr, base } | 409 conflict | 400 <reason>. Rules: src/lib/admin-api.ts
 import type { AdminEnv } from '../../../src/lib/access.ts';
 import { publish, respond } from '../../../src/lib/admin-api.ts';
 

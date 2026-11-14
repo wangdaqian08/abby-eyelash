@@ -170,8 +170,10 @@ One build holds both looks. Look B pages are built under `/look-b/` (`src/pages/
 ## K. Photo admin (`/admin/`)
 
 Abby (and the administrator) add, delete, reorder and replace the site's photos at `https://www.abbyeyelashes.com/admin/`, on a phone.
-"發佈" makes one commit to `main` (file `src/data/photo-admin.json` plus the new photos in `src/assets/photos/`); the CI in part B2
-then tests, builds and deploys it, so a change is live a few minutes later. Design: `docs/superpowers/specs/2026-11-14-admin-photos-design.md`.
+"發佈" makes a commit on the branch `admin/photos` (file `src/data/photo-admin.json` plus the new photos in `src/assets/photos/`)
+and opens a pull request to `main` titled "Photos from the admin". The administrator checks it ("Files changed", and the Cloudflare
+preview link CI posts in the PR's checks) and merges it; the CI in part B2 then deploys `main`. Closing the PR without merging turns
+the change down: Abby's admin goes back to the site as it is. While the PR is open, Abby's next publishes are added to it. Design: `docs/superpowers/specs/2026-11-14-admin-photos-design.md`.
 
 Until K1–K3 are done the admin page opens but every publish is refused. Menu names below are from memory and Cloudflare renames
 menus often; the linked documents are the reference.
@@ -191,9 +193,9 @@ so the `*.pages.dev` addresses, which Access does not cover, cannot publish eith
 ### K2. Permission to commit: a GitHub token (5 minutes)
 
 1. GitHub → **Settings** → **Developer settings** → **Personal access tokens** → **Fine-grained tokens** → **Generate new token**.
-2. Repository access: **Only select repositories** → `abby-eyelash`. Permissions: **Contents** read and write, **Actions** read and write.
+2. Repository access: **Only select repositories** → `abby-eyelash`. Permissions: **Contents** read and write, **Pull requests** read and write, **Actions** read and write.
 3. Expiry: the longest offered. Put the date in a calendar: after it, every publish fails with "發佈沒有成功" until a new token is saved in K3.
-4. If `main` has a branch protection rule that requires pull requests, allow this token's account to bypass it; otherwise the publish is refused.
+4. Merge admin PRs with **Squash and merge** or **Rebase and merge** (`main` requires a linear history). Do not edit `photo-admin.json` in the PR before merging: Abby's next publish would then be refused as "網站已被更新".
 
 ### K3. Variables (Cloudflare Pages → `abby-eyelash` → Settings → Variables and Secrets → Production)
 
@@ -211,7 +213,7 @@ Redeploy after saving (GitHub → Actions → CI → Run workflow).
 
 - [ ] A private window on `https://www.abbyeyelashes.com/admin/` shows Cloudflare's email-code page, not the admin.
 - [ ] `curl -X POST https://abby-eyelash.pages.dev/api/admin/publish` answers `401 {"error":"signin"}`.
-- [ ] Signed in: move one photo, 發佈, and the banner goes 發佈中 → 已上線. Note how long that took and put the number in `buildingNote` in `src/i18n/admin.ts`.
+- [ ] Signed in: move one photo, 發佈. The banner says 已送出，等待管理員審核, and a PR "Photos from the admin" appears. Merge it: the banner goes 網站正在更新 → 已上線 (it checks once a minute while the PR waits).
 
 ### K5. Check once on Abby's phone (iPhone X, Safari)
 

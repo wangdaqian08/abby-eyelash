@@ -9,7 +9,8 @@ export interface Draft {
   clean: AdminData; // the data without this draft's changes: the live site, or what was last published from this phone
   removed: string[]; // `${groupId}/${id}`: deleted at publish, restorable until then
   focus: Record<string, { x: number; y: number }>; // crop position of uploads whose source is still on this phone
-  pending?: { commit: string; state: 'building' | 'live' | 'failed'; at: number }; // the last publish from this phone; at: when (ms)
+  // The last publish from this phone: its pull request, and where it stands (review → building → live; or rejected, failed).
+  pending?: { pr: number; state: 'review' | 'rejected' | 'building' | 'live' | 'failed' };
   behind?: string[]; // older bases the deployed site may still show: the ones this phone published over
 }
 
@@ -91,14 +92,12 @@ export const changeCount = (d: Draft) => Object.values(changes(d)).reduce((n, li
 export const isDirty = (d: Draft) => changeCount(d) > 0;
 
 /** After a 200 from /api/admin/publish: the published data is the clean state, on the new base, while CI builds it. */
-export function afterPublish(d: Draft, commit: string, base: string, now = Date.now()): Draft {
+/** After a 200 from /api/admin/publish. pr 0: the data was already on main. */
+export function afterPublish(d: Draft, pr: number, base: string): Draft {
   const data = finalData(d);
-  return { base, data, clean: copy(data), removed: [], focus: Object.fromEntries(Object.entries(d.focus).filter(([id]) => id in data.uploads)), pending: { commit, state: 'building', at: now }, behind: [...(d.behind ?? []), d.base] };
+  return { base, data, clean: copy(data), removed: [], focus: Object.fromEntries(Object.entries(d.focus).filter(([id]) => id in data.uploads)), pending: { pr, state: pr ? 'review' : 'live' }, behind: [...(d.behind ?? []), d.base] };
 }
 
-export const BUILD_TIMEOUT_MS = 15 * 60_000;
-/** The last publish is still being built, so a new one must wait. Not for ever: if the build status never arrives, publishing opens again. */
-export const building = (d: Draft, now = Date.now()) => d.pending?.state === 'building' && now - d.pending.at < BUILD_TIMEOUT_MS;
 
 /**
  * Which state the page starts from. The snapshot (/admin/state.json) is the deployed site; right after a publish it is
@@ -113,8 +112,9 @@ export function resume(stored: Draft | undefined, s: AdminState): { draft: Draft
     const { pending: _over, behind: _seen, ...draft } = stored;
     return { draft, stale: false };
   }
-  // The site still shows a version this phone published over: it has not caught up (building, failed, or CI is done but
+  // The site still shows a version this phone published over: it has not caught up (in review, building, failed, or CI is done but
   // the new files are not served yet). Only a version this phone has never seen means someone else published.
+  if (stored.pending?.state === 'rejected') return dirty ? { draft: stored, stale: true } : { draft: fromState(s), stale: false }; // turned down: the site stays
   if (stored.behind?.includes(s.base)) return { draft: stored, stale: false };
   return dirty ? { draft: stored, stale: true } : { draft: fromState(s), stale: false };
 }

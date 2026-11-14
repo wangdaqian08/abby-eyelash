@@ -208,8 +208,8 @@ const snapshot = await (await page.request.get(`${BASE}/admin/state.json`)).json
 check(sent.base === snapshot.base, '11: on the base the draft was started from');
 check(Object.values(sent.blobs ?? {}).every((sha) => /^[0-9a-f]{40}$/.test(sha)), '11: every blob id is a git id');
 
-// Review Focus 1 — a second publish while the first is still building
-await page.route('**/api/admin/status*', (r) => r.fulfill({ json: { state: 'building' } }));
+// Review Focus 1 — a second publish while the first is still waiting for review (it goes into the same PR)
+await page.route('**/api/admin/status*', (r) => r.fulfill({ json: { state: 'review' } }));
 await go('#/g/styled'); await view('group');
 check((await tiles())[0] === tall && await page.$eval(`[data-tile="${tall}"] img`, (i) => i.complete && i.naturalWidth > 0), '11: after publishing, this phone still shows the published state (the site is not rebuilt yet)');
 check(!(await text(`[data-tile="${tall}"]`)).includes('新增'), '11: and the upload is no longer marked new');
@@ -222,12 +222,22 @@ posts.length = 0;
 await page.click('[data-action="publish"]'); await view('publish'); await page.click('[data-action="confirm"]'); await view('list');
 const second = JSON.parse(posts.find((p) => p.path === '/api/admin/publish')?.body ?? '{}');
 check(second.base && second.base !== snapshot.base && Object.keys(second.blobs).length === 0, '11: the second publish is based on the first, not on the old site');
-check((await text('[data-banner]')).includes('發佈中'), `11: while the site is building the banner says 發佈中 (got "${await text('[data-banner]')}")`);
+check((await text('[data-banner]')).includes('等待管理員審核'), `11: while the PR waits the banner says 等待管理員審核 (got "${await text('[data-banner]')}")`);
 await go('#/g/styled'); await view('group');
 await page.click(`[data-tile="${(await tiles()).at(-1)}"] [data-action="remove"]`);
-check(await page.$eval('[data-action="publish"]', (a) => a.getAttribute('aria-disabled') === 'true'), '11: publishing again waits for the build; editing goes on');
+check(await page.$eval('[data-action="publish"]', (a) => a.getAttribute('aria-disabled') !== 'true'), '11: while the PR waits, more changes can be published into it');
 await page.reload(); await view('group');
-check((await tiles())[0] === tall && !(await tiles()).includes(victim), '11: a reload during the build keeps what was published');
+check((await tiles())[0] === tall && !(await tiles()).includes(victim), '11: a reload during the review keeps what was published');
+// the administrator closes the PR without merging: the phone goes back to the site as it is
+page.once('dialog', (d) => d.accept());
+await go('#/x'); await page.click('[data-action="discard"]'); await view('list');
+await page.unroute('**/api/admin/status*');
+await page.route('**/api/admin/status*', (r) => r.fulfill({ json: { state: 'rejected' } }));
+await page.reload(); await view('list');
+await page.waitForFunction(() => document.querySelector('[data-banner]')?.textContent.includes('管理員沒有採用'), null, { timeout: 5000 }).catch(() => {});
+check((await text('[data-banner]')).includes('管理員沒有採用'), `11: a turned-down PR says so (got "${await text('[data-banner]')}")`);
+await go('#/g/styled'); await view('group');
+check((await tiles()).join() === fixedData().groups.styled.join(), '11: and the phone shows the site as it is again');
 await page.unroute('**/api/admin/status*');
 
 // 12 — refused publishes (Review Focus 5), and 13 — discard, on a second phone
