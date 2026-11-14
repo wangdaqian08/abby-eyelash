@@ -12,7 +12,7 @@ export function pickVariant(cookieHeader: string | null, query: URLSearchParams,
 }
 
 /** Requests that never split: the booking API (one real backend for both looks). */
-export const neverSplit = (pathname: string) => pathname.startsWith('/api/');
+export const neverSplit = (pathname: string) => /^\/(api|admin)\//.test(pathname); // the booking API and the photo admin have one look
 
 export const cookieHeader = (name: string, v: Variant, maxAgeDays: number, secure: boolean) =>
   `${name}=${v}; Path=/; Max-Age=${maxAgeDays * 86400}; SameSite=Lax${secure ? '; Secure' : ''}`;

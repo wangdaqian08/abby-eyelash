@@ -63,7 +63,7 @@ const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };
         <div data-part class="mt-12 md:mt-16">
           <h3 class="text-2xl md:text-3xl">{part.title}</h3>
           <div class="mt-6 space-y-8">
-            {part.groups.map((g) => (
+            {part.groups.filter((g) => g.items.length).map((g) => ( // a group emptied in the admin is hidden
               <div>
                 <h4 class="mb-3 flex items-center gap-2 text-sm font-medium">
                   {g.swatch && <span class="size-2.5 rounded-full" style={`background:${g.swatch}`} aria-hidden="true"></span>}

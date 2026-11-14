@@ -43,7 +43,7 @@ export const isBot = (ua: string | null) =>
 
 /** A page request the router may move (not the API, the calendar link, a file or a look-B path). */
 export const routable = (pathname: string) =>
-  !/^\/(api|c|look-b|_astro|media|images)(\/|$)/.test(pathname) && (!/\.[a-z0-9]+$/i.test(pathname) || pathname.endsWith('.html'));
+  !/^\/(api|c|look-b|admin|_astro|media|images)(\/|$)/.test(pathname) && (!/\.[a-z0-9]+$/i.test(pathname) || pathname.endsWith('.html'));
 
 export interface LangRequest {
   pathname: string;

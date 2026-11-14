@@ -1,9 +1,10 @@
-import { findOption, priceText, type Lang } from './services.ts';
+import { findOption, priceText, services, type Lang } from './services.ts';
 import { localePath } from '../lib/i18n.ts';
 import { aliasHant } from '../lib/hant.ts';
+import admin from './photo-admin.json' with { type: 'json' };
 
 // Written in en + zh; aliasHant (end of file) adds 'zh-hant', read as the zh text and converted after the build.
-type L10n = { en: string; zh: string; readonly 'zh-hant'?: string };
+export type L10n = { en: string; zh: string; readonly 'zh-hant'?: string };
 export type Ratio = '4:3' | '3:4' | 'original';
 /** Fractions of the (EXIF-rotated) source, applied before the ratio crop. */
 export interface Box { left: number; top: number; width: number; height: number }
@@ -106,7 +107,17 @@ export const photo = (id: string): Photo => {
   return p;
 };
 
-export const lashCards: { serviceId: string; optionId: string; photo: string }[] = [
+export type Dir = Photo['dir'];
+export type AdminRatio = '4:3' | '3:4';
+/** A photo added in the admin (/admin/). `where`: the group id or place key it was uploaded to (used for its alt text). */
+export interface Upload { dir: Dir; ratio: AdminRatio; where: string }
+/** What the admin edits (src/data/photo-admin.json): group lists, fixed-place overrides, uploads, style names. */
+export interface AdminData { groups: Record<string, string[]>; slots: Record<string, string>; uploads: Record<string, Upload>; labels: Record<string, string> }
+export const adminData = admin as AdminData;
+const G = adminData.groups;
+const placed = (key: string, def: string) => adminData.slots[key] ?? def;
+
+const cardDefs: { serviceId: string; optionId: string; photo: string }[] = [
   { serviceId: 'lash-extensions', optionId: 'classic-natural', photo: 'classic-natural' },
   { serviceId: 'lash-extensions', optionId: 'classic-full', photo: 'classic-full-bottom' },
   { serviceId: 'lash-extensions', optionId: 'hybrid-natural', photo: 'hybrid-natural' },
@@ -114,6 +125,7 @@ export const lashCards: { serviceId: string; optionId: string; photo: string }[]
   { serviceId: 'lash-extensions', optionId: 'styled', photo: 'styled-fairy' },
   { serviceId: 'lash-lift', optionId: 'keratin-lift', photo: 'lift-1' },
 ];
+export const lashCards = cardDefs.map((c) => ({ ...c, photo: placed(`card:${c.serviceId}/${c.optionId}`, c.photo) }));
 
 export const lashLooks = (lang: Lang) => lashCards.map((c) => {
   const o = findOption(c.serviceId, c.optionId)!;
@@ -139,15 +151,15 @@ export const NAIL_VISIBLE = 3; // items shown per group before "show all"
 
 export const nailGroups: { id: string; name: L10n; swatch: string; items: string[] }[] = [
   { id: 'nude-french', name: { en: 'Nude · French', zh: '裸粉 · 法式' }, swatch: '#e8c4b8',
-    items: ['nail-6920', 'nail-3406', 'nail-4067', 'nail-2112', 'nail-2441', 'nail-2223'] },
+    items: G['nude-french'] },
   { id: 'gold-mirror', name: { en: 'Gold · Mirror', zh: '金色 · 镜面' }, swatch: '#c9a24b',
-    items: ['nail-fc1a', 'nail-4915', 'nail-2020', 'nail-9011'] },
+    items: G['gold-mirror'] },
   { id: 'warm-floral', name: { en: 'Warm yellow · Floral', zh: '暖黄 · 花朵' }, swatch: '#f0c33c',
-    items: ['nail-video', 'nail-b029', 'nail-6e6c'] },
+    items: G['warm-floral'] },
   { id: 'wine-navy', name: { en: 'Wine · Navy', zh: '酒红 · 深蓝' }, swatch: '#6b1e2e',
-    items: ['nail-8353', 'nail-1848', 'nail-3029'] },
+    items: G['wine-navy'] },
   { id: 'mono-art', name: { en: 'Black & white · Art', zh: '黑白 · 彩绘' }, swatch: '#2b2b2b',
-    items: ['nail-9024', 'nail-2473', 'nail-8351', 'nail-7334', 'nail-4630', 'nail-9264', 'nail-7242'] },
+    items: G['mono-art'] },
 ];
 
 export const styleGuide: { photo: string; optionId: string; desc: L10n }[] = [
@@ -155,35 +167,56 @@ export const styleGuide: { photo: string; optionId: string; desc: L10n }[] = [
   { photo: 'ai-classic-full', optionId: 'classic-full', desc: { en: 'Thicker and darker along the lash line, a little like eyeliner.', zh: '更浓更黑，睫毛根部像画了一道眼线。' } },
 ];
 
-export const styledLooks: { photo: string; name: L10n }[] = [
-  { photo: 'styled-fairy', name: { en: 'Fairy', zh: '仙子' } },
-  { photo: 'styled-layered', name: { en: 'Layered classic', zh: '单根层次' } },
-  { photo: 'styled-mermaid', name: { en: 'Mermaid', zh: '人鱼' } },
-  { photo: 'styled-manga', name: { en: 'Manga', zh: '漫画' } },
-  { photo: 'styled-liner', name: { en: 'Liner thickened', zh: '眼线加浓' } },
-  { photo: 'styled-liner-2', name: { en: 'Liner thickened II', zh: '眼线加浓 2' } },
-  { photo: 'styled-liner-bottom', name: { en: 'Liner thickened + bottom lashes', zh: '眼线加浓 + 下睫毛' } },
-  { photo: 'styled-sunflower', name: { en: 'Sunflower + bottom lashes', zh: '太阳花 + 下睫毛' } },
-  { photo: 'styled-pompom', name: { en: 'Little pompom + bottom lashes', zh: '小绒花 + 下睫毛' } },
-  { photo: 'styled-bottom', name: { en: 'Styled + bottom lashes', zh: '造型款 + 下睫毛' } },
-  { photo: 'styled-bottom-2', name: { en: 'Styled + bottom lashes II', zh: '造型款 + 下睫毛 2' } },
-  { photo: 'styled-close', name: { en: 'Styled close-up', zh: '造型款特写' } },
+// Names of the twelve styled photos that were on the site before the admin existed. A photo with a style name chosen in the admin uses that instead.
+const legacyLooks: Record<string, L10n> = {
+  'styled-fairy': { en: 'Fairy', zh: '仙子' },
+  'styled-layered': { en: 'Layered classic', zh: '单根层次' },
+  'styled-mermaid': { en: 'Mermaid', zh: '人鱼' },
+  'styled-manga': { en: 'Manga', zh: '漫画' },
+  'styled-liner': { en: 'Liner thickened', zh: '眼线加浓' },
+  'styled-liner-2': { en: 'Liner thickened II', zh: '眼线加浓 2' },
+  'styled-liner-bottom': { en: 'Liner thickened + bottom lashes', zh: '眼线加浓 + 下睫毛' },
+  'styled-sunflower': { en: 'Sunflower + bottom lashes', zh: '太阳花 + 下睫毛' },
+  'styled-pompom': { en: 'Little pompom + bottom lashes', zh: '小绒花 + 下睫毛' },
+  'styled-bottom': { en: 'Styled + bottom lashes', zh: '造型款 + 下睫毛' },
+  'styled-bottom-2': { en: 'Styled + bottom lashes II', zh: '造型款 + 下睫毛 2' },
+  'styled-close': { en: 'Styled close-up', zh: '造型款特写' },
+};
+const optionLabel = (dir: Dir, serviceId: string, optionId: string) =>
+  ({ key: `option:${serviceId}/${optionId}`, dir, styledOnly: false, name: findOption(serviceId, optionId)!.name as L10n });
+const lookLabel = (id: string, name: L10n) => ({ key: `look:${id}`, dir: 'lash' as Dir, styledOnly: true, name });
+/** Style names the admin's dropdown offers. `styledOnly`: offered (and shown under the photo) only in the styled group. */
+export const adminLabels: { key: string; dir: Dir; styledOnly: boolean; name: L10n }[] = [
+  lookLabel('fairy', legacyLooks['styled-fairy']), lookLabel('layered', legacyLooks['styled-layered']), lookLabel('mermaid', legacyLooks['styled-mermaid']),
+  lookLabel('manga', legacyLooks['styled-manga']), lookLabel('liner', legacyLooks['styled-liner']),
+  lookLabel('sunflower', { en: 'Sunflower', zh: '太阳花' }), lookLabel('pompom', { en: 'Little pompom', zh: '小绒花' }),
+  ...['classic-natural', 'classic-full', 'hybrid-natural', 'hybrid-full', 'styled'].map((o) => optionLabel('lash', 'lash-extensions', o)),
+  optionLabel('lash', 'lash-lift', 'keratin-lift'),
+  ...['solid', 'cat-eye', 'aurora', 'french'].map((o) => optionLabel('nails', 'gel-nails', o)),
+  optionLabel('nails', 'handcrafted-nails', 'nail-art'),
+  optionLabel('brows', 'powder-brows', 'powder'),
 ];
+/** The style name of a photo: the one chosen in the admin, else the name it had before the admin existed. */
+export const lookName = (id: string): L10n | undefined =>
+  adminLabels.find((l) => l.key === adminData.labels[id])?.name ?? legacyLooks[id];
+
+/** Styled looks (lash-extensions page): the admin's `styled` list, in its order. A photo without a style name shows no caption. */
+export const styledLooks: { photo: string; name?: L10n }[] = G.styled.map((photo) => ({ photo, name: lookName(photo) }));
 
 export const LASH_VISIBLE = 4; // lash photos shown per group before "show all"
 /** Home portfolio, lash part: grouped by look; one ratio per group so each grid is uniform. The six "lash looks" cards and the hero aren't repeated. */
 /** Home portfolio, brows part. The brows page shows brow-9795 and brow-6863, so they aren't repeated here. */
 export const BROW_VISIBLE = 4;
 export const browGroups: { id: string; name: L10n; ratio: '3:4'; items: string[] }[] = [ // 3:4 like the nail tiles
-  { id: 'before-after', name: { en: 'Before and after', zh: '术前术后对比' }, ratio: '3:4', items: ['brow-video', 'brow-8979', 'brow-8645'] },
-  { id: 'close-ups', name: { en: 'Close-ups', zh: '效果特写' }, ratio: '3:4', items: ['brow-3166', 'brow-6069'] },
+  { id: 'before-after', name: { en: 'Before and after', zh: '术前术后对比' }, ratio: '3:4', items: G['before-after'] },
+  { id: 'close-ups', name: { en: 'Close-ups', zh: '效果特写' }, ratio: '3:4', items: G['close-ups'] },
 ];
 
 export const lashGroups: { id: string; name: L10n; ratio: '3:4' | '4:3'; items: string[] }[] = [
-  { id: 'face', name: { en: 'Full-face looks', zh: '整脸效果' }, ratio: '3:4', items: ['face-natural', 'selfie', 'face-smile', 'styled-half-face', 'styled-mermaid-selfie'] },
+  { id: 'face', name: { en: 'Full-face looks', zh: '整脸效果' }, ratio: '3:4', items: G.face },
   { id: 'natural-full', name: { en: 'Natural and full sets', zh: '自然款 · 浓密款' }, ratio: '4:3',
-    items: ['classic-natural-2', 'hybrid-full-eye', 'classic-natural-colour', 'hybrid-full-bottom'] },
-  { id: 'styled', name: { en: 'Styled sets', zh: '造型款' }, ratio: '4:3', items: styledLooks.map((l) => l.photo).filter((p) => p !== 'styled-fairy') },
+    items: G['natural-full'] },
+  { id: 'styled', name: { en: 'Styled sets', zh: '造型款' }, ratio: '4:3', items: G.styled.filter((p) => !lashCards.some((c) => c.photo === p)) }, // a lash card's photo is not repeated
 ];
 
 /** Per service slot: manifest photo, optional object-position, optional literal aspect classes (default in ServicePage). */
@@ -194,7 +227,7 @@ export interface ServiceSlots {
 // Slots follow the master's ratio (4:3 shown 4:3, 3:4 shown 4:5) so no eye, nail or watermark is cropped. Literal classes so Tailwind sees them.
 const NAIL = 'aspect-[4/5]';
 const WIDE = 'aspect-[4/3]';
-export const servicePhotos: Record<string, ServiceSlots> = {
+const pageDefs: Record<string, ServiceSlots> = {
   'lash-extensions': { hero: 'styled-half-face', heroAspect: NAIL, heroPos: '50% 0%', detail: 'styled-mermaid-selfie', detailAspect: NAIL, detailPos: '50% 0%' },
   'lash-lift': { hero: 'lift-3', heroAspect: NAIL }, // no detail photo: the sidebar shows only the Book button
   'powder-brows': { hero: 'brow-9795', heroAspect: WIDE, detail: 'brow-6863', detailAspect: NAIL },
@@ -203,6 +236,45 @@ export const servicePhotos: Record<string, ServiceSlots> = {
   'nail-extensions': { hero: 'nail-2112', heroAspect: NAIL, heroPos: '50% 100%', detail: 'nail-6920', detailAspect: NAIL },
 };
 
-export const homeHero = 'hero-mirror';
+const HERO_DEF = 'hero-mirror';
+export const homeHero = placed('home-hero', HERO_DEF);
+// A place replaced in the admin shows the new photo; the position tweak belonged to the old photo, so it is dropped.
+const replaced = (serviceId: string, s: ServiceSlots): ServiceSlots => {
+  const out = { ...s };
+  for (const kind of ['hero', 'detail'] as const) {
+    const id = adminData.slots[`page:${serviceId}:${kind}`];
+    if (s[kind] && id) { out[kind] = id; delete out[`${kind}Pos`]; }
+  }
+  return out;
+};
+export const servicePhotos: Record<string, ServiceSlots> = Object.fromEntries(Object.entries(pageDefs).map(([id, s]) => [id, replaced(id, s)]));
 
-aliasHant([photos, nailVideo, browVideo, nailGroups, styleGuide, styledLooks, browGroups, lashGroups, servicePhotos]);
+// ── Admin definitions (shared by the site build, /admin/ and the publish API) ──
+const serviceName = (id: string) => services.find((s) => s.id === id)!.name as L10n;
+const place = (key: string, def: string, name: L10n) => ({ key, dir: photo(def).dir, ratio: photo(def).ratio as AdminRatio, def, name });
+/** The eighteen fixed places: replace only. `def` is the photo shown when the admin has not replaced it. */
+export const adminSlots: { key: string; dir: Dir; ratio: AdminRatio; def: string; name: L10n }[] = [
+  place('home-hero', HERO_DEF, { en: 'Home', zh: '首页' }),
+  ...cardDefs.map((c) => place(`card:${c.serviceId}/${c.optionId}`, c.photo, findOption(c.serviceId, c.optionId)!.name as L10n)),
+  ...Object.entries(pageDefs).flatMap(([id, s]) => (['hero', 'detail'] as const).filter((k) => s[k]).map((k) => place(`page:${id}:${k}`, s[k]!, serviceName(id)))),
+];
+/** The ten portfolio groups, in site order: add, delete, reorder. */
+export const adminGroups: { id: string; dir: Dir; ratio: AdminRatio; visible: number; cols: 2 | 3; name: L10n }[] = [
+  ...lashGroups.map((g) => ({ id: g.id, dir: 'lash' as Dir, ratio: g.ratio, visible: LASH_VISIBLE, cols: 2 as const, name: g.name })),
+  ...nailGroups.map((g) => ({ id: g.id, dir: 'nails' as Dir, ratio: '3:4' as const, visible: NAIL_VISIBLE, cols: 3 as const, name: g.name })),
+  ...browGroups.map((g) => ({ id: g.id, dir: 'brows' as Dir, ratio: g.ratio, visible: BROW_VISIBLE, cols: 3 as const, name: g.name })),
+];
+const NOUN: Record<Dir, L10n> = { lash: { en: 'lash extensions', zh: '嫁接睫毛' }, nails: { en: 'nails', zh: '美甲' }, brows: { en: 'powder brows', zh: '雾眉' } };
+/** Alt text of an admin upload: its style name, else the name of the group or place it was uploaded to. */
+export function uploadAlt(u: Upload, label: string | undefined): L10n {
+  const x = adminLabels.find((l) => l.key === label)?.name ?? adminGroups.find((g) => g.id === u.where)?.name ?? adminSlots.find((p) => p.key === u.where)?.name ?? NOUN[u.dir];
+  return { en: `${x.en} – ${NOUN[u.dir].en} by Abby, Burwood`, zh: `${x.zh}，Abby ${NOUN[u.dir].zh}，Burwood` };
+}
+// Admin uploads join the manifest (no source file: their master is committed by the admin, scripts/photos.mjs skips them).
+for (const [id, u] of Object.entries(adminData.uploads)) {
+  const p: Photo = { id, dir: u.dir, source: '', ratio: u.ratio, alt: uploadAlt(u, adminData.labels[id]) };
+  photos.push(p); byId.set(id, p);
+}
+
+
+aliasHant([photos, nailVideo, browVideo, nailGroups, styleGuide, styledLooks, browGroups, lashGroups, servicePhotos, adminLabels, adminSlots, legacyLooks]);

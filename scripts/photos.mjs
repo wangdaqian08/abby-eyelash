@@ -16,6 +16,7 @@ const LONG = 1600;
 const dims = { '4:3': [LONG, 1200], '3:4': [1200, LONG] };
 
 for (const p of photos) {
+  if (!p.source) continue; // an admin upload: its master is already in src/assets/photos
   let file = isAbsolute(p.source) ? p.source : join(src, p.source);
   if (!existsSync(file)) { console.log(`skip ${p.id}: source missing (${file}), keeping existing master`); continue; }
   let tmp;

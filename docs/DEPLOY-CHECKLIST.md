@@ -166,3 +166,61 @@ One build holds both looks. Look B pages are built under `/look-b/` (`src/pages/
 3. At launch: `bPercent: 50`, commit, deploy. Check: open the site in two private windows until one shows the glass header; response header `x-style-variant` says which look you got; `?style=A` / `?style=B` forces one (also locally).
 4. Decision rule, fixed before the start: run until **each look has at least 50 `booking_submitted` and at least 4 weeks have passed** (stop at 8 weeks at the latest). The look with the higher share of users with `booking_submitted` wins; `book_click`, engagement and returning users are supporting signals. Don't stop early on a good day. During the test change content only (photos, prices, text), not the design.
 5. End: delete the losing look: its `lookB ? … : …` branches, the B rules in `global.css` (or the A ones), `src/pages/look-b/`, the middleware and the `ab-test` check.
+
+## K. Photo admin (`/admin/`)
+
+Abby (and the administrator) add, delete, reorder and replace the site's photos at `https://www.abbyeyelashes.com/admin/`, on a phone.
+"發佈" makes a commit on the branch `admin/photos` (file `src/data/photo-admin.json` plus the new photos in `src/assets/photos/`)
+and opens a pull request to `main` titled "Photos from the admin". The administrator checks it ("Files changed", and the Cloudflare
+preview link CI posts in the PR's checks) and merges it; the CI in part B2 then deploys `main`. Closing the PR without merging turns
+the change down: Abby's admin goes back to the site as it is. While the PR is open, Abby's next publishes are added to it. Design: `docs/superpowers/specs/2026-11-14-admin-photos-design.md`.
+
+Until K1–K3 are done the admin page opens but every publish is refused. Menu names below are from memory and Cloudflare renames
+menus often; the linked documents are the reference.
+
+### K1. Sign-in: Cloudflare Access (10 minutes, free for up to 50 users)
+
+1. Cloudflare dashboard → **Zero Trust** → **Access** → **Applications** → **Add an application** → **Self-hosted**.
+2. Application name `Abby admin`. Session duration **1 month**.
+3. Add two public hostnames to the same application: domain `www.abbyeyelashes.com` with path `admin`, and domain `www.abbyeyelashes.com` with path `api/admin`.
+4. Policy: action **Allow**, include **Emails** → `wangdaqian08@gmail.com` (add Abby's address here later). Login method: **One-time PIN**.
+5. Save. Copy the **Application Audience (AUD) Tag** from the application's overview, and the team domain (`<team>.cloudflareaccess.com`, under Zero Trust → Settings).
+
+Docs: <https://developers.cloudflare.com/cloudflare-one/applications/configure-apps/self-hosted-public-app/>.
+The API checks the Access token itself (`src/lib/access.ts`, <https://developers.cloudflare.com/cloudflare-one/identity/authorization-cookie/validating-json/>),
+so the `*.pages.dev` addresses, which Access does not cover, cannot publish either.
+
+### K2. Permission to commit: a GitHub token (5 minutes)
+
+1. GitHub → **Settings** → **Developer settings** → **Personal access tokens** → **Fine-grained tokens** → **Generate new token**.
+2. Repository access: **Only select repositories** → `abby-eyelash`. Permissions: **Contents** read and write, **Pull requests** read and write, **Actions** read and write.
+3. Expiry: the longest offered. Put the date in a calendar: after it, every publish fails with "發佈沒有成功" until a new token is saved in K3.
+4. Merge admin PRs with **Squash and merge** or **Rebase and merge** (`main` requires a linear history). Do not edit `photo-admin.json` in the PR before merging: Abby's next publish would then be refused as "網站已被更新".
+
+### K3. Variables (Cloudflare Pages → `abby-eyelash` → Settings → Variables and Secrets → Production)
+
+| Name | Value |
+|---|---|
+| `ACCESS_TEAM_DOMAIN` | `<team>.cloudflareaccess.com` (no `https://`) |
+| `ACCESS_AUD` | the AUD tag from K1 |
+| `ADMIN_REPO` | `wangdaqian08/abby-eyelash` |
+| `ADMIN_GITHUB_TOKEN` | the token from K2, as a **secret** |
+
+Never set `ADMIN_DEMO` in Production: it turns sign-in off (demo mode cannot publish, but the page would look open).
+Redeploy after saving (GitHub → Actions → CI → Run workflow).
+
+### K4. Check after K1–K3
+
+- [ ] A private window on `https://www.abbyeyelashes.com/admin/` shows Cloudflare's email-code page, not the admin.
+- [ ] `curl -X POST https://abby-eyelash.pages.dev/api/admin/publish` answers `401 {"error":"signin"}`.
+- [ ] Signed in: move one photo, 發佈. The banner says 已送出，等待管理員審核, and a PR "Photos from the admin" appears. Merge it: the banner goes 網站正在更新 → 已上線 (it checks once a minute while the PR waits).
+
+### K5. Check once on Abby's phone (iPhone X, Safari)
+
+Automated tests run in Chromium. These five need the real phone:
+
+- [ ] Pick a photo taken with the iPhone camera (HEIC in the library): a tile appears.
+- [ ] Press and hold a tile, drag it two rows up while the page scrolls: it lands where released, and no "save image" menu appears.
+- [ ] In 編輯, the photo follows the finger; 完成 keeps the position.
+- [ ] Close Safari, open `/admin/` again: the draft is still there.
+- [ ] Every button can be hit with a thumb; nothing is hidden under the home indicator.

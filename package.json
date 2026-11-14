@@ -10,7 +10,7 @@
     "start": "npm run build && npm run preview",
     "prepreview": "node scripts/db.mjs up",
     "preview": "npm run serve",
-    "serve": "wrangler pages dev ./dist --port 8788 --ip 0.0.0.0 --compatibility-flags nodejs_compat --binding BOOKING_DEMO=1 --binding DATABASE_URL=postgres://abby_app:abby_dev@127.0.0.1:5434/postgres",
+    "serve": "wrangler pages dev ./dist --port 8788 --ip 0.0.0.0 --compatibility-flags nodejs_compat --binding BOOKING_DEMO=1 --binding ADMIN_DEMO=1 --binding DATABASE_URL=postgres://abby_app:abby_dev@127.0.0.1:5434/postgres",
     "db": "node scripts/db.mjs up",
     "db:migrate": "node scripts/db.mjs migrate",
     "pretest": "node scripts/prices.mjs",

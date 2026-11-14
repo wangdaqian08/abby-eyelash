@@ -27,7 +27,8 @@ if (!existsSync(dist)) { console.error(`dist dir not found: ${dist}`); process.e
 
 // ---- collect pages
 // dist/look-b/ = look-B copies served at the normal URLs (src/lib/ab-test.ts); robots-disallowed, never indexed as such.
-const pages = walk(dist).filter((f) => f.endsWith('.html') && !relative(dist, f).startsWith('look-b/')).map((file) => {
+// dist/admin/ = the photo admin: not a public page, checked on its own below.
+const pages = walk(dist).filter((f) => f.endsWith('.html') && !/^(look-b|admin)\//.test(relative(dist, f))).map((file) => {
   const html = read(file);
   const rel = '/' + relative(dist, file).replace(/index\.html$/, '').replace(/\.html$/, '');
   const robots = tags(html, /<meta\s[^>]*name="(robots|googlebot|bingbot)"[^>]*>/gi).map((t) => attr(t, 'content') ?? '');
@@ -92,6 +93,18 @@ for (const key of ['title', 'description']) {
   const seen = new Map();
   for (const p of indexable) if (p[key]) seen.set(p[key], [...(seen.get(p[key]) ?? []), p.rel]);
   for (const [v, where] of seen) if (where.length > 1) fail(where.join(', '), `duplicate ${key} "${v}"`);
+}
+
+// ---- the photo admin stays out of search, and has no look-B copy
+{
+  const adminFile = join(dist, 'admin', 'index.html');
+  if (!existsSync(adminFile)) fail('/admin/', 'page missing');
+  else if (!/<meta\s[^>]*name="robots"[^>]*content="[^"]*noindex/i.test(read(adminFile))) fail('/admin/', 'not noindex');
+  if (existsSync(join(dist, 'look-b', 'admin'))) fail('/admin/', 'has a look-B copy');
+  const robotsTxt = existsSync(join(dist, 'robots.txt')) ? read(join(dist, 'robots.txt')) : '';
+  for (const g of robotsTxt.split(/\n\s*\n/).filter((g) => /^User-agent:/im.test(g)))
+    if (!/^Disallow:\s*\/admin\/\s*$/m.test(g)) fail('robots.txt', `${g.split('\n')[0]} does not disallow /admin/`);
+  for (const f of walk(dist).filter((f) => /sitemap.*\.xml$/.test(f))) if (read(f).includes('/admin')) fail('sitemap', `${relative(dist, f)} lists /admin`);
 }
 
 // ---- robots.txt

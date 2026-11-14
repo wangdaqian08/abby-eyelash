@@ -18,7 +18,7 @@ export default defineConfig({
   integrations: [
     sitemap({
       i18n: { defaultLocale: 'en', locales: { en: 'en-AU', zh: 'zh-Hans', 'zh-hant': 'zh-Hant' } },
-      filter: (page) => !/\/404\/?$/.test(page) && !new URL(page).pathname.startsWith('/look-b/'), // look-B copies are served at the normal URLs
+      filter: (page) => !/\/404\/?$/.test(page) && !/^\/(look-b|admin)\//.test(new URL(page).pathname), // look-B copies are served at the normal URLs
       // Truthful lastmod (GEO-STRATEGY #13): service pages and the home pages (which show prices) get a real date; others omit it.
       serialize(item) {
         const slug = new URL(item.url).pathname.replace(/^\/zh(?:-hant)?(?=\/)/, '').replace(/^\/|\/$/g, '');
