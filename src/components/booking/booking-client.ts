@@ -732,7 +732,8 @@ export function start(root: HTMLElement) {
     st.items = [{ service: pre, option: main.find((o) => o.id === q.get('option')) ?? (main.length === 1 ? main[0] : undefined), addons: solo ? { [solo.id]: 1 } : {} }];
   }
   // From a look photo (?look=<photo id>): its name goes into the notes. Only ids the page knows, so the URL cannot inject text.
+  // hasOwnProperty, not Object.hasOwn (Safari 15.4+).
   const look = q.get('look');
-  if (look && cfg.looks && Object.hasOwn(cfg.looks, look) && !st.details.notes) st.details.notes = t.notesLook + cfg.looks[look];
+  if (look && cfg.looks && Object.prototype.hasOwnProperty.call(cfg.looks, look) && !st.details.notes) st.details.notes = t.notesLook + cfg.looks[look];
   go(1, false);
 }

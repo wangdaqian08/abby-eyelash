@@ -289,8 +289,14 @@ if (mine()) {
     await page.click('[data-action="to-details"]');
     return page.inputValue('#bk-notes');
   };
-  const got = await notesFor('styled-mermaid');
-  check(got === 'Look I’d like: Mermaid', `look=styled-mermaid: notes should be "Look I’d like: Mermaid", got "${got}"`);
+  // Any look the page knows (the admin decides which photos have one), so the test does not pin a photo.
+  await open('/book/');
+  const [id, name] = Object.entries(JSON.parse(await page.$eval('[data-booking]', (e) => e.dataset.config)).looks ?? {})[0] ?? [];
+  check(id, 'booking: data-config should carry the look names');
+  if (id) {
+    const got = await notesFor(id);
+    check(got === `Look I’d like: ${name}`, `look=${id}: notes should be "Look I’d like: ${name}", got "${got}"`);
+  }
   for (const bad of ['nope', '__proto__']) {
     const v = await notesFor(bad);
     check(v === '', `look=${bad}: notes should stay empty, got "${v}"`);
@@ -308,6 +314,9 @@ if (mine()) {
   check((await page.$$('#gallery [data-part]:last-child [data-bar]')).length === 0, 'gallery: brows have no name bar');
   const noBar = await page.$$eval('#gallery [data-part]:not(:last-child) li', (lis) => lis.filter((li) => !li.querySelector('[data-bar]')).length);
   check(noBar === 0, `gallery: every lash and nail card has a name bar (${noBar} without)`);
+  // The focus ring is drawn outside the link: nothing around a photo link may clip it.
+  const clipped = await page.$$eval('#gallery [data-part] li:not(:has([data-video])) > a', (as) => as.filter((a) => getComputedStyle(a.parentElement).overflow !== 'visible').length);
+  check(clipped === 0, `gallery: ${clipped} photo links sit in a clipping card, so their focus ring is hidden`);
   const toggle = await page.$('#gallery [data-video-toggle]');
   if (toggle) {
     await toggle.dispatchEvent('click'); // a real mouse would first hover, which already plays it

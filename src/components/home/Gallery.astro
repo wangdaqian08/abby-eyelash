@@ -30,6 +30,8 @@ const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };
 // Each photo opens its booking (photoBooking); lash and nail cards show the style in a bar under the photo, brows show none.
 const booking = (id: string) => photoBooking(id, photo(videos[id]?.poster ?? id).dir);
 const href = (id: string) => bookingHref(lang, id, booking(id));
+// The card is the link itself, so its focus ring is not clipped and a tap presses it (data-pressed); a video tile keeps it on the <li>.
+const CARD = 'group/card overflow-hidden rounded-field bg-surface-3 shadow-[var(--shadow-soft)] transition duration-300 ease-brand hover:-translate-y-0.5 hover:shadow-lift active:scale-[.98]';
 const small = (p: string) => p === 'nails' || p === 'brows'; // three-column grids
 const barClass = (p: string) => `flex items-center justify-between gap-1 ${small(p) ? 'min-h-6.5 py-1 pl-1.75 pr-1.25' : 'min-h-7.5 py-1.5 pl-2.5 pr-2'}`;
 ---
@@ -54,7 +56,7 @@ const barClass = (p: string) => `flex items-center justify-between gap-1 ${small
       const tiles = (g: Group, ids: string[]) => (
         <ul data-reveal data-stagger data-late class={grid(part.id)}>
           {ids.map((id) => (
-            <li class="group/card overflow-hidden rounded-field bg-surface-3 shadow-[var(--shadow-soft)] transition duration-300 ease-brand hover:-translate-y-0.5 hover:shadow-lift active:scale-[.98]">
+            <li class={videos[id] ? `${CARD} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary` : undefined}>
               {videos[id] ? (
                 <>
                   <div class:list={['relative bg-fg/5', aspect[g.ratio]]}>
@@ -70,7 +72,7 @@ const barClass = (p: string) => `flex items-center justify-between gap-1 ${small
                   {booking(id).name && <a href={href(id)} data-track="book_click" class={barClass(part.id)} data-bar>{bar(id)}</a>}
                 </>
               ) : (
-                <a href={href(id)} data-track="book_click" class="block">
+                <a href={href(id)} data-track="book_click" class:list={['block', CARD]}>
                   <span class:list={['block overflow-hidden bg-fg/5', aspect[g.ratio]]}>
                     <Picture src={photoSrc(id)} alt={photo(id).alt[lang]} formats={['avif', 'webp']} widths={[240, 480, 720]} sizes={sizes(part.id)} loading="lazy" class="size-full object-cover transition-transform duration-700 ease-soft group-hover/card:scale-[1.04]" />
                   </span>
