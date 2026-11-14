@@ -297,6 +297,33 @@ if (mine()) {
   }
 }
 
+// 10. Home gallery: every photo opens the booking. Reads whatever the admin published, so it picks its cards from the page.
+if (mine()) {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(BASE + '/');
+  const hrefs = await page.$$eval('#gallery [data-part] a[href*="/book?service="]', (as) => as.map((a) => a.getAttribute('href')));
+  const tiles = await page.$$eval('#gallery [data-part] li', (lis) => lis.length);
+  const videoTiles = await page.$$eval('#gallery [data-video]', (v) => v.length);
+  check(hrefs.length >= tiles - videoTiles, `gallery: every photo should be a booking link (${hrefs.length} links, ${tiles} tiles)`);
+  check((await page.$$('#gallery [data-part]:last-child [data-bar]')).length === 0, 'gallery: brows have no name bar');
+  const noBar = await page.$$eval('#gallery [data-part]:not(:last-child) li', (lis) => lis.filter((li) => !li.querySelector('[data-bar]')).length);
+  check(noBar === 0, `gallery: every lash and nail card has a name bar (${noBar} without)`);
+  const toggle = await page.$('#gallery [data-video-toggle]');
+  if (toggle) {
+    await toggle.dispatchEvent('click'); // a real mouse would first hover, which already plays it
+    check((await toggle.getAttribute('aria-pressed')) === 'true' && new URL(page.url()).pathname === '/', 'gallery: tapping a video plays it and stays on the page');
+  }
+  const withOption = hrefs.find((h) => h.includes('&option=') && !h.includes('powder-brows'));
+  if (withOption) {
+    const u = new URL(withOption, BASE);
+    await page.click(`#gallery a[href="${withOption}"] >> nth=0`);
+    await page.waitForSelector('input[name="bk-service"]');
+    const svc = u.searchParams.get('service'), opt = u.searchParams.get('option');
+    check(await isChecked(`input[name="bk-option-${svc}"][value="${opt}"]`), `gallery: ${withOption} should open booking with ${opt} chosen`);
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
+}
+
 check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
 await browser.close();
 console.log(`${cases} lash click-order cases, ${pass} checks passed, ${fails.length} failed`);
