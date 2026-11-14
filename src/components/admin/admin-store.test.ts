@@ -20,7 +20,7 @@ test('addToGroup puts the upload first, centred, and leaves the live data alone'
   const d = addToGroup(d0, 'styled', 'u-aaaaaaaaaa', LASH);
   assert.deepEqual(d.data.groups.styled, ['u-aaaaaaaaaa', ...styled]);
   assert.deepEqual(d.data.uploads['u-aaaaaaaaaa'], LASH);
-  assert.deepEqual(d.focus['u-aaaaaaaaaa'], { x: 0.5, y: 0.5 });
+  assert.deepEqual(d.focus['u-aaaaaaaaaa'], { x: 0.5, y: 0.5, z: 1 });
   assert.deepEqual(d0.data.groups.styled, styled); // no mutation
   assert.deepEqual(d.clean, adminData);
 });
@@ -33,6 +33,13 @@ test('toggleRemoved marks and restores a live photo, and drops an unpublished up
   d = setLabel(addToGroup(d, 'styled', 'u-aaaaaaaaaa', LASH), 'u-aaaaaaaaaa', 'look:mermaid');
   d = toggleRemoved(d, 'styled', 'u-aaaaaaaaaa');
   assert.deepEqual([d.data.groups.styled, d.data.uploads, d.data.labels, d.focus, d.removed], [styled, {}, {}, {}, []]);
+});
+test('setFocus keeps the zoom with the position; a new upload starts at 1x, centred', () => {
+  let d = addToGroup(fresh(), 'styled', 'u-aaaaaaaaaa', LASH);
+  assert.deepEqual(d.focus['u-aaaaaaaaaa'], { x: 0.5, y: 0.5, z: 1 });
+  d = setFocus(d, 'u-aaaaaaaaaa', 0.3, 0.6, 1.8);
+  assert.deepEqual(d.focus['u-aaaaaaaaaa'], { x: 0.3, y: 0.6, z: 1.8 });
+  assert.deepEqual(replaceSlot(fresh(), 'home-hero', 'u-bbbbbbbbbb', HERO).focus['u-bbbbbbbbbb'], { x: 0.5, y: 0.5, z: 1 });
 });
 test('move reorders within the group only', () => {
   const d = move(fresh(), 'styled', 2, 0);
@@ -83,7 +90,7 @@ test('afterPublish: the published data becomes the clean state on the new base, 
   assert.deepEqual([d.base, d.data, d.clean, d.removed, d.pending], ['base-1', final, final, [], { pr: 42, state: 'review' }]);
   assert.deepEqual(afterPublish(d, 0, 'base-1').pending, { pr: 0, state: 'live' }); // already on the site
   assert.equal(isDirty(d), false);
-  assert.deepEqual(d.focus['u-aaaaaaaaaa'], { x: 0.5, y: 0.5 }); // its thumbnail is still drawn from the source until the site has it
+  assert.deepEqual(d.focus['u-aaaaaaaaaa'], { x: 0.5, y: 0.5, z: 1 }); // its thumbnail is still drawn from the source until the site has it
 });
 test('resume: a second visit while the first publish is still building keeps the published state (the snapshot is older)', () => {
   const published = afterPublish(addToGroup(fresh(), 'styled', 'u-aaaaaaaaaa', LASH), 42, 'base-1');

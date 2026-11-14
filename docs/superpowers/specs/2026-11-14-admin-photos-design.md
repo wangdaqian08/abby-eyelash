@@ -38,7 +38,8 @@ Address: `/admin/`. Two tabs.
 
 - Accepted: photos only (JPEG, PNG, HEIC as the phone delivers them), source file at most 20 MB.
 - The ratio comes from the group or place and cannot be changed.
-- "編輯" opens the position screen: the photo sits behind a fixed frame of that ratio and is dragged with one finger. No zoom.
+- "編輯" opens the position screen: the photo sits behind a fixed frame of that ratio and is dragged with one finger.
+- Zoom (owner's decision, 2026-11-14; prototype screens 08 and 09): two-finger pinch or a slider, 1x to 3x, zoom in only (never white edges). The output size does not change: a zoomed crop takes a smaller part of the photo and enlarges it. Past the photo's sharp limit (the zoom at which the part used is as wide as the output, e.g. 1.9x for an iPhone X portrait photo in a 4:3 group) the slider turns orange and a warning says "放大過多，畫質可能變差" with the limit; it never blocks publishing. Like the position, the zoom can be changed only before the photo is published.
 - Output, made by the program with no choice for the user: 1600 × 1200 (4:3) or 1200 × 1600 (3:4), JPEG quality 0.82, no metadata. These are the values of `scripts/photos.mjs`.
 - Position can be changed only before the photo is published. A published photo: reorder, delete, change the style name; to re-crop, delete and upload again (the site keeps only the cropped file).
 - Style name: an optional dropdown under the editor. Options are the existing names of that service; no free text.
@@ -68,7 +69,7 @@ Cloudflare Access (Zero Trust) in front of `/admin` and `/api/admin`: one-time c
 
 - Video upload, and the moving part of Live Photos: version 2. The two existing videos stay; in the admin they can be reordered and deleted, not added.
 - Tapping a portfolio photo to open booking: a separate site change.
-- Typing new style names; zoom in the editor; moving a photo between groups; merging two people's drafts; desktop layout.
+- Typing new style names; moving a photo between groups; merging two people's drafts; desktop layout.
 
 ## Open facts to verify before or during the build
 
