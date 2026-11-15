@@ -70,10 +70,10 @@ const BAR = 'flex items-center justify-between gap-[.382em] px-[.618em] py-[.382
                       </span>
                     </button>
                   </div>
-                  {booking(id).name && <a href={href(id)} data-track="book_click" class={BAR} data-bar>{bar(id)}</a>}
+                  {booking(id).name && <a href={href(id)} data-track="book_click" data-photo={id} class={BAR} data-bar>{bar(id)}</a>}
                 </>
               ) : (
-                <a href={href(id)} data-track="book_click" class:list={['block', CARD]}>
+                <a href={href(id)} data-track="book_click" data-photo={id} class:list={['block', CARD]}>
                   <span class:list={['block overflow-hidden bg-fg/5', aspect[g.ratio]]}>
                     <Picture src={photoSrc(id)} alt={photo(id).alt[lang]} formats={['avif', 'webp']} widths={[240, 480, 720]} sizes={sizes(part.id)} loading="lazy" class="size-full object-cover transition-transform duration-700 ease-soft group-hover/card:scale-[1.04]" />
                   </span>
