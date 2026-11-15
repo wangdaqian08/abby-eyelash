@@ -31,9 +31,10 @@ const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };
 const booking = (id: string) => photoBooking(id, photo(videos[id]?.poster ?? id).dir);
 const href = (id: string) => bookingHref(lang, id, booking(id));
 // The card is the link itself, so its focus ring is not clipped and a tap presses it (data-pressed); a video tile keeps it on the <li>.
-const CARD = 'group/card overflow-hidden rounded-field bg-surface-3 shadow-[var(--shadow-soft)] transition duration-300 ease-brand hover:-translate-y-0.5 hover:shadow-lift active:scale-[.98]';
-const small = (p: string) => p === 'nails' || p === 'brows'; // three-column grids
-const barClass = (p: string) => `flex items-center justify-between gap-1 ${small(p) ? 'min-h-6.5 py-1 pl-1.75 pr-1.25' : 'min-h-7.5 py-1.5 pl-2.5 pr-2'}`;
+// @container: the bar text follows the card's width (cqi), 12px on the smallest phone card up to 15px on the wide desktop one.
+const CARD = 'group/card @container overflow-hidden rounded-field bg-surface-3 shadow-[var(--shadow-soft)] transition duration-300 ease-brand hover:-translate-y-0.5 hover:shadow-lift active:scale-[.98]';
+// Golden ratio inside the bar, all in em so it scales as one piece: line 1.618em, padding 0.382em : 0.618em, chevron 0.786em.
+const BAR = 'flex items-center justify-between gap-[.382em] px-[.618em] py-[.382em] text-[length:clamp(12px,9.4px_+_1.45cqi,15px)] leading-[1.618]';
 ---
 <section id="gallery" class="bg-surface-2 py-16 md:py-24">
   <div class="mx-auto max-w-6xl px-4 sm:px-6">
@@ -48,8 +49,8 @@ const barClass = (p: string) => `flex items-center justify-between gap-1 ${small
         const b = booking(id);
         return (
           <>
-            <span class:list={['min-w-0 truncate transition-colors duration-200 group-hover/card:text-primary', small(part.id) ? 'text-[11px] leading-4' : 'text-xs leading-4', b.muted ? 'text-muted' : 'font-medium']}>{b.name![lang]}</span>
-            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="size-3 shrink-0 text-accent-ink transition-transform duration-200 group-hover/card:translate-x-0.5"><path d="m9 6 6 6-6 6" /></svg>
+            <span class:list={['min-w-0 truncate transition-colors duration-200 group-hover/card:text-primary', b.muted ? 'text-muted' : 'font-medium']}>{b.name![lang]}</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="size-[.786em] shrink-0 text-accent-ink transition-transform duration-200 group-hover/card:translate-x-0.5"><path d="m9 6 6 6-6 6" /></svg>
           </>
         );
       };
@@ -69,14 +70,14 @@ const barClass = (p: string) => `flex items-center justify-between gap-1 ${small
                       </span>
                     </button>
                   </div>
-                  {booking(id).name && <a href={href(id)} data-track="book_click" class={barClass(part.id)} data-bar>{bar(id)}</a>}
+                  {booking(id).name && <a href={href(id)} data-track="book_click" class={BAR} data-bar>{bar(id)}</a>}
                 </>
               ) : (
                 <a href={href(id)} data-track="book_click" class:list={['block', CARD]}>
                   <span class:list={['block overflow-hidden bg-fg/5', aspect[g.ratio]]}>
                     <Picture src={photoSrc(id)} alt={photo(id).alt[lang]} formats={['avif', 'webp']} widths={[240, 480, 720]} sizes={sizes(part.id)} loading="lazy" class="size-full object-cover transition-transform duration-700 ease-soft group-hover/card:scale-[1.04]" />
                   </span>
-                  {booking(id).name && <span class={barClass(part.id)} data-bar>{bar(id)}</span>}
+                  {booking(id).name && <span class={BAR} data-bar>{bar(id)}</span>}
                 </a>
               )}
             </li>

@@ -317,6 +317,14 @@ if (mine()) {
   // The focus ring is drawn outside the link: nothing around a photo link may clip it.
   const clipped = await page.$$eval('#gallery [data-part] li:not(:has([data-video])) > a', (as) => as.filter((a) => getComputedStyle(a.parentElement).overflow !== 'visible').length);
   check(clipped === 0, `gallery: ${clipped} photo links sit in a clipping card, so their focus ring is hidden`);
+  // The bar text follows the card width: 12px floor on the smallest phone card, larger on the wide desktop nail card.
+  const barPx = () => page.$eval('#gallery [data-part]:nth-child(3) [data-bar]', (b) => parseFloat(getComputedStyle(b).fontSize));
+  const phonePx = await barPx();
+  check(phonePx === 12, `gallery: phone nail bar text should be 12px, got ${phonePx}`);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const deskPx = await barPx();
+  check(deskPx >= 14 && deskPx <= 15, `gallery: desktop nail bar text should be 14–15px, got ${deskPx}`);
+  await page.setViewportSize({ width: 375, height: 812 });
   const toggle = await page.$('#gallery [data-video-toggle]');
   if (toggle) {
     await toggle.dispatchEvent('click'); // a real mouse would first hover, which already plays it
