@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// Post-build SEO/GEO checks over a built dist dir (docs/GEO-STRATEGY.md #1, #3, #5, #11–#15).
+// Post-build SEO/GEO checks over a built dist dir (docs/GEO-STRATEGY.md #1, #3, #5, #11–#15, #20).
 // Usage: node scripts/check-seo.mjs [distDir=dist]   — exits 1 with a report if anything fails.
 // shortcut: regex HTML parsing — fine for Astro's predictable output; switch to a real parser if checks get flaky.
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import sharp from 'sharp';
 
 const dist = process.argv[2] ?? 'dist';
 // Required by GEO-STRATEGY #3 + D2 (kept independent of src/pages/robots.txt.ts on purpose).
@@ -93,6 +94,31 @@ for (const key of ['title', 'description']) {
   const seen = new Map();
   for (const p of indexable) if (p[key]) seen.set(p[key], [...(seen.get(p[key]) ?? []), p.rel]);
   for (const [v, where] of seen) if (where.length > 1) fail(where.join(', '), `duplicate ${key} "${v}"`);
+}
+
+// ---- link previews (og:image): the picture Facebook, WeChat and iMessage show for a shared link (GEO-STRATEGY #20)
+// Every og:image is a real 1200 × 630 picture, and its width/height tags say so. A service page (the page its own Service
+// node points to) shows its own photo: never the site default, never the photo of another service in the same language.
+{
+  const sizeOf = new Map();
+  const shared = new Map(); // `${lang} ${image path}` → service pages using it
+  for (const p of indexable) {
+    if (!/^https?:\/\//.test(p.ogImage ?? '')) continue; // missing or relative: reported above
+    const path = decodeURIComponent(new URL(p.ogImage).pathname), file = join(dist, path);
+    if (existsSync(file)) {
+      if (!sizeOf.has(file)) sizeOf.set(file, await sharp(file).metadata().then((m) => `${m.width}x${m.height}`, () => 'unreadable'));
+      if (sizeOf.get(file) !== '1200x630') fail(p.rel, `og:image ${path} is ${sizeOf.get(file)}, expected 1200x630`);
+    }
+    const said = ['width', 'height'].map((k) => attr(tags(p.html, new RegExp(`<meta\\s[^>]*property="og:image:${k}"[^>]*>`, 'gi'))[0] ?? '', 'content')).join('x');
+    if (said !== '1200x630') fail(p.rel, `og:image:width/height say ${said}, expected 1200x630`);
+    const nodes = [];
+    const collect = (v) => { if (Array.isArray(v)) v.forEach(collect); else if (v && typeof v === 'object') { nodes.push(v); Object.values(v).forEach(collect); } };
+    for (const raw of p.jsonld) { try { collect(JSON.parse(raw)); } catch { /* reported above */ } }
+    if (!nodes.some((n) => n['@type'] === 'Service' && n.url === p.canonicals[0])) continue; // not a service page
+    if (path === '/og-default.jpg') fail(p.rel, 'a service page shows the site default og:image, not its own photo');
+    shared.set(`${p.lang} ${path}`, [...(shared.get(`${p.lang} ${path}`) ?? []), p.rel]);
+  }
+  for (const [key, where] of shared) if (where.length > 1) fail(where.join(', '), `service pages share one og:image (${key.split(' ')[1]})`);
 }
 
 // ---- the photo admin stays out of search, and has no look-B copy

@@ -36,7 +36,10 @@ const route = () => {
   const [, view = '', id = ''] = location.hash.replace(/\?.*$/, '').split('/');
   return { view: ({ g: 'group', s: 'slots', e: 'edit', p: 'preview', x: 'publish' } as Record<string, string>)[view] ?? 'list', id: decodeURIComponent(id) };
 };
-const aspect = (ratio: string) => (ratio === '4:3' ? 'aspect-[4/3]' : 'aspect-[3/4]');
+const ASPECT: Record<string, string> = { '4:3': 'aspect-[4/3]', '3:4': 'aspect-[3/4]', '1.91:1': 'aspect-[40/21]' }; // literal classes, so Tailwind sees them
+const aspect = (ratio: string) => ASPECT[ratio];
+const portrait = (ratio: Slot['ratio']) => OUT[ratio][1] > OUT[ratio][0];
+const isOg = (ratio: string) => ratio === '1.91:1'; // a service page's link preview
 const slotNow = (s: Slot) => draft.data.slots[s.key] ?? s.def;
 const removed = (g: string, id: string) => draft.removed.includes(`${g}/${id}`);
 const nameOf = (id: string) => state.labels.find((l) => l.key === draft.data.labels[id])?.name ?? state.photos[id]?.name ?? '';
@@ -187,11 +190,14 @@ function groupView(g: Group) {
 function slotsView() {
   const row = (s: Slot) => {
     const changed = draft.data.slots[s.key] !== draft.clean.slots[s.key];
+    // A link preview nobody has picked yet shows the automatic cut of the page's hero: what the page uses now.
+    const auto = s.auto && !(s.key in draft.data.slots);
+    const shown = auto ? `<img src="${esc(s.auto!)}" alt="" draggable="false" class="size-full object-cover">` : picture(slotNow(s));
     return `
       <li data-slot="${s.key}" class="flex min-h-17 items-center gap-3 px-3 py-2 ${changed ? 'bg-primary/5' : ''}">
-        <span class="w-14 shrink-0 overflow-hidden rounded-field bg-surface-2 ${aspect(s.ratio)} ${changed ? 'outline-3 -outline-offset-3 outline-primary' : ''}">${picture(slotNow(s))}</span>
+        <span class="${isOg(s.ratio) ? 'w-16' : 'w-14'} shrink-0 overflow-hidden rounded-field bg-surface-2 ${aspect(s.ratio)} ${changed ? 'outline-3 -outline-offset-3 outline-primary' : ''}">${shown}</span>
         <span class="min-w-0 flex-1"><span class="block font-medium">${esc(s.section === 'hero' ? t.heroName : s.name)}</span>
-          <span class="block text-sm ${changed ? 'font-bold text-primary' : 'text-muted'}">${changed ? t.replaced : t.ratio[s.ratio]}</span></span>
+          <span class="block text-sm ${changed ? 'font-bold text-primary' : 'text-muted'}">${changed ? t.replaced : isOg(s.ratio) ? (auto ? t.ogAuto : t.ogSet) : t.ratio[s.ratio]}</span></span>
         ${changed
           ? `<a data-action="edit" href="#/e/${slotNow(s)}?s=${encodeURIComponent(s.key)}" class="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-sm font-bold text-primary">${t.edit}</a>
              <button type="button" data-action="reset" class="${pill} shrink-0 bg-surface-3 text-fg shadow-sm">${t.restore}</button>`
@@ -215,9 +221,9 @@ function slotsView() {
 // ── Editor: drag and zoom the photo behind a frame of the fixed ratio; optional style name ──
 /** Sizes on screen: the frame, the photo scaled to cover it, and how far the photo can move (spare). */
 function layout() {
-  const e = editing!, wide = e.ctx.ratio === '4:3';
+  const e = editing!, [ow, oh] = OUT[e.ctx.ratio];
   const stageW = root.clientWidth - 32; // the content width (px-4 on both sides)
-  const fw = wide ? stageW : Math.round(stageW * 0.75), fh = Math.round(wide ? fw * 0.75 : (fw * 4) / 3);
+  const fw = portrait(e.ctx.ratio) ? Math.round(stageW * 0.75) : stageW, fh = Math.round((fw * oh) / ow);
   const base = e.w ? Math.max(fw / e.w, fh / e.h) : 0;
   const dw = e.w ? e.w * base * e.z : fw, dh = e.h ? e.h * base * e.z : fh;
   const spareX = Math.max(0, Math.round(dw - fw)), spareY = Math.max(0, Math.round(dh - fh));
@@ -281,7 +287,7 @@ function guideLayer() {
     return `<div data-thirds><span class="${line} inset-y-0 left-1/3 w-px"></span><span class="${line} inset-y-0 left-2/3 w-px"></span>
       <span class="${line} inset-x-0 top-1/3 h-px"></span><span class="${line} inset-x-0 top-2/3 h-px"></span></div>`;
   }
-  const g = goldenGuide(e.ctx.ratio !== '4:3', guideTurn);
+  const g = goldenGuide(portrait(e.ctx.ratio), guideTurn);
   return `${g.svg}<span data-guide-end class="absolute -mt-1.75 -ml-1.75 size-3.5 rounded-full bg-[#f3d08a] shadow-[0_0_0_2px_rgb(30_18_21/.55),0_0_0_7px_rgb(243_208_138/.35)]" style="left:${g.end[0] * 100}%;top:${g.end[1] * 100}%"></span>`;
 }
 function guideRow() {
@@ -324,12 +330,13 @@ function editView() {
         <span class="pointer-events-none absolute rounded-full bg-fg/75 px-2 py-0.5 text-xs whitespace-nowrap text-bg" style="left:${l.left + 8}px;top:${l.top + 8}px">${t.ratio[e.ctx.ratio]} · ${t.fixedRatio}</span>
       </div>
       ${e.w ? zoomControls() : `<p class="mt-3 text-sm text-muted">${t.locked}</p>`}
+      ${isOg(e.ctx.ratio) ? '' : `
       <label for="look-name" class="mt-5 block font-bold">${t.labelTitle}</label>
       <select id="look-name" data-label class="mt-1.5 h-12 w-full rounded-field bg-surface-3 px-3 text-base shadow-sm outline-1 outline-primary/20">
         <option value="">${t.labelNone}</option>
         ${options.map((o) => `<option value="${o.key}" ${o.key === label ? 'selected' : ''}>${esc(o.name)}</option>`).join('')}
       </select>
-      <p class="mt-1.5 text-xs leading-relaxed text-muted">${legacy ? `${t.currentName(esc(legacy))}。` : ''}${e.ctx.dir === 'brows' ? t.labelHidden : t.labelShown}</p>
+      <p class="mt-1.5 text-xs leading-relaxed text-muted">${legacy ? `${t.currentName(esc(legacy))}。` : ''}${e.ctx.dir === 'brows' ? t.labelHidden : t.labelShown}</p>`}
     </div>`;
 }
 /** Opens the editor for the photo in the address (#/e/<id>?g=<group> or ?s=<place>); reads the source's size first. */
@@ -350,7 +357,8 @@ async function openEditor(id: string) {
 function closeEditor(keep: boolean) {
   const e = editing!;
   if (keep) {
-    let next = setLabel(draft, e.id, root.querySelector<HTMLSelectElement>('select[data-label]')!.value);
+    const name = root.querySelector<HTMLSelectElement>('select[data-label]'); // a link preview has no style name
+    let next = name ? setLabel(draft, e.id, name.value) : draft;
     const r2 = (n: number) => Math.round(n * 100) / 100;
     if (e.w) next = setFocus(next, e.id, r2(e.x), r2(e.y), r2(e.z));
     save(next);
@@ -419,7 +427,7 @@ function previewView() {
     </section>`;
   const place = (s: Slot) => `
     <section class="mt-6">${head(t.previewSlot(slotTitle(s)))}
-      <figure data-preview-slot="${s.key}" class="mx-auto mt-2 overflow-hidden rounded-card bg-surface-2 ${s.ratio === '4:3' ? 'w-full' : 'w-2/3'} ${aspect(s.ratio)}">${picture(slotNow(s))}</figure>
+      <figure data-preview-slot="${s.key}" class="mx-auto mt-2 overflow-hidden rounded-card bg-surface-2 ${portrait(s.ratio) ? 'w-2/3' : 'w-full'} ${aspect(s.ratio)}">${picture(slotNow(s))}</figure>
     </section>`;
   const groups = state.groups.filter((g) => touched(g, c));
   const body = [...groups.map(home), ...(groups.includes(styled) ? [lashPage()] : []), ...state.slots.filter((s) => c.replaced.includes(s.key)).map(place)];

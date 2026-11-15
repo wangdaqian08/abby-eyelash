@@ -3,7 +3,7 @@
 import { adminGroups, adminLabels, adminSlots, photos, videos, type AdminData, type AdminRatio, type Dir } from '../data/photos.ts';
 
 /** Master size per ratio: the values of scripts/photos.mjs. */
-export const OUT: Record<AdminRatio, [number, number]> = { '4:3': [1600, 1200], '3:4': [1200, 1600] };
+export const OUT: Record<AdminRatio, [number, number]> = { '4:3': [1600, 1200], '3:4': [1200, 1600], '1.91:1': [1200, 630] }; // 1.91:1 = the og:image size
 export const JPEG_QUALITY = 0.82;
 export const MAX_SOURCE_BYTES = 6 * 1024 * 1024; // the photo picked on the phone (owner's decision, 2026-11-14); only the cropped ~0.3 MB JPEG is uploaded
 export const MAX_BLOB_BASE64 = 2_000_000; // characters; a 1600 × 1200 JPEG at 0.82 is far below this
@@ -15,7 +15,7 @@ export interface AdminState {
   base: string; // gitBlobSha of photo-admin.json as built
   data: AdminData;
   groups: { id: string; part: 'lashes' | 'nails' | 'brows'; name: string; dir: Dir; ratio: AdminRatio; visible: number; cols: 2 | 3 }[];
-  slots: { key: string; section: string; name: string; dir: Dir; ratio: AdminRatio; def: string }[];
+  slots: { key: string; section: string; name: string; dir: Dir; ratio: AdminRatio; def: string; auto?: string }[]; // auto: thumbnail of a link preview's automatic cut
   labels: { key: string; dir: Dir; styledOnly: boolean; name: string }[];
   photos: Record<string, { thumb: string; video?: true; name?: string }>;
 }
@@ -52,7 +52,7 @@ export function validateAdmin(next: AdminData, prev: AdminData, newBlobs: Readon
   if (Object.keys(next.groups).sort().join() !== adminGroups.map((g) => g.id).sort().join()) return 'groups';
 
   for (const [id, u] of Object.entries(next.uploads)) {
-    if (!UPLOAD_ID.test(id) || !isRecord(u) || !['lash', 'nails', 'brows'].includes(u.dir) || !['4:3', '3:4'].includes(u.ratio) || typeof u.where !== 'string') return 'upload';
+    if (!UPLOAD_ID.test(id) || !isRecord(u) || !['lash', 'nails', 'brows'].includes(u.dir) || !Object.hasOwn(OUT, u.ratio as string) || typeof u.where !== 'string') return 'upload';
     const was = prev.uploads[id];
     if (was ? was.dir !== u.dir || was.ratio !== u.ratio || newBlobs.has(id) : !newBlobs.has(id)) return 'upload';
   }

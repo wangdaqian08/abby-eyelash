@@ -5,7 +5,7 @@ import admin from './photo-admin.json' with { type: 'json' };
 
 // Written in en + zh; aliasHant (end of file) adds 'zh-hant', read as the zh text and converted after the build.
 export type L10n = { en: string; zh: string; readonly 'zh-hant'?: string };
-export type Ratio = '4:3' | '3:4' | 'original';
+export type Ratio = '4:3' | '3:4' | '1.91:1' | 'original';
 /** Fractions of the (EXIF-rotated) source, applied before the ratio crop. */
 export interface Box { left: number; top: number; width: number; height: number }
 export interface Photo {
@@ -108,7 +108,7 @@ export const photo = (id: string): Photo => {
 };
 
 export type Dir = Photo['dir'];
-export type AdminRatio = '4:3' | '3:4';
+export type AdminRatio = '4:3' | '3:4' | '1.91:1'; // 1.91:1: a service page's link preview (og:image, 1200 × 630); admin uploads only
 /** A photo added in the admin (/admin/). `where`: the group id or place key it was uploaded to (used for its alt text). */
 export interface Upload { dir: Dir; ratio: AdminRatio; where: string }
 /** What the admin edits (src/data/photo-admin.json): group lists, fixed-place overrides, uploads, style names. */
@@ -241,6 +241,7 @@ export const lashGroups: { id: string; name: L10n; ratio: '3:4' | '4:3'; items: 
 export interface ServiceSlots {
   hero?: string; heroPos?: string; heroAspect?: string;
   detail?: string; detailPos?: string; detailAspect?: string;
+  og?: string; // the link preview Abby cropped in the admin; without it the hero is cut automatically (lib/og-image.ts)
 }
 // Slots follow the master's ratio (4:3 shown 4:3, 3:4 shown 4:5) so no eye, nail or watermark is cropped. Literal classes so Tailwind sees them.
 const NAIL = 'aspect-[4/5]';
@@ -263,6 +264,8 @@ const replaced = (serviceId: string, s: ServiceSlots): ServiceSlots => {
     const id = adminData.slots[`page:${serviceId}:${kind}`];
     if (s[kind] && id) { out[kind] = id; delete out[`${kind}Pos`]; }
   }
+  const og = adminData.slots[`page:${serviceId}:og`];
+  if (og) out.og = og;
   return out;
 };
 export const servicePhotos: Record<string, ServiceSlots> = Object.fromEntries(Object.entries(pageDefs).map(([id, s]) => [id, replaced(id, s)]));
@@ -270,11 +273,14 @@ export const servicePhotos: Record<string, ServiceSlots> = Object.fromEntries(Ob
 // ── Admin definitions (shared by the site build, /admin/ and the publish API) ──
 const serviceName = (id: string) => services.find((s) => s.id === id)!.name as L10n;
 const place = (key: string, def: string, name: L10n) => ({ key, dir: photo(def).dir, ratio: photo(def).ratio as AdminRatio, def, name });
-/** The eighteen fixed places: replace only. `def` is the photo shown when the admin has not replaced it. */
+// A service page's link preview: no photo of that shape exists before the admin, so `def` is the page's hero as it is now
+// (the automatic cut of it is what the page uses until Abby crops her own).
+const ogPlace = (id: string) => ({ key: `page:${id}:og`, dir: photo(pageDefs[id].hero!).dir, ratio: '1.91:1' as AdminRatio, def: servicePhotos[id].hero!, name: serviceName(id) });
+/** The twenty-four fixed places: replace only. `def` is the photo shown when the admin has not replaced it. */
 export const adminSlots: { key: string; dir: Dir; ratio: AdminRatio; def: string; name: L10n }[] = [
   place('home-hero', HERO_DEF, { en: 'Home', zh: '首页' }),
   ...cardDefs.map((c) => place(`card:${c.serviceId}/${c.optionId}`, c.photo, findOption(c.serviceId, c.optionId)!.name as L10n)),
-  ...Object.entries(pageDefs).flatMap(([id, s]) => (['hero', 'detail'] as const).filter((k) => s[k]).map((k) => place(`page:${id}:${k}`, s[k]!, serviceName(id)))),
+  ...Object.entries(pageDefs).flatMap(([id, s]) => [...(['hero', 'detail'] as const).filter((k) => s[k]).map((k) => place(`page:${id}:${k}`, s[k]!, serviceName(id))), ogPlace(id)]),
 ];
 /** The ten portfolio groups, in site order: add, delete, reorder. */
 export const adminGroups: { id: string; dir: Dir; ratio: AdminRatio; visible: number; cols: 2 | 3; name: L10n }[] = [

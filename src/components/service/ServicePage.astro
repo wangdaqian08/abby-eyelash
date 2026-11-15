@@ -1,6 +1,7 @@
 ---
 // One service page (EN or ZH). All facts come from services.ts / site.ts / service-content.ts and render as static HTML.
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ogImage } from '../../lib/og-image';
 import ServiceImage from './ServiceImage.astro';
 import StyledLooks from './StyledLooks.astro';
 import LashStyleGuide from './LashStyleGuide.astro';
@@ -31,6 +32,8 @@ const updated = new Intl.DateTimeFormat(INTL[lang], { dateStyle: 'long', timeZon
 const sp: ServiceSlots | undefined = servicePhotos[service.id];
 const related = services.filter((s) => s.id !== service.id);
 
+const og = await ogImage(sp ?? {}); // the page's own link preview; a page without a hero keeps the site default
+
 const eyebrow = ['text-[0.8125rem] font-medium uppercase text-accent-ink', en && 'tracking-[0.25em]'];
 const btn = [
   (lookB ? 'press inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-7 py-3 font-medium' : 'inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-7 py-3 font-medium transition duration-200 ease-brand active:scale-[.97]'),
@@ -39,7 +42,7 @@ const btn = [
 const container = 'mx-auto max-w-6xl px-4 sm:px-6';
 ---
 
-<BaseLayout lang={lang} title={c.title} description={c.description} updated={service.updated}>
+<BaseLayout lang={lang} title={c.title} description={c.description} updated={service.updated} image={og ? og.src : undefined}>
   <article>
     {/* Hero: breadcrumb, H1, answer-first intro, CTAs */}
     <section><div class:list={[container, 'grid items-center gap-10 pb-16 pt-[calc(var(--header-h)+24px)] lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:pb-24 lg:pt-[calc(var(--header-h)+48px)]']}>

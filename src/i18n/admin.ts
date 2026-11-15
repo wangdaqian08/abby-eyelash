@@ -9,7 +9,7 @@ export const admin = {
   tabGroups: '作品集',
   tabSlots: '固定位置',
   parts: { lashes: '睫毛', nails: '美甲', brows: '眉毛' },
-  ratio: { '4:3': '橫圖 4:3', '3:4': '直圖 3:4' },
+  ratio: { '4:3': '橫圖 4:3', '3:4': '直圖 3:4', '1.91:1': '分享預覽圖 1.91:1' },
   photos: (n: number) => `${n} 張`,
   videos: (n: number) => ` + ${n} 段影片`,
   draftChip: '草稿',
@@ -56,6 +56,8 @@ export const admin = {
   heroName: '首頁最上方',
   replace: '更換',
   replaced: '已更換 · 未發佈',
+  ogAuto: '分享用 · 自動取自主圖',
+  ogSet: '分享用 · 已自選',
   // editor
   editTitle: '調整位置',
   cancel: '取消',

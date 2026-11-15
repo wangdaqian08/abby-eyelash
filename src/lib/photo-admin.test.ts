@@ -26,6 +26,8 @@ test('sharpLimit: the zoom up to which the part used is still as wide as the out
   assert.equal(sharpLimit(3024, 4032, '4:3'), 1.89); // portrait into 4:3
   assert.equal(sharpLimit(3024, 4032, '3:4'), 2.52); // portrait into 3:4 (1200 wide)
   assert.equal(sharpLimit(1280, 960, '4:3'), 0.8); // a small picture is stretched even at 1x
+  assert.equal(sharpLimit(3024, 4032, '1.91:1'), 2.52); // portrait into a link preview (1200 wide): only a band of it is kept
+  assert.deepEqual(cropRect(3000, 4000, '1.91:1', 0.5, 0.5), { sx: 0, sy: 1213, sw: 3000, sh: 1575 });
 });
 test('gitBlobSha matches git hash-object', async () => {
   assert.equal(await gitBlobSha('hello\n'), 'ce013625030ba8dba906f756967f9e9ca394464a');
@@ -44,6 +46,8 @@ test('validateAdmin accepts every single admin action', () => {
   assert.equal(validateAdmin(swap, live, new Set(['u-0000000000'])), null);
   const reorder = structuredClone(live); reorder.groups['warm-floral'].reverse(); // the video moves with the photos
   assert.equal(validateAdmin(reorder, live, new Set()), null);
+  const og = structuredClone(live); og.uploads['u-1111111111'] = { dir: 'nails', ratio: '1.91:1', where: 'page:gel-nails:og' }; og.slots['page:gel-nails:og'] = 'u-1111111111';
+  assert.equal(validateAdmin(og, live, new Set(['u-1111111111'])), null); // a service page's link preview
 });
 test('validateAdmin names what is wrong', () => {
   const live = fixture();
@@ -55,6 +59,11 @@ test('validateAdmin names what is wrong', () => {
   assert.equal(bad((d) => { d.groups.styled.push(d.groups.styled[0]); }), 'duplicate');
   assert.equal(bad((d) => { d.slots['home-hero'] = 'styled-fairy'; }), 'slot'); // 4:3 into a 3:4 place
   assert.equal(bad((d) => { d.slots['nope'] = 'hero-mirror'; }), 'slot');
+  assert.equal(bad((d) => { d.slots['page:gel-nails:og'] = 'nail-3406'; }), 'slot'); // a link preview takes only a photo cropped to its own shape
+  assert.equal(bad((d) => { d.uploads['u-1111111111'] = { dir: 'lash', ratio: '1.91:1', where: 'home-hero' }; d.slots['home-hero'] = 'u-1111111111'; }, ['u-1111111111']), 'slot'); // and that shape fits nowhere else
+  assert.equal(bad((d) => { d.uploads['u-1111111111'] = { dir: 'lash', ratio: '1.91:1', where: 'styled' }; d.groups.styled.push('u-1111111111'); }, ['u-1111111111']), 'item');
+  assert.equal(bad((d) => { d.uploads['u-1111111111'] = { dir: 'nails', ratio: '16:9' as never, where: 'page:gel-nails:og' }; d.slots['page:gel-nails:og'] = 'u-1111111111'; }, ['u-1111111111']), 'upload'); // an unknown shape
+  assert.equal(bad((d) => { d.uploads['u-1111111111'] = { dir: 'nails', ratio: 'constructor' as never, where: 'page:gel-nails:og' }; d.slots['page:gel-nails:og'] = 'u-1111111111'; }, ['u-1111111111']), 'upload');
   assert.equal(bad((d) => { d.uploads['u-abcdefghij'] = { dir: 'lash', ratio: '4:3', where: 'styled' }; d.groups.styled.push('u-abcdefghij'); }), 'upload'); // no blob
   assert.equal(bad((d) => { d.uploads['u-abcdefghij'] = { dir: 'lash', ratio: '4:3', where: 'styled' }; }, ['u-abcdefghij']), 'upload'); // unreferenced
   assert.equal(bad((d) => { d.uploads['U-../../etc'] = { dir: 'lash', ratio: '4:3', where: 'styled' }; d.groups.styled.push('U-../../etc'); }, ['U-../../etc']), 'upload'); // id shape
