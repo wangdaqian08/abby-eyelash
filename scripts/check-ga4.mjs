@@ -1,5 +1,5 @@
 // GA4 on the live site, in a real browser (phone size): the cookie choice is respected, and after "Accept all"
-// Google receives page_view and book_click for G-ND8T7ZBSLR with style_variant and lang.
+// Google receives page_view and book_click for G-ND8T7ZBSLR with style_variant and lang, and a photo tap names its photo.
 // Usage: npm run check:ga4 → the live site. It sends a few real hits to Abby's GA4, tagged utm_source=site-check so they
 // can be filtered out of reports. Only the live host reports (src/components/Analytics.astro), so before a deploy:
 // `npm run start` (local build on :8788 with the demo booking API), then LOCAL=1 npm run check:ga4 → the live address
@@ -40,7 +40,8 @@ async function visit(name, fn) {
   const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true, locale: 'en-AU' });
   const page = await ctx.newPage();
   if (LOCAL) {
-    await page.route(`${BASE}/**`, async (r) => r.fulfill({ response: await r.fetch({ url: r.request().url().replace(BASE, LOCAL), maxRedirects: 0 }) }));
+    // .catch: a lazy image can still be loading when the visit closes its context; that request no longer matters.
+    await page.route(`${BASE}/**`, (r) => r.fetch({ url: r.request().url().replace(BASE, LOCAL), maxRedirects: 0 }).then((response) => r.fulfill({ response })).catch(() => {}));
     await page.route('**/g/collect**', (r) => r.fulfill({ status: 204 })); // seen by the 'request' listener, never reaches Google
   } else {
     await page.route('**/g/collect**', (r) => (/en=booking_/.test(r.request().url() + (r.request().postData() ?? '')) ? r.fulfill({ status: 204 }) : r.continue()));
@@ -100,6 +101,17 @@ for (const [path, lang] of [['/', 'en-AU'], ['/zh/', 'zh-Hans']]) {
     check(!!again && !(await page.isVisible('[data-consent="all"]')), 'next page load: tracking starts without asking again', again ? show(again) : 'no page_view after reload');
   });
 }
+
+await visit('a portfolio photo tap on /', async ({ page, waitFor }) => {
+  await page.goto(`${BASE}/?${TAG}`);
+  await page.tap('[data-consent="all"]');
+  const photo = page.locator('#gallery a[data-photo]').first();
+  const id = await photo.getAttribute('data-photo');
+  await photo.scrollIntoViewIfNeeded();
+  await photo.tap();
+  const pc = await waitFor((h) => h.en === 'book_click' && h['ep.photo']);
+  check(!!id && pc?.['ep.photo'] === id, `book_click from a gallery photo carries photo=${id}`, pc ? `${show(pc)} ep.photo=${pc['ep.photo']}` : 'no book_click with photo');
+});
 
 await visit('a booking up to "Send by SMS" on /book/', async ({ page, events, waitFor }) => {
   await page.goto(`${BASE}/book/?service=lash-lift&${TAG}`);
