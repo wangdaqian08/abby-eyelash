@@ -51,6 +51,7 @@ const en = {
   fNotes: 'Notes',
   optional: '(optional)',
   notesHint: 'Allergies, inspiration, first visit?',
+  notesLook: 'Look I’d like: ', // + the look's name, when the visitor came from a look photo (?look=)
   sDate: 'Date',
   sTime: 'Time',
   sDuration: 'Duration',
@@ -139,6 +140,7 @@ const zh: Strings = {
   fNotes: '备注',
   optional: '（选填）',
   notesHint: '是否过敏？有参考款式？是否首次到店？',
+  notesLook: '想做的款式：',
   sDate: '日期',
   sTime: '时间',
   sDuration: '时长',

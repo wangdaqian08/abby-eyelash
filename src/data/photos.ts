@@ -200,6 +200,24 @@ export const adminLabels: { key: string; dir: Dir; styledOnly: boolean; name: L1
 export const lookName = (id: string): L10n | undefined =>
   adminLabels.find((l) => l.key === adminData.labels[id])?.name ?? legacyLooks[id];
 
+/** The booking a portfolio photo opens, and the name shown under it (none: no bar). */
+export interface PhotoBooking { service: string; option?: string; look?: true; name?: L10n; muted?: true }
+const PART: Record<Exclude<Dir, 'brows'>, string> = { lash: 'lash-extensions', nails: 'gel-nails' };
+const serviceNameOf = (id: string) => services.find((s) => s.id === id)!.name as L10n;
+export function photoBooking(id: string, dir: Dir, labels: Record<string, string> = adminData.labels): PhotoBooking {
+  if (dir === 'brows') return { service: 'powder-brows', option: 'powder' }; // one brows style only: no name bar (owner, 2026-11-15)
+  const key = labels[id];
+  if (key?.startsWith('option:')) {
+    const [service, option] = key.slice(7).split('/');
+    return { service, option, name: service === 'handcrafted-nails' ? serviceNameOf(service) : findOption(service, option)!.name as L10n }; // 定制款 alone says nothing
+  }
+  const look = key?.startsWith('look:') ? adminLabels.find((l) => l.key === key)?.name : key ? undefined : legacyLooks[id];
+  if (look) return { service: 'lash-extensions', option: 'styled', look: true, name: look };
+  return { service: PART[dir], name: serviceNameOf(PART[dir]), muted: true };
+}
+export const bookingHref = (lang: Lang, id: string, b: PhotoBooking) =>
+  localePath(lang, `/book?service=${b.service}${b.option ? `&option=${b.option}` : ''}${b.look ? `&look=${id}` : ''}`);
+
 /** Styled looks (lash-extensions page): the admin's `styled` list, in its order. A photo without a style name shows no caption. */
 export const styledLooks: { photo: string; name?: L10n }[] = G.styled.map((photo) => ({ photo, name: lookName(photo) }));
 

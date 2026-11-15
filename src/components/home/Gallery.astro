@@ -4,7 +4,7 @@
 import { Picture, getImage } from 'astro:assets';
 import type { Lang } from '../../data/services';
 import { site } from '../../data/site';
-import { BROW_VISIBLE, LASH_VISIBLE, NAIL_VISIBLE, browGroups, lashGroups, nailGroups, photo, videos } from '../../data/photos';
+import { BROW_VISIBLE, LASH_VISIBLE, NAIL_VISIBLE, bookingHref, browGroups, lashGroups, nailGroups, photo, photoBooking, videos } from '../../data/photos';
 import { common, fill } from '../../i18n/common';
 import { localePath } from '../../lib/i18n';
 import { photoSrc } from '../../lib/photo-src';
@@ -27,6 +27,14 @@ const parts: { id: string; title: string; groups: Group[]; visible: number; book
 const grid = (p: string) => (p === 'nails' || p === 'brows' ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-2 gap-2 lg:grid-cols-4');
 const sizes = (p: string) => (p === 'nails' || p === 'brows' ? '(min-width: 1152px) 360px, 31vw' : '(min-width: 1024px) 270px, 47vw');
 const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };
+// Each photo opens its booking (photoBooking); lash and nail cards show the style in a bar under the photo, brows show none.
+const booking = (id: string) => photoBooking(id, photo(videos[id]?.poster ?? id).dir);
+const href = (id: string) => bookingHref(lang, id, booking(id));
+// The card is the link itself, so its focus ring is not clipped and a tap presses it (data-pressed); a video tile keeps it on the <li>.
+// @container: the bar text follows the card's width (cqi), 12px on the smallest phone card up to 15px on the wide desktop one.
+const CARD = 'group/card @container overflow-hidden rounded-field bg-surface-3 shadow-[var(--shadow-soft)] transition duration-300 ease-brand hover:-translate-y-0.5 hover:shadow-lift active:scale-[.98]';
+// Golden ratio inside the bar, all in em so it scales as one piece: line 1.618em, padding 0.382em : 0.618em, chevron 0.786em.
+const BAR = 'flex items-center justify-between gap-[.382em] px-[.618em] py-[.382em] text-[length:clamp(12px,9.4px_+_1.45cqi,15px)] leading-[1.618]';
 ---
 <section id="gallery" class="bg-surface-2 py-16 md:py-24">
   <div class="mx-auto max-w-6xl px-4 sm:px-6">
@@ -37,23 +45,40 @@ const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };
 
     {parts.map((part) => {
       const count = part.groups.reduce((n, g) => n + g.items.length, 0);
+      const bar = (id: string) => {
+        const b = booking(id);
+        return (
+          <>
+            <span class:list={['min-w-0 truncate transition-colors duration-200 group-hover/card:text-primary', b.muted ? 'text-muted' : 'font-medium']}>{b.name![lang]}</span>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="size-[.786em] shrink-0 text-accent-ink transition-transform duration-200 group-hover/card:translate-x-0.5"><path d="m9 6 6 6-6 6" /></svg>
+          </>
+        );
+      };
       const tiles = (g: Group, ids: string[]) => (
         <ul data-reveal data-stagger data-late class={grid(part.id)}>
           {ids.map((id) => (
-            <li class:list={['relative overflow-hidden rounded-field bg-fg/5', aspect[g.ratio]]}>
+            <li class={videos[id] ? `${CARD} has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary` : undefined}>
               {videos[id] ? (
                 <>
-                  <video muted loop playsinline preload="none" poster={posterUrl[id]} width="480" height="640" class="aspect-[3/4] size-full object-cover" aria-label={videos[id].alt[lang]} data-video>
-                    <source src={videos[id].src} type="video/mp4" />
-                  </video>
-                  <button type="button" data-video-toggle aria-pressed="false" aria-label={t.playVideo} class="group absolute inset-0">
-                    <span aria-hidden="true" class="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-surface/80 text-fg backdrop-blur-sm transition-opacity duration-200 group-aria-pressed:opacity-0">
-                      <svg viewBox="0 0 24 24" class="size-3 translate-x-px" fill="currentColor"><path d="M7 5v14l12-7z" /></svg>
-                    </span>
-                  </button>
+                  <div class:list={['relative bg-fg/5', aspect[g.ratio]]}>
+                    <video muted loop playsinline preload="none" poster={posterUrl[id]} width="480" height="640" class="aspect-[3/4] size-full object-cover" aria-label={videos[id].alt[lang]} data-video>
+                      <source src={videos[id].src} type="video/mp4" />
+                    </video>
+                    <button type="button" data-video-toggle aria-pressed="false" aria-label={t.playVideo} class="group absolute inset-0">
+                      <span aria-hidden="true" class="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-surface/80 text-fg backdrop-blur-sm transition-opacity duration-200 group-aria-pressed:opacity-0">
+                        <svg viewBox="0 0 24 24" class="size-3 translate-x-px" fill="currentColor"><path d="M7 5v14l12-7z" /></svg>
+                      </span>
+                    </button>
+                  </div>
+                  {booking(id).name && <a href={href(id)} data-track="book_click" class={BAR} data-bar>{bar(id)}</a>}
                 </>
               ) : (
-                <Picture src={photoSrc(id)} alt={photo(id).alt[lang]} formats={['avif', 'webp']} widths={[240, 480, 720]} sizes={sizes(part.id)} loading="lazy" class="size-full object-cover" />
+                <a href={href(id)} data-track="book_click" class:list={['block', CARD]}>
+                  <span class:list={['block overflow-hidden bg-fg/5', aspect[g.ratio]]}>
+                    <Picture src={photoSrc(id)} alt={photo(id).alt[lang]} formats={['avif', 'webp']} widths={[240, 480, 720]} sizes={sizes(part.id)} loading="lazy" class="size-full object-cover transition-transform duration-700 ease-soft group-hover/card:scale-[1.04]" />
+                  </span>
+                  {booking(id).name && <span class={BAR} data-bar>{bar(id)}</span>}
+                </a>
               )}
             </li>
           ))}

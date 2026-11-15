@@ -5,6 +5,7 @@ import { admin as t } from '../../i18n/admin';
 import { MAX_SOURCE_BYTES, MAX_ZOOM, OUT, sharpLimit, type AdminState } from '../../lib/photo-admin';
 import { sortable } from './admin-drag';
 import { render as renderJpeg } from './admin-image';
+import { goldenGuide } from './golden';
 import { addToGroup, afterPublish, changeCount, changes, finalData, fromState, isDirty, kv, move, newId, replaceSlot, resetSlot, resume, setFocus, setLabel, toggleRemoved, unpublished, type Draft } from './admin-store';
 
 type Group = AdminState['groups'][number];
@@ -21,6 +22,10 @@ let pollTimer = 0;
 let lastEdit = '#/'; // where "返回編輯" goes: the list, group or fixed-places screen last shown
 // The photo open in the editor. w, h: its source size (0 = already on the site, cannot be re-cropped). Saved only by 完成.
 let editing: { id: string; x: number; y: number; z: number; w: number; h: number; back: string; ctx: Group | Slot; grab?: { px: number; py: number; x: number; y: number } } | undefined;
+// The editor's golden-spiral guide: on or off is remembered on this phone; which corner the spiral is in, while the page is open.
+const GUIDE = 'abby-admin-guide';
+let guide = (() => { try { return localStorage.getItem(GUIDE) === '1'; } catch { return false; } })();
+let guideTurn = 0;
 const touches = new Map<number, { x: number; y: number }>(); // fingers on the editor's photo
 let pinchStart: { d: number; z: number } | undefined;
 const sources = new Map<string, string>(); // upload id → object URL of its source file, while that is still on this phone
@@ -247,7 +252,8 @@ function zoomControls() {
   const lens = (plus: boolean) => `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" class="size-4.5 shrink-0 text-muted"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5M8 11h6${plus ? 'M11 8v6' : ''}"/></svg>`;
   const thumb = '[&::-webkit-slider-thumb]:size-7 [&::-webkit-slider-thumb]:-mt-[11px] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-surface-3 [&::-webkit-slider-thumb]:shadow-[0_1px_3px_color-mix(in_oklch,var(--fg)_35%,transparent)] [&::-webkit-slider-runnable-track]:h-1.5 [&::-moz-range-thumb]:size-7 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-surface-3';
   return `
-    <p class="mt-2 text-center text-sm text-muted">${t.dragZoom}</p>
+    ${guideRow()}
+    ${hint()}
     <div class="mt-2 flex items-center gap-2.5">
       ${lens(false)}
       <div class="relative h-11 flex-1">
@@ -267,13 +273,40 @@ function zoomControls() {
       <button type="button" data-action="recentre" class="${pill} shrink-0 bg-surface-2 text-fg">${t.recentre}</button>
     </div>`;
 }
+/** Inside the white frame: the thirds grid, or (guide on, photo can move) the golden spiral with a dot where it ends. */
+function guideLayer() {
+  const e = editing!;
+  if (!(e.w && guide)) {
+    const line = 'absolute bg-surface-3/40';
+    return `<div data-thirds><span class="${line} inset-y-0 left-1/3 w-px"></span><span class="${line} inset-y-0 left-2/3 w-px"></span>
+      <span class="${line} inset-x-0 top-1/3 h-px"></span><span class="${line} inset-x-0 top-2/3 h-px"></span></div>`;
+  }
+  const g = goldenGuide(e.ctx.ratio !== '4:3', guideTurn);
+  return `${g.svg}<span data-guide-end class="absolute -mt-1.75 -ml-1.75 size-3.5 rounded-full bg-[#f3d08a] shadow-[0_0_0_2px_rgb(30_18_21/.55),0_0_0_7px_rgb(243_208_138/.35)]" style="left:${g.end[0] * 100}%;top:${g.end[1] * 100}%"></span>`;
+}
+function guideRow() {
+  return `
+    <div data-guide-row class="mt-2.5 flex items-center justify-end gap-2.5">
+      ${guide ? `<button type="button" data-action="turn" aria-label="${t.guideTurnLabel}" class="${pill} mr-auto gap-1.5 bg-surface-2 text-fg">${icon('M20 12a8 8 0 1 1-2.3-5.7M20 4v4h-4')}${t.guideTurn}</button>` : ''}
+      <label for="guide-switch" class="cursor-pointer text-sm font-bold">${t.guide}</label>
+      <button type="button" id="guide-switch" role="switch" aria-checked="${guide}" data-action="guide" class="relative h-8 w-13 shrink-0 rounded-full transition-colors duration-200 before:absolute before:-inset-x-0.5 before:-inset-y-1.5 ${guide ? 'bg-primary' : 'bg-fg/20'}">
+        <span class="absolute top-0.75 left-0.75 size-6.5 rounded-full bg-surface-3 shadow-[0_1px_3px_rgb(30_18_21/.3)] transition-transform duration-200 ${guide ? 'translate-x-5' : ''}"></span>
+      </button>
+    </div>`;
+}
+const hint = () => `<p data-hint class="mt-1.5 text-center text-sm text-balance ${guide ? 'font-medium text-accent-ink' : 'text-muted'}">${guide ? t.guideHint : t.dragZoom}</p>`;
+/** After the switch or 換方向: redraws only the guide, so an unsaved style name and the photo's place stay as they are. */
+function refreshGuide() {
+  root.querySelector('[data-guide-layer]')!.innerHTML = guideLayer();
+  root.querySelector('[data-guide-row]')!.outerHTML = guideRow();
+  root.querySelector('[data-hint]')!.outerHTML = hint();
+}
 function editView() {
   const e = editing!, l = layout();
   const inStyled = draft.data.groups.styled.includes(e.id);
   const options = state.labels.filter((x) => x.dir === e.ctx.dir && (inStyled ? x.styledOnly || x.key === 'option:lash-extensions/styled' : !x.styledOnly));
   const label = draft.data.labels[e.id] ?? '';
   const legacy = !label && state.photos[e.id]?.name;
-  const line = 'absolute bg-surface-3/40';
   return `
     <div data-view="edit">
       <header class="flex items-center justify-between">
@@ -286,8 +319,7 @@ function editView() {
           ? `<img data-photo src="${esc(sources.get(e.id) ?? '')}" alt="" draggable="false" class="pointer-events-none absolute max-w-none">`
           : picture(e.id, 'pointer-events-none absolute object-cover').replace('style="', `style="left:${l.left}px;top:${l.top}px;width:${l.fw}px;height:${l.fh}px;`)}
         <div aria-hidden="true" class="pointer-events-none absolute rounded-[4px] shadow-[0_0_0_9999px_color-mix(in_oklch,var(--fg)_72%,transparent)] outline-2 outline-surface-3" style="left:${l.left}px;top:${l.top}px;width:${l.fw}px;height:${l.fh}px">
-          <span class="${line} inset-y-0 left-1/3 w-px"></span><span class="${line} inset-y-0 left-2/3 w-px"></span>
-          <span class="${line} inset-x-0 top-1/3 h-px"></span><span class="${line} inset-x-0 top-2/3 h-px"></span>
+          <div data-guide-layer class="absolute inset-0">${guideLayer()}</div>
         </div>
         <span class="pointer-events-none absolute rounded-full bg-fg/75 px-2 py-0.5 text-xs whitespace-nowrap text-bg" style="left:${l.left + 8}px;top:${l.top + 8}px">${t.ratio[e.ctx.ratio]} · ${t.fixedRatio}</span>
       </div>
@@ -297,7 +329,7 @@ function editView() {
         <option value="">${t.labelNone}</option>
         ${options.map((o) => `<option value="${o.key}" ${o.key === label ? 'selected' : ''}>${esc(o.name)}</option>`).join('')}
       </select>
-      <p class="mt-1.5 text-xs leading-relaxed text-muted">${legacy ? `${t.currentName(esc(legacy))}。` : ''}${inStyled ? t.labelShown : t.labelHidden}</p>
+      <p class="mt-1.5 text-xs leading-relaxed text-muted">${legacy ? `${t.currentName(esc(legacy))}。` : ''}${e.ctx.dir === 'brows' ? t.labelHidden : t.labelShown}</p>
     </div>`;
 }
 /** Opens the editor for the photo in the address (#/e/<id>?g=<group> or ?s=<place>); reads the source's size first. */
@@ -579,6 +611,8 @@ function clicked(e: MouseEvent) {
     case 'done': closeEditor(true); break;
     case 'cancel': closeEditor(false); break;
     case 'recentre': if (editing) { editing.x = editing.y = 0.5; editing.z = 1; placePhoto(); } break;
+    case 'guide': guide = !guide; try { localStorage.setItem(GUIDE, guide ? '1' : '0'); } catch { /* private mode: on for this visit only */ } refreshGuide(); root.querySelector<HTMLElement>('#guide-switch')?.focus(); break;
+    case 'turn': guideTurn = (guideTurn + 1) % 4; refreshGuide(); root.querySelector<HTMLElement>('[data-action="turn"]')?.focus(); break;
     case 'confirm': void publishNow(); break;
     case 'discard': if (confirm(t.discardAsk)) discard(); break;
     case 'drop-reload': void dropAndReload(); break;

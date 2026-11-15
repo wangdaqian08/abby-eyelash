@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { bookableWith, findOption, mainOptions, priceText, services } from './services.ts';
-import { adminData, adminGroups, adminLabels, adminSlots, browGroups, browVideo, homeHero, lashCards, lashGroups, lashLooks, lookName, nailGroups, nailVideo, photo, photos, servicePhotos, styleGuide, styledLooks, uploadAlt, videos } from './photos.ts';
+import { adminData, adminGroups, adminLabels, adminSlots, bookingHref, browGroups, browVideo, homeHero, photoBooking, lashCards, lashGroups, lashLooks, lookName, nailGroups, nailVideo, photo, photos, servicePhotos, styleGuide, styledLooks, uploadAlt, videos } from './photos.ts';
 
 test('every lash card points at a bookable main option', () => {
   assert.equal(lashCards.length, 6);
@@ -85,4 +85,36 @@ test('AI style-guide images are labelled as AI in both languages and never used 
     ...nailGroups.flatMap((g) => g.items), ...lashGroups.flatMap((g) => g.items), ...Object.values(servicePhotos).flatMap((s) => [s.hero, s.detail])];
   for (const id of ai) assert.ok(!used.includes(id), id);
   for (const g of styleGuide) assert.ok(findOption('lash-extensions', g.optionId), g.optionId);
+});
+
+test('photoBooking: option label', () => {
+  const b = photoBooking('classic-natural-2', 'lash', { 'classic-natural-2': 'option:lash-extensions/classic-natural' });
+  assert.deepEqual([b.service, b.option, b.name?.zh, b.look, b.muted], ['lash-extensions', 'classic-natural', '日式单根 · 自然', undefined, undefined]);
+});
+test('photoBooking: hand-painted nails show the service name', () => {
+  assert.equal(photoBooking('nail-8351', 'nails', { 'nail-8351': 'option:handcrafted-nails/nail-art' }).name?.zh, '手绘造型');
+});
+test('photoBooking: look label and legacy look name book the styled set', () => {
+  const a = photoBooking('u-abcdefghij', 'lash', { 'u-abcdefghij': 'look:mermaid' });
+  assert.deepEqual([a.service, a.option, a.look, a.name?.zh], ['lash-extensions', 'styled', true, '人鱼']);
+  const b = photoBooking('styled-liner-2', 'lash', {});
+  assert.deepEqual([b.option, b.look, b.name?.zh], ['styled', true, '眼线加浓 2']);
+});
+test('photoBooking: no label books the part service, muted name', () => {
+  const b = photoBooking('nail-2020', 'nails', {});
+  assert.deepEqual([b.service, b.option, b.muted, b.name?.zh], ['gel-nails', undefined, true, '凝胶美甲']);
+});
+test('photoBooking: brows never get a name', () => {
+  assert.deepEqual(photoBooking('brow-3166', 'brows', { 'brow-3166': 'option:powder-brows/powder' }), { service: 'powder-brows', option: 'powder' });
+});
+test('bookingHref', () => {
+  assert.equal(bookingHref('zh', 'styled-mermaid', photoBooking('styled-mermaid', 'lash', {})), '/zh/book?service=lash-extensions&option=styled&look=styled-mermaid');
+  assert.equal(bookingHref('en', 'nail-2020', photoBooking('nail-2020', 'nails', {})), '/book?service=gel-nails');
+});
+
+// Live data, so no id is pinned: Abby may change any label (see the rule at the top of this file).
+test('the published labels are valid and every photo maps to a booking', async () => {
+  const { validateAdmin } = await import('../lib/photo-admin.ts');
+  assert.equal(validateAdmin(adminData, adminData, new Set()), null);
+  for (const g of adminGroups) for (const id of adminData.groups[g.id]) assert.ok(photoBooking(id, g.dir).service, id);
 });

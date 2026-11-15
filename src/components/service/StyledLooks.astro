@@ -1,7 +1,8 @@
 ---
 import { Picture } from 'astro:assets';
 import type { Lang } from '../../data/services';
-import { photo, styledLooks } from '../../data/photos';
+import { bookingHref, photo, photoBooking, styledLooks } from '../../data/photos';
+import { common } from '../../i18n/common';
 import { serviceStrings } from '../../i18n/service';
 import { photoSrc } from '../../lib/photo-src';
 import { lookOf } from '../../lib/ab-test';
@@ -15,18 +16,23 @@ const t = serviceStrings[lang];
   <h2 class="text-4xl leading-tight lg:text-5xl [&_em]:block">{t.styledTitle}<em>{t.styledAccent}</em></h2>
   <div data-reveal data-stagger class="mt-10 grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
     {styledLooks.map((l) => (
-      <figure class="overflow-hidden rounded-card bg-surface">
-        <Picture
+      <a href={bookingHref(lang, l.photo, photoBooking(l.photo, 'lash'))} data-track="book_click" class="group flex flex-col overflow-hidden rounded-card bg-surface transition duration-300 ease-brand hover:-translate-y-1 hover:shadow-lift active:scale-[.98]">
+        <span class="block overflow-hidden"><Picture
           src={photoSrc(l.photo)}
           alt={photo(l.photo).alt[lang]}
           formats={['avif', 'webp']}
           widths={[320, 640, 960]}
           sizes="(min-width: 1024px) 368px, 47vw"
           loading="lazy"
-          class="aspect-[4/3] w-full object-cover"
-        />
-        {l.name && <figcaption class="p-3 text-sm font-medium sm:p-4">{l.name[lang]}</figcaption>}
-      </figure>
+          class="aspect-[4/3] w-full object-cover transition-transform duration-700 ease-soft group-hover:scale-[1.04]"
+        /></span>
+        {l.name && (
+          <span class="flex flex-col gap-1 p-3 sm:p-4">
+            <span class="text-sm font-medium">{l.name[lang]}</span>
+            <span class="text-sm text-accent-ink">{common[lang].lashLooks.bookThis} →</span>
+          </span>
+        )}
+      </a>
     ))}
   </div>
   <a href={bookHref} data-track="book_click" class:list={[btnClass, (lookB ? 'btn-solid press mt-10' : 'mt-10 btn-raise bg-primary text-on-primary hover:bg-primary/90')]}>{t.book}</a>

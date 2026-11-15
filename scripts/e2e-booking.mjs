@@ -277,6 +277,70 @@ if (mine()) {
   await page.setViewportSize({ width: 1280, height: 900 });
 }
 
+// 9. A look photo's link (?look=<photo id>) pre-fills the notes with the look's name; an unknown id is ignored.
+if (mine()) {
+  const notesFor = async (look) => {
+    await open(`/book/?service=${L}&option=styled&look=${look}`);
+    check(await isChecked(`input[name="bk-option-${L}"][value="styled"]`), `look=${look}: styled should be chosen`);
+    await page.click('[data-action="to-date"]');
+    await page.waitForSelector('[data-grid] button[data-date]:not([aria-disabled])');
+    await page.click('[data-grid] button[data-date]:not([aria-disabled])');
+    await page.click('button[data-time]');
+    await page.click('[data-action="to-details"]');
+    return page.inputValue('#bk-notes');
+  };
+  // Any look the page knows (the admin decides which photos have one), so the test does not pin a photo.
+  await open('/book/');
+  const [id, name] = Object.entries(JSON.parse(await page.$eval('[data-booking]', (e) => e.dataset.config)).looks ?? {})[0] ?? [];
+  check(id, 'booking: data-config should carry the look names');
+  if (id) {
+    const got = await notesFor(id);
+    check(got === `Look I’d like: ${name}`, `look=${id}: notes should be "Look I’d like: ${name}", got "${got}"`);
+  }
+  for (const bad of ['nope', '__proto__']) {
+    const v = await notesFor(bad);
+    check(v === '', `look=${bad}: notes should stay empty, got "${v}"`);
+  }
+}
+
+// 10. Home gallery: every photo opens the booking. Reads whatever the admin published, so it picks its cards from the page.
+if (mine()) {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(BASE + '/');
+  const hrefs = await page.$$eval('#gallery [data-part] a[href*="/book?service="]', (as) => as.map((a) => a.getAttribute('href')));
+  const tiles = await page.$$eval('#gallery [data-part] li', (lis) => lis.length);
+  const videoTiles = await page.$$eval('#gallery [data-video]', (v) => v.length);
+  check(hrefs.length >= tiles - videoTiles, `gallery: every photo should be a booking link (${hrefs.length} links, ${tiles} tiles)`);
+  check((await page.$$('#gallery [data-part]:last-child [data-bar]')).length === 0, 'gallery: brows have no name bar');
+  const noBar = await page.$$eval('#gallery [data-part]:not(:last-child) li', (lis) => lis.filter((li) => !li.querySelector('[data-bar]')).length);
+  check(noBar === 0, `gallery: every lash and nail card has a name bar (${noBar} without)`);
+  // The focus ring is drawn outside the link: nothing around a photo link may clip it.
+  const clipped = await page.$$eval('#gallery [data-part] li:not(:has([data-video])) > a', (as) => as.filter((a) => getComputedStyle(a.parentElement).overflow !== 'visible').length);
+  check(clipped === 0, `gallery: ${clipped} photo links sit in a clipping card, so their focus ring is hidden`);
+  // The bar text follows the card width: 12px floor on the smallest phone card, larger on the wide desktop nail card.
+  const barPx = () => page.$eval('#gallery [data-part]:nth-child(3) [data-bar]', (b) => parseFloat(getComputedStyle(b).fontSize));
+  const phonePx = await barPx();
+  check(phonePx === 12, `gallery: phone nail bar text should be 12px, got ${phonePx}`);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const deskPx = await barPx();
+  check(deskPx >= 14 && deskPx <= 15, `gallery: desktop nail bar text should be 14–15px, got ${deskPx}`);
+  await page.setViewportSize({ width: 375, height: 812 });
+  const toggle = await page.$('#gallery [data-video-toggle]');
+  if (toggle) {
+    await toggle.dispatchEvent('click'); // a real mouse would first hover, which already plays it
+    check((await toggle.getAttribute('aria-pressed')) === 'true' && new URL(page.url()).pathname === '/', 'gallery: tapping a video plays it and stays on the page');
+  }
+  const withOption = hrefs.find((h) => h.includes('&option=') && !h.includes('powder-brows'));
+  if (withOption) {
+    const u = new URL(withOption, BASE);
+    await page.click(`#gallery a[href="${withOption}"] >> nth=0`);
+    await page.waitForSelector('input[name="bk-service"]');
+    const svc = u.searchParams.get('service'), opt = u.searchParams.get('option');
+    check(await isChecked(`input[name="bk-option-${svc}"][value="${opt}"]`), `gallery: ${withOption} should open booking with ${opt} chosen`);
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
+}
+
 check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
 await browser.close();
 console.log(`${cases} lash click-order cases, ${pass} checks passed, ${fails.length} failed`);
