@@ -15,7 +15,8 @@ test('every lash card points at a bookable main option', () => {
 test('photo-admin.json: the ten groups, no unknown place, every id known with the right dir and ratio', () => {
   assert.deepEqual(Object.keys(adminData.groups).sort(), adminGroups.map((g) => g.id).sort());
   assert.equal(adminGroups.length, 10);
-  assert.equal(adminSlots.length, 18);
+  assert.equal(adminSlots.length, 24); // home hero, 6 lash cards, 11 page photos, 6 link previews
+  for (const s of services) assert.equal(adminSlots.find((x) => x.key === `page:${s.id}:og`)?.ratio, '1.91:1', s.id); // every service page has one
   for (const g of adminGroups) {
     const ids = adminData.groups[g.id];
     assert.equal(new Set(ids).size, ids.length, g.id);

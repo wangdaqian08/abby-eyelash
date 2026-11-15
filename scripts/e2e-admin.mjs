@@ -47,7 +47,7 @@ await go();
 check((await page.$$('[data-group]')).length === 10, '1: the portfolio tab lists ten groups');
 check((await text('[data-view]')).includes('圖片管理'), '1: the title is 圖片管理');
 await page.click('[data-tab="slots"]'); await view('slots');
-check((await page.$$('[data-slot]')).length === 18, '1: the fixed-places tab lists eighteen places');
+check((await page.$$('[data-slot]')).length === 24, '1: the fixed-places tab lists twenty-four places');
 
 // 2 — add a photo to a group
 await go('#/g/styled'); await view('group');
@@ -378,6 +378,53 @@ check((await text2('[data-notice]')).includes('1 張超過 6 MB') && (await text
 await open2('#/s'); await p2.click('[data-slot="home-hero"] [data-action="replace"]');
 check(!(await p2.$eval('[data-file]', (i) => i.multiple)), '5b: replacing a fixed place takes one photo');
 await phone2.close();
+
+// 14 — a service page's link preview (預覽圖): its own shape, cropped by hand, sent at 1200 × 630 (a third phone, nothing else in its draft)
+{
+  const phone3 = await phone();
+  const p3 = await phone3.newPage();
+  p3.on('pageerror', (e) => errors.push(e.message));
+  const text3 = (sel) => p3.$eval(sel, (e) => e.innerText).catch(() => '');
+  const og = '[data-slot="page:gel-nails:og"]';
+  await p3.goto(`${BASE}/admin/#/s`); await p3.waitForSelector('[data-view="slots"]');
+  check((await p3.$$('[data-slot$=":og"]')).length === 6, '14: every service page has a 預覽圖 place');
+  check((await text3(og)).includes('預覽圖') && (await text3(og)).includes('自動取自主圖'), `14: an unpicked preview says it is cut from the main photo (got "${await text3(og)}")`);
+  await p3.waitForFunction((sel) => document.querySelector(sel)?.naturalWidth > 0, `${og} img`, { timeout: 5000 }).catch(() => {}); // the thumbnail has loaded
+  const auto = await p3.$eval(`${og} img`, (i) => ({ src: i.src, shape: i.naturalWidth / i.naturalHeight }));
+  check(Math.abs(auto.shape - 1200 / 630) < 0.02, `14: and shows that automatic cut, in the preview's shape (got ${auto.shape.toFixed(2)})`);
+  await p3.click(`${og} [data-action="replace"]`); await p3.setInputFiles('[data-file]', fixture('admin-portrait.jpg')); await p3.waitForTimeout(250);
+  check((await text3(og)).includes('已更換 · 未發佈') && (await p3.$eval(`${og} img`, (i) => i.src)) !== auto.src, '14: a picked photo replaces it');
+  await p3.click(`${og} [data-action="edit"]`); await p3.waitForSelector('[data-view="edit"]');
+  check((await text3('[data-view]')).includes('分享預覽圖 1.91:1') && (await text3('[data-view]')).includes('輸出 1200 × 630'), '14: the editor frames it at 1.91:1 and names the 1200 × 630 output');
+  check(!(await p3.$('select[data-label]')), '14: a link preview has no style name');
+  check((await text3('[data-readout]')).includes('垂直位置 50%'), `14: a tall photo moves up and down in the wide frame (got "${await text3('[data-readout]')}")`);
+  const b = await (await p3.$('[data-stage]')).boundingBox(), [x, y] = [b.x + b.width / 2, b.y + b.height / 2];
+  await p3.mouse.move(x, y); await p3.mouse.down(); await p3.mouse.move(x, y - 60, { steps: 6 }); await p3.mouse.up();
+  const fy = Number((await text3('[data-readout]')).match(/(\d+)%/)?.[1]);
+  check(fy > 50, `14: dragging up shows more of its lower part (got ${fy}%)`);
+  await p3.click('[data-action="done"]'); await p3.waitForSelector('[data-view="slots"]');
+  await p3.click('[data-action="preview"]'); await p3.waitForSelector('[data-view="preview"]');
+  const fig = await (await p3.$('[data-preview-slot="page:gel-nails:og"]')).boundingBox();
+  check(Math.abs(fig.width / fig.height - 1200 / 630) < 0.02, `14: the preview shows it in that shape (got ${(fig.width / fig.height).toFixed(2)})`);
+  const posts3 = [];
+  p3.on('request', (r) => { if (r.method() === 'POST' && r.url().includes('/api/admin/')) posts3.push({ path: new URL(r.url()).pathname, body: r.postData() }); });
+  await p3.click('[data-action="publish"]'); await p3.waitForSelector('[data-view="publish"]');
+  await p3.click('[data-action="confirm"]'); await p3.waitForSelector('[data-view="list"]');
+  const sent3 = JSON.parse(posts3.find((p) => p.path === '/api/admin/publish')?.body ?? '{}');
+  const id3 = sent3.data?.slots['page:gel-nails:og'];
+  check(/^u-[a-z0-9]{10}$/.test(id3 ?? '') && sent3.data.uploads[id3]?.ratio === '1.91:1' && sent3.data.uploads[id3]?.dir === 'nails', '14: the publish puts the upload in the place, as a 1.91:1 nails photo');
+  const master = Buffer.from(posts3.find((p) => p.path === '/api/admin/blob')?.body ?? '', 'base64');
+  const meta = await sharp(master).metadata().catch(() => ({}));
+  check(`${meta.format} ${meta.width}x${meta.height}` === 'jpeg 1200x630', `14: its master is a 1200 × 630 JPEG (got ${meta.format} ${meta.width}x${meta.height})`);
+  const small3 = (input) => (Buffer.isBuffer(input) ? sharp(input) : input).resize(160, 84, { fit: 'fill' }).greyscale().raw().toBuffer();
+  const cut = (f) => { const c = cropRect(1500, 2000, '1.91:1', 0.5, f); return small3(sharp(fixture('admin-portrait.jpg')).extract({ left: c.sx, top: c.sy, width: c.sw, height: c.sh })); };
+  const far = (m, n) => m.reduce((t, v, i) => t + Math.abs(v - n[i]), 0) / m.length;
+  const [got, where, middle] = [await small3(master), await cut(fy / 100), await cut(0.5)];
+  check(far(got, where) < 4 && far(got, where) < far(got, middle) / 2, `14: cut where the editor left it, not at the centre (distance ${far(got, where).toFixed(1)}, centre ${far(got, middle).toFixed(1)})`);
+  check((await text3('[data-banner]')).includes('已上線') || (await text3('[data-banner]')).includes('發佈中') || (await text3('[data-banner]')).includes('等待'), `14: and the publish is accepted (got "${await text3('[data-banner]')}")`);
+  check(!/undefined|NaN|null|\[object/.test(await text3('[data-admin]')), '14: nothing on its screens reads as a bug');
+  await phone3.close();
+}
 
 // nothing on the page may read as a bug, and every control must be large enough for a thumb
 check(!/undefined|NaN|null|\[object/.test(await text('[data-admin]')), 'the page shows undefined / NaN / null');
