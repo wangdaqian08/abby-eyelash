@@ -2,7 +2,6 @@
   "groups": {
     "face": [
       "u-agtd2qkfqp",
-      "u-21kshbf34f",
       "u-7ole7as5cq",
       "u-92f83sy8lg",
       "u-0w5i41u163",
@@ -101,11 +100,6 @@
       "dir": "lash",
       "ratio": "3:4",
       "where": "face"
-    },
-    "u-21kshbf34f": {
-      "dir": "lash",
-      "ratio": "3:4",
-      "where": "face"
     }
   },
   "labels": {
@@ -135,7 +129,6 @@
     "nail-4630": "option:handcrafted-nails/nail-art",
     "nail-9264": "option:handcrafted-nails/nail-art",
     "nail-7242": "option:handcrafted-nails/nail-art",
-    "u-21kshbf34f": "option:lash-extensions/styled",
     "u-7ole7as5cq": "option:lash-extensions/hybrid-full",
     "u-92f83sy8lg": "option:lash-extensions/hybrid-natural"
   }
