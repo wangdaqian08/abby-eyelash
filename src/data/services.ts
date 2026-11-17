@@ -152,6 +152,8 @@ export const renamed = (d: Draft, names: Names): Draft => ({
   options: d.options.map((o) => (names[`${d.id}/${o.id}`] ? { ...o, name: names[`${d.id}/${o.id}`] } : o)),
 });
 const names = ((admin as { names?: Names }).names ?? {});
+/** The names as written above, before the admin's changes: what the admin shows to go back to. */
+export const writtenNames: Names = Object.fromEntries(drafts.flatMap((d) => [[d.id, d.name], ...d.options.map((o) => [`${d.id}/${o.id}`, o.name] as const)]));
 export const services = aliasHant(drafts.map((d) => withPrices(renamed(d, names)))) as unknown as Service[]; // aliasHant adds 'zh-hant' to every text
 
 const unknown = Object.keys(prices).filter((k) => !services.some((s) => s.options.some((o) => (o.priceKey ?? `${s.id}/${o.id}`) === k)));

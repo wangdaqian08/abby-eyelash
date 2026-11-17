@@ -311,9 +311,11 @@ if (mine()) {
   const tiles = await page.$$eval('#gallery [data-part] li', (lis) => lis.length);
   const videoTiles = await page.$$eval('#gallery [data-video]', (v) => v.length);
   check(hrefs.length >= tiles - videoTiles, `gallery: every photo should be a booking link (${hrefs.length} links, ${tiles} tiles)`);
-  check((await page.$$('#gallery [data-part]:last-child [data-bar]')).length === 0, 'gallery: brows have no name bar');
-  const noBar = await page.$$eval('#gallery [data-part]:not(:last-child) li', (lis) => lis.filter((li) => !li.querySelector('[data-bar]')).length);
-  check(noBar === 0, `gallery: every lash and nail card has a name bar (${noBar} without)`);
+  const noBar = await page.$$eval('#gallery [data-part] li', (lis) => lis.filter((li) => !li.querySelector('[data-bar]')).length);
+  check(noBar === 0, `gallery: every card has a name bar, brows too (${noBar} without)`);
+  const numbers = await page.$$eval('#gallery [data-photo]', (as) => as.map((a) => a.dataset.photo));
+  const unnumbered = numbers.filter((n) => !/^[a-z-]+-\d+$/.test(n));
+  check(numbers.length > 0 && !unnumbered.length, `gallery: every card names its photo number for GA4 (${unnumbered.join(', ')})`);
   // The focus ring is drawn outside the link: nothing around a photo link may clip it.
   const clipped = await page.$$eval('#gallery [data-part] li:not(:has([data-video])) > a', (as) => as.filter((a) => getComputedStyle(a.parentElement).overflow !== 'visible').length);
   check(clipped === 0, `gallery: ${clipped} photo links sit in a clipping card, so their focus ring is hidden`);

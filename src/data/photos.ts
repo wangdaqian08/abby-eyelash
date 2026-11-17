@@ -315,8 +315,11 @@ for (const [id, u] of Object.entries(adminData.uploads)) {
   const p: Photo = { id, dir: u.dir, source: '', ratio: u.ratio, alt: uploadAlt(id, u) };
   photos.push(p); byId.set(id, p);
 }
-// Descriptions written in the admin replace the ones above.
-for (const [id, alt] of Object.entries(adminData.alts)) { const p = videos[id] ?? byId.get(id); if (p) p.alt = { ...alt }; }
+// Descriptions written in the admin replace the ones above (kept here: the admin shows them to go back to).
+const writtenAlts = new Map<string, L10n>();
+for (const [id, alt] of Object.entries(adminData.alts)) { const p = videos[id] ?? byId.get(id); if (p) { writtenAlts.set(id, p.alt); p.alt = { ...alt }; } }
+/** A photo's description as written in the code (or generated for an upload), before the admin's change. */
+export const writtenAlt = (id: string): L10n => writtenAlts.get(id) ?? (videos[id] ?? photo(id)).alt;
 
 
 aliasHant([photos, nailVideo, browVideo, styleGuide, styledLooks, adminGroups, servicePhotos, adminLabels, adminSlots, legacyLooks, OTHER, FACE]);

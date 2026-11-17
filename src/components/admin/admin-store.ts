@@ -136,7 +136,8 @@ export function afterPublish(d: Draft, pr: number, base: string): Draft {
  * `stale`: the draft was started on a site that someone else has changed since; a publish would be refused.
  */
 export function resume(stored: Draft | undefined, s: AdminState): { draft: Draft; stale: boolean } {
-  if (!stored) return { draft: fromState(s), stale: false };
+  // none, or saved before the portfolio was regrouped by style (2026-11-17): its group lists no longer exist, so it cannot be published
+  if (!stored?.data?.numbers) return { draft: fromState(s), stale: false };
   const dirty = isDirty(stored);
   if (stored.base === s.base) { // the site is what this draft was started on (or has caught up with our publish)
     if (!dirty) return { draft: fromState(s), stale: false };

@@ -18,7 +18,7 @@ export interface AdminState {
   groups: { id: string; part: 'lashes' | 'nails' | 'brows'; service: string; serviceName: string; name: string; dir: Dir; ratio: AdminRatio; visible: number; cols: 2 | 3 }[];
   slots: { key: string; section: string; name: string; dir: Dir; ratio: AdminRatio; def: string; auto?: string }[]; // auto: thumbnail of a link preview's automatic cut
   labels: { key: string; group: string; name: string }[];
-  names: { key: string; service: string; text: { en: string; zh: string } }[]; // the names as built: services, then their styles
+  names: { key: string; service: string; label: string; text: { en: string; zh: string } }[]; // services, then their styles; text: as written in the code
   photos: Record<string, { thumb: string; video?: true; name?: string; alt: { en: string; zh: string } }>;
 }
 

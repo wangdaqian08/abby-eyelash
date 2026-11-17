@@ -2,13 +2,14 @@
 // Every change goes into a draft kept on the phone (admin-store.ts); nothing reaches the site before "發佈".
 // Spec: docs/superpowers/specs/2026-11-14-admin-photos-design.md
 import { admin as t } from '../../i18n/admin';
-import { MAX_SOURCE_BYTES, MAX_ZOOM, OUT, sharpLimit, type AdminState } from '../../lib/photo-admin';
+import { MAX_ALT, MAX_NAME, MAX_SOURCE_BYTES, MAX_ZOOM, OUT, sharpLimit, type AdminState } from '../../lib/photo-admin';
 import { sortable } from './admin-drag';
 import { render as renderJpeg } from './admin-image';
 import { goldenGuide } from './golden';
-import { addToGroup, afterPublish, changeCount, changes, finalData, fromState, isDirty, kv, move, newId, replaceSlot, resetSlot, resume, setFocus, setLabel, toggleRemoved, unpublished, type Draft } from './admin-store';
+import { addToGroup, afterPublish, changeCount, changes, finalData, fromState, isDirty, kv, move, moveTo, newId, replaceSlot, resetSlot, resume, setAlt, setFocus, setLabel, setName, toggleRemoved, unpublished, type Draft } from './admin-store';
 
 type Group = AdminState['groups'][number];
+const STYLED = 'lash-extensions/styled'; // the styled set: its photos carry look names, and the lash page shows it too
 type Slot = AdminState['slots'][number];
 
 let root: HTMLElement;
@@ -34,7 +35,7 @@ const fileInput = Object.assign(document.createElement('input'), { type: 'file',
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 const route = () => {
   const [, view = '', id = ''] = location.hash.replace(/\?.*$/, '').split('/');
-  return { view: ({ g: 'group', s: 'slots', e: 'edit', p: 'preview', x: 'publish' } as Record<string, string>)[view] ?? 'list', id: decodeURIComponent(id) };
+  return { view: ({ g: 'group', s: 'slots', n: 'names', e: 'edit', p: 'preview', x: 'publish' } as Record<string, string>)[view] ?? 'list', id: decodeURIComponent(id) };
 };
 const ASPECT: Record<string, string> = { '4:3': 'aspect-[4/3]', '3:4': 'aspect-[3/4]', '1.91:1': 'aspect-[40/21]' }; // literal classes, so Tailwind sees them
 const aspect = (ratio: string) => ASPECT[ratio];
@@ -42,7 +43,10 @@ const portrait = (ratio: Slot['ratio']) => OUT[ratio][1] > OUT[ratio][0];
 const isOg = (ratio: string) => ratio === '1.91:1'; // a service page's link preview
 const slotNow = (s: Slot) => draft.data.slots[s.key] ?? s.def;
 const removed = (g: string, id: string) => draft.removed.includes(`${g}/${id}`);
-const nameOf = (id: string) => state.labels.find((l) => l.key === draft.data.labels[id])?.name ?? state.photos[id]?.name ?? '';
+const nameOf = (id: string) => state.labels.find((l) => l.key === draft.data.labels[id])?.name ?? (draft.data.groups[STYLED].includes(id) ? state.photos[id]?.name : '') ?? '';
+/** "凝膠美甲 · 貓眼"; 整臉效果 alone. */
+const groupTitle = (g: Group) => (g.id === 'face' ? g.name : `${g.serviceName} · ${g.name}`);
+const groupHref = (g: Group | string) => `#/g/${encodeURIComponent(typeof g === 'string' ? g : g.id)}`;
 
 function picture(id: string, cls = 'size-full object-cover') {
   const f = draft.focus[id] ?? { x: 0.5, y: 0.5, z: 1 };
@@ -71,16 +75,16 @@ function forgetSource(id: string) {
 const say = (text: string) => { notice = text; render(); };
 
 // ── Shared pieces ──
-function top(tab: 'groups' | 'slots') {
+function top(tab: 'groups' | 'slots' | 'names') {
   const on = 'bg-surface-3 font-bold text-fg shadow-sm', off = 'font-medium text-muted';
   return `
     <header class="flex items-end justify-between">
       <div><p class="text-xs tracking-[0.12em] text-muted">${t.brand}</p><h1 class="font-sans text-[1.75rem] leading-tight font-bold">${t.title}</h1></div>
       <a href="/cdn-cgi/access/logout" class="inline-flex min-h-11 min-w-11 items-center justify-end text-sm text-muted">${t.logout}</a>
     </header>
-    <nav class="mt-4 grid grid-cols-2 gap-1 rounded-full bg-surface-2 p-1">
-      <a data-tab="groups" href="#/" ${tab === 'groups' ? 'aria-current="page"' : ''} class="flex min-h-11 items-center justify-center rounded-full ${tab === 'groups' ? on : off}">${t.tabGroups}</a>
-      <a data-tab="slots" href="#/s" ${tab === 'slots' ? 'aria-current="page"' : ''} class="flex min-h-11 items-center justify-center rounded-full ${tab === 'slots' ? on : off}">${t.tabSlots}</a>
+    <nav class="mt-4 grid grid-cols-3 gap-1 rounded-full bg-surface-2 p-1">
+      ${([['groups', '#/', t.tabGroups], ['slots', '#/s', t.tabSlots], ['names', '#/n', t.tabNames]] as const).map(([id, href, label]) =>
+        `<a data-tab="${id}" href="${href}" ${tab === id ? 'aria-current="page"' : ''} class="flex min-h-11 items-center justify-center rounded-full ${tab === id ? on : off}">${label}</a>`).join('')}
     </nav>`;
 }
 function banner() {
@@ -117,8 +121,8 @@ function bar() {
 }
 /** Has this draft changed anything in the group? */
 const touched = (g: Group, c = changes(draft)) =>
-  c.reordered.includes(g.id) || c.removed.some((m) => m.startsWith(`${g.id}/`)) || draft.data.groups[g.id].some((id) => c.added.includes(id) || c.relabelled.includes(id));
-const cardPhotos = () => new Set(state.slots.filter((s) => s.section === 'cards').map(slotNow)); // the home portfolio does not repeat a lash card's photo
+  c.reordered.includes(g.id) || c.removed.some((m) => m.startsWith(`${g.id}/`)) || draft.clean.groups[g.id].some((id) => c.moved.includes(id))
+  || draft.data.groups[g.id].some((id) => c.added.includes(id) || c.relabelled.includes(id) || c.moved.includes(id) || c.described.includes(id));
 const slotTitle = (s: Slot) => (s.section === 'hero' ? t.heroName : s.section === 'cards' ? `${t.sectionCards} · ${esc(s.name)}` : `${t.sectionPage(esc(s.section))} · ${esc(s.name)}`);
 const countText = (g: Group, ids: string[]) => {
   const v = ids.filter((id) => state.photos[id]?.video).length;
@@ -131,30 +135,40 @@ function listView() {
   const row = (g: Group) => {
     const ids = draft.data.groups[g.id].filter((id) => !removed(g.id, id));
     return `
-      <li><a data-group="${g.id}" href="#/g/${g.id}" class="flex min-h-16 items-center gap-3 px-3">
+      <li><a data-group="${g.id}" href="${groupHref(g)}" class="flex min-h-16 items-center gap-3 px-3">
         <span class="size-11 shrink-0 overflow-hidden rounded-field bg-surface-2">${ids[0] ? picture(ids[0]) : ''}</span>
-        <span class="min-w-0 flex-1"><span class="block font-medium">${esc(g.name)}</span><span class="block text-sm text-muted">${countText(g, ids)}</span></span>
+        <span class="min-w-0 flex-1"><span class="block font-medium">${esc(g.name)}</span>${ids.length
+          ? `<span class="block text-sm text-muted">${countText(g, ids)}</span>`
+          : `<span data-empty-style class="block text-sm font-medium text-accent-ink">${t.emptyStyle}</span>`}</span>
         ${touched(g, c) ? `<span class="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold whitespace-nowrap text-primary">${t.draftChip}</span>` : ''}
         <span class="shrink-0 text-muted">${icon(CHEVRON)}</span>
       </a></li>`;
   };
-  const part = (id: Group['part']) => `
+  // each part by service (整臉效果 first in lashes), then its styles; an empty style is listed with a reminder
+  const sectionOf = (g: Group) => (g.id === 'face' ? 'face' : g.service);
+  const part = (id: Group['part']) => {
+    const groups = state.groups.filter((g) => g.part === id);
+    return `
     <section class="mt-5">
       <h2 class="px-1 font-sans text-sm font-medium text-muted">${t.parts[id]}</h2>
-      <ul class="mt-2 overflow-hidden rounded-card bg-surface shadow-sm">${state.groups.filter((g) => g.part === id).map(row).join('')}</ul>
+      ${[...new Set(groups.map(sectionOf))].map((k) => {
+        const own = groups.filter((g) => sectionOf(g) === k);
+        return `<h3 class="mt-3 px-1 font-sans text-base font-bold">${esc(k === 'face' ? own[0].name : own[0].serviceName)}</h3>
+          <ul class="mt-1.5 overflow-hidden rounded-card bg-surface shadow-sm">${own.map(row).join('')}</ul>`;
+      }).join('')}
     </section>`;
+  };
   return `<div data-view="list">${top('groups')}${banner()}${noticeBox()}${(['lashes', 'nails', 'brows'] as const).map(part).join('')}</div>`;
 }
 
 // ── One group: add, delete, restore, reorder ──
 function groupView(g: Group) {
   const ids = draft.data.groups[g.id];
-  const onCard = new Set(g.id === 'styled' ? state.slots.filter((s) => s.section === 'cards').map(slotNow) : []); // the home portfolio does not repeat a lash card's photo
   let shown = 0;
   const tile = (id: string, i: number) => {
     const gone = removed(g.id, id), isNew = unpublished(draft, id), video = state.photos[id]?.video, name = nameOf(id);
-    if (!gone && !onCard.has(id)) shown++;
-    const last = shown === g.visible && !gone && !onCard.has(id) && ids.slice(i + 1).some((x) => !removed(g.id, x) && !onCard.has(x));
+    if (!gone) shown++;
+    const last = shown === g.visible && !gone && ids.slice(i + 1).some((x) => !removed(g.id, x));
     const chipCls = 'absolute top-1.5 left-1.5 rounded-full px-2 py-0.5 text-xs font-bold whitespace-nowrap';
     return `
       <li data-tile="${id}" class="relative touch-manipulation overflow-hidden rounded-field bg-surface-2 select-none [-webkit-touch-callout:none] data-[placeholder]:opacity-30 ${aspect(g.ratio)} ${isNew ? 'outline-3 -outline-offset-3 outline-primary' : ''}">
@@ -164,10 +178,10 @@ function groupView(g: Group) {
             <span class="text-xs font-medium">${t.removedNote}</span>
             <button type="button" data-action="restore" class="${pill} gap-1.5 bg-surface-3 text-fg shadow-sm">${icon(UNDO)}${t.restore}</button>
           </div>` : `
-          ${isNew ? `<span class="${chipCls} bg-primary text-on-primary">${t.isNew}</span>` : video ? `<span class="${chipCls} bg-fg/75 text-bg">${t.video}</span>` : onCard.has(id) ? `<span class="${chipCls} bg-fg/75 text-bg">${t.onCard}</span>` : ''}
+          ${isNew ? `<span class="${chipCls} bg-primary text-on-primary">${t.isNew}</span>` : video ? `<span class="${chipCls} bg-fg/75 text-bg">${t.video}</span>` : ''}
           <div class="group-data-[dragging]/admin:hidden">
             ${name ? `<span class="absolute bottom-1.5 left-1.5 max-w-[55%] truncate rounded-full bg-fg/75 px-2 py-0.5 text-xs text-bg">${esc(name)}</span>` : ''}
-            ${video ? '' : `<a data-action="edit" href="#/e/${id}?g=${g.id}" class="absolute right-0 bottom-0 flex min-h-11 min-w-11 items-end justify-end p-1.5"><span class="rounded-full bg-surface-3 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap text-fg">${t.edit}</span></a>`}
+            <a data-action="edit" href="#/e/${id}?g=${encodeURIComponent(g.id)}" class="absolute right-0 bottom-0 flex min-h-11 min-w-11 items-end justify-end p-1.5"><span class="rounded-full bg-surface-3 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap text-fg">${t.edit}</span></a>
             <button type="button" data-action="remove" aria-label="${t.remove(esc(name))}" class="absolute top-0 right-0 flex size-11 items-start justify-end p-1.5"><span class="flex size-6.5 items-center justify-center rounded-full bg-fg/75 text-bg">${icon(CROSS, 'size-3.5')}</span></button>
           </div>`}
       </li>
@@ -176,8 +190,8 @@ function groupView(g: Group) {
   return `
     <div data-view="group">
       <a href="#/" class="inline-flex min-h-11 items-center gap-1 text-muted">${icon(BACK)}${t.back}</a>
-      <h1 class="mt-1 font-sans text-2xl leading-tight font-bold">${esc(g.name)}</h1>
-      <p class="mt-1 text-sm text-muted">${t.parts[g.part]} · ${countText(g, ids.filter((id) => !removed(g.id, id)))}${g.id === 'styled' ? ` · ${t.sharedOrder}` : ''}</p>
+      <h1 class="mt-1 font-sans text-2xl leading-tight font-bold">${esc(groupTitle(g))}</h1>
+      <p class="mt-1 text-sm text-muted">${t.parts[g.part]} · ${countText(g, ids.filter((id) => !removed(g.id, id)))}${g.id === STYLED ? ` · ${t.sharedOrder}` : ''}</p>
       ${noticeBox()}
       <button type="button" data-action="add" class="${pill} mt-3 min-h-12 w-full gap-2 bg-primary/10 text-base text-primary">${icon(PLUS, 'size-4.5')}${t.add}</button>
       <p class="mt-3 text-sm text-muted">${ids.length ? t.groupHint : t.empty}</p>
@@ -216,6 +230,45 @@ function slotsView() {
         </section>`).join('')}
       ${bar()}
     </div>`;
+}
+
+// ── Names: each service and its styles, in Chinese and English ──
+function namesView() {
+  const row = (n: AdminState['names'][number]) => {
+    const now = draft.data.names[n.key] ?? n.text, mine = n.key in draft.data.names;
+    const changed = JSON.stringify(draft.data.names[n.key]) !== JSON.stringify(draft.clean.names[n.key]);
+    const input = (lang: 'zh' | 'en', label: string) =>
+      `<label class="mt-1.5 flex items-center gap-2"><span class="w-24 shrink-0 text-xs text-muted">${label}</span>
+        <input data-lang="${lang}" value="${esc(now[lang])}" maxlength="${MAX_NAME}" class="h-11 min-w-0 flex-1 rounded-field bg-surface-3 px-3 text-base shadow-sm outline-1 outline-primary/20"></label>`;
+    return `
+      <li data-name="${n.key}" class="px-3 py-3 ${changed ? 'bg-primary/5' : ''}">
+        <p class="flex items-center justify-between gap-2"><span class="font-bold">${n.key.includes('/') ? esc(n.label) : t.nameService}</span>
+          ${changed ? `<span class="shrink-0 text-xs font-bold text-primary">${t.nameChanged}</span>` : ''}
+          ${mine ? `<button type="button" data-action="name-reset" class="${pill} shrink-0 bg-surface-3 text-fg shadow-sm">${t.restore}</button>` : ''}</p>
+        ${input('zh', t.nameZh)}${input('en', t.nameEn)}
+      </li>`;
+  };
+  const byService = [...new Set(state.names.map((n) => n.service))];
+  return `
+    <div data-view="names">${top('names')}${banner()}${noticeBox()}
+      <p class="mt-4 px-1 text-sm text-muted">${t.namesIntro}</p>
+      ${byService.map((sv) => `
+        <section class="mt-5">
+          <h2 class="px-1 font-sans text-base font-bold">${esc(state.names.find((n) => n.key === sv)!.label)}</h2>
+          <ul class="mt-2 divide-y divide-fg/5 overflow-hidden rounded-card bg-surface shadow-sm">${state.names.filter((n) => n.service === sv).map(row).join('')}</ul>
+        </section>`).join('')}
+      ${bar()}
+    </div>`;
+}
+/** A name field was left: both languages written → the new name; one blank → back to the written name. */
+function nameEdited(li: HTMLElement) {
+  const n = state.names.find((x) => x.key === li.dataset.name);
+  if (!n) return;
+  const [zh, en] = (['zh', 'en'] as const).map((k) => li.querySelector<HTMLInputElement>(`[data-lang="${k}"]`)!.value.trim());
+  const now = draft.data.names[n.key] ?? n.text;
+  if (zh === now.zh && en === now.en) return;
+  notice = zh && en ? '' : t.nameEmpty;
+  commit(setName(draft, n.key, zh && en ? { en, zh } : undefined, n.text));
 }
 
 // ── Editor: drag and zoom the photo behind a frame of the fixed ratio; optional style name ──
@@ -309,10 +362,13 @@ function refreshGuide() {
 }
 function editView() {
   const e = editing!, l = layout();
-  const inStyled = draft.data.groups.styled.includes(e.id);
-  const options = state.labels.filter((x) => x.dir === e.ctx.dir && (inStyled ? x.styledOnly || x.key === 'option:lash-extensions/styled' : !x.styledOnly));
+  const g = 'key' in e.ctx ? undefined : e.ctx; // a portfolio group (not a fixed place)
+  const options = state.labels.filter((x) => x.group === g?.id); // 整臉效果: its style; the styled set: its look name
   const label = draft.data.labels[e.id] ?? '';
-  const legacy = !label && state.photos[e.id]?.name;
+  const legacy = !label && g?.id === STYLED && state.photos[e.id]?.name;
+  const alt = draft.data.alts[e.id] ?? state.photos[e.id]?.alt ?? { en: '', zh: '' };
+  const num = finalData(draft).numbers[e.id], was = draft.clean.numbers[e.id];
+  const field = 'mt-1.5 w-full rounded-field bg-surface-3 px-3 text-base shadow-sm outline-1 outline-primary/20';
   return `
     <div data-view="edit">
       <header class="flex items-center justify-between">
@@ -330,13 +386,28 @@ function editView() {
         <span class="pointer-events-none absolute rounded-full bg-fg/75 px-2 py-0.5 text-xs whitespace-nowrap text-bg" style="left:${l.left + 8}px;top:${l.top + 8}px">${t.ratio[e.ctx.ratio]} · ${t.fixedRatio}</span>
       </div>
       ${e.w ? zoomControls() : `<p class="mt-3 text-sm text-muted">${t.locked}</p>`}
-      ${isOg(e.ctx.ratio) ? '' : `
-      <label for="look-name" class="mt-5 block font-bold">${t.labelTitle}</label>
-      <select id="look-name" data-label class="mt-1.5 h-12 w-full rounded-field bg-surface-3 px-3 text-base shadow-sm outline-1 outline-primary/20">
+      ${g ? `
+      <label for="photo-group" class="mt-5 block font-bold">${t.groupTitle}</label>
+      <select id="photo-group" data-group-select class="${field} h-12">
+        ${state.groups.filter((x) => x.dir === g.dir).map((x) => `<option value="${x.id}" ${x.id === g.id ? 'selected' : ''}>${esc(groupTitle(x))}</option>`).join('')}
+      </select>
+      <p class="mt-1.5 text-xs leading-relaxed text-muted">${t.groupNote}</p>` : ''}
+      ${options.length ? `
+      <label for="look-name" class="mt-5 block font-bold">${g!.id === 'face' ? t.labelTitle : t.lookTitle}</label>
+      <select id="look-name" data-label class="${field} h-12">
         <option value="">${t.labelNone}</option>
         ${options.map((o) => `<option value="${o.key}" ${o.key === label ? 'selected' : ''}>${esc(o.name)}</option>`).join('')}
       </select>
-      <p class="mt-1.5 text-xs leading-relaxed text-muted">${legacy ? `${t.currentName(esc(legacy))}。` : ''}${e.ctx.dir === 'brows' ? t.labelHidden : t.labelShown}</p>`}
+      <p class="mt-1.5 text-xs leading-relaxed text-muted">${legacy ? `${t.currentName(esc(legacy))}。` : ''}${t.labelShown}</p>` : ''}
+      ${isOg(e.ctx.ratio) ? '' : `
+      <p class="mt-5 font-bold">${t.altTitle}</p>
+      <label for="alt-zh" class="mt-2 block text-sm text-muted">${t.altZh}</label>
+      <textarea id="alt-zh" data-alt="zh" rows="2" maxlength="${MAX_ALT}" class="${field} py-2">${esc(alt.zh)}</textarea>
+      <label for="alt-en" class="mt-2 block text-sm text-muted">${t.altEn}</label>
+      <textarea id="alt-en" data-alt="en" rows="2" maxlength="${MAX_ALT}" class="${field} py-2">${esc(alt.en)}</textarea>
+      <p class="mt-1.5 text-xs leading-relaxed text-muted">${t.altNote}</p>
+      ${num ? `<p data-number class="mt-5 text-sm font-bold tabular-nums">${was && was !== num ? t.numberNext(num, was) : t.number(num)}</p>
+      <p class="mt-1 text-xs leading-relaxed text-muted">${t.numberNote}</p>` : ''}`}
     </div>`;
 }
 /** Opens the editor for the photo in the address (#/e/<id>?g=<group> or ?s=<place>); reads the source's size first. */
@@ -345,7 +416,7 @@ async function openEditor(id: string) {
   const ctx = state.slots.find((s) => s.key === q.get('s')) ?? state.groups.find((g) => g.id === q.get('g'));
   const known = ctx && ('key' in ctx ? slotNow(ctx) === id : draft.data.groups[ctx.id].includes(id));
   if (!known) { location.hash = '#/'; return; }
-  const next: NonNullable<typeof editing> = { id, x: 0.5, y: 0.5, z: 1, ...draft.focus[id], w: 0, h: 0, back: 'key' in ctx ? '#/s' : `#/g/${ctx.id}`, ctx };
+  const next: NonNullable<typeof editing> = { id, x: 0.5, y: 0.5, z: 1, ...draft.focus[id], w: 0, h: 0, back: 'key' in ctx ? '#/s' : groupHref(ctx), ctx };
   if (unpublished(draft, id) && sources.has(id)) {
     const img = Object.assign(new Image(), { src: sources.get(id)! });
     await img.decode().catch(() => {});
@@ -357,8 +428,14 @@ async function openEditor(id: string) {
 function closeEditor(keep: boolean) {
   const e = editing!;
   if (keep) {
-    const name = root.querySelector<HTMLSelectElement>('select[data-label]'); // a link preview has no style name
+    const name = root.querySelector<HTMLSelectElement>('select[data-label]'); // only 整臉效果 and the styled set have one
     let next = name ? setLabel(draft, e.id, name.value) : draft;
+    const to = root.querySelector<HTMLSelectElement>('select[data-group-select]')?.value;
+    if (to && !('key' in e.ctx)) next = moveTo(next, e.ctx.id, to, e.id); // after the label: a label that does not apply there is dropped
+    const [zh, en] = (['zh', 'en'] as const).map((k) => root.querySelector<HTMLTextAreaElement>(`[data-alt="${k}"]`)?.value.trim());
+    const shown = draft.data.alts[e.id] ?? state.photos[e.id]?.alt;
+    if (zh !== undefined && en !== undefined && (zh !== (shown?.zh ?? '') || en !== (shown?.en ?? '')))
+      next = setAlt(next, e.id, zh && en ? { en, zh } : undefined, state.photos[e.id]?.alt); // one left blank: back to the written one
     const r2 = (n: number) => Math.round(n * 100) / 100;
     if (e.w) next = setFocus(next, e.id, r2(e.x), r2(e.y), r2(e.z));
     save(next);
@@ -403,13 +480,13 @@ function dragged(ev: PointerEvent) {
 
 // ── Preview: the draft in the site's phone layout ──
 function previewView() {
-  const c = changes(draft), cards = cardPhotos();
+  const c = changes(draft);
   const kept = (g: Group) => draft.data.groups[g.id].filter((id) => !removed(g.id, id));
   const head = (text: string) => `<h2 class="font-sans text-sm font-medium text-muted">${text}</h2>`;
   const home = (g: Group) => {
-    const ids = kept(g).filter((id) => g.id !== 'styled' || !cards.has(id));
+    const ids = kept(g);
     return `
-      <section class="mt-6">${head(t.previewHome(esc(g.name)))}
+      <section class="mt-6">${head(t.previewHome(esc(groupTitle(g))))}
         <div class="mt-2 rounded-card bg-surface-2 p-3">
           <ul data-preview-group="${g.id}" class="grid gap-2 ${g.cols === 2 ? 'grid-cols-2' : 'grid-cols-3'}">
             ${ids.slice(0, g.visible).map((id) => `<li data-photo-id="${id}" class="overflow-hidden rounded-field bg-fg/5 ${aspect(g.ratio)}">${picture(id)}</li>`).join('')}
@@ -418,10 +495,10 @@ function previewView() {
         </div>
       </section>`;
   };
-  const styled = state.groups.find((g) => g.id === 'styled')!;
+  const styled = state.groups.find((g) => g.id === STYLED)!;
   const lashPage = () => `
     <section class="mt-6">${head(t.previewPage)}
-      <ul data-preview-page="styled" class="mt-2 grid grid-cols-2 gap-3">
+      <ul data-preview-page="${STYLED}" class="mt-2 grid grid-cols-2 gap-3">
         ${kept(styled).map((id) => `<li data-photo-id="${id}" class="overflow-hidden rounded-card bg-surface shadow-sm"><div class="aspect-[4/3]">${picture(id)}</div>${nameOf(id) ? `<p class="p-3 text-sm font-medium">${esc(nameOf(id))}</p>` : ''}</li>`).join('')}
       </ul>
     </section>`;
@@ -447,18 +524,24 @@ function previewView() {
 // ── Publish: what will change, then send it ──
 function publishView() {
   const c = changes(draft), n = changeCount(draft);
-  const groupName = (id: string) => esc(state.groups.find((g) => g.id === id)?.name ?? '');
+  const groupName = (id: string) => { const g = state.groups.find((x) => x.id === id); return g ? esc(groupTitle(g)) : ''; };
+  const groupNow = (id: string) => state.groups.find((g) => draft.data.groups[g.id].includes(id))?.id ?? '';
+  const nameLabel = (key: string) => { const n = state.names.find((x) => x.key === key)!; return esc(n.key.includes('/') ? `${state.names.find((x) => x.key === n.service)!.label} · ${n.label}` : n.label); };
   const row = (photo: string | undefined, title: string, note: string, grey = false) => `
     <li data-change class="flex min-h-16 items-center gap-3 px-3 py-2">
       <span class="aspect-[4/3] w-14 shrink-0 overflow-hidden rounded-field bg-surface-2">${photo ? picture(photo, `size-full object-cover ${grey ? 'opacity-50 grayscale' : ''}`) : ''}</span>
       <span class="min-w-0"><span class="block font-bold">${title}</span><span class="block text-sm text-muted">${note}</span></span>
     </li>`;
   const rows = [
-    ...c.added.map((id) => row(id, t.chAdded, groupName(state.groups.find((g) => draft.data.groups[g.id].includes(id))?.id ?? ''))),
-    ...c.removed.map((m) => { const [g, id] = [m.slice(0, m.indexOf('/')), m.slice(m.indexOf('/') + 1)]; return row(id, t.chRemoved, `${groupName(g)}${nameOf(id) ? `「${esc(nameOf(id))}」` : ''}`, true); }),
+    ...c.added.map((id) => row(id, t.chAdded, groupName(groupNow(id)))),
+    // a mark is `${groupId}/${photoId}`: group ids have a '/' of their own, photo ids none
+    ...c.removed.map((m) => { const [g, id] = [m.slice(0, m.lastIndexOf('/')), m.slice(m.lastIndexOf('/') + 1)]; return row(id, t.chRemoved, `${groupName(g)}${nameOf(id) ? `「${esc(nameOf(id))}」` : ''}`, true); }),
+    ...c.moved.map((id) => row(id, t.chMoved, groupName(groupNow(id)))),
     ...c.reordered.map((g) => row(draft.data.groups[g].find((id) => !removed(g, id)), t.chReordered, groupName(g))),
     ...state.slots.filter((s) => c.replaced.includes(s.key)).map((s) => row(slotNow(s), t.chReplaced, slotTitle(s))),
     ...c.relabelled.map((id) => row(id, t.chRelabelled, esc(nameOf(id)) || t.labelNone)),
+    ...c.renamed.map((key) => row(undefined, t.chRenamed, `${nameLabel(key)}：${esc((draft.data.names[key] ?? state.names.find((n) => n.key === key)!.text).zh)}`)),
+    ...c.described.map((id) => row(id, t.chDescribed, esc((draft.data.alts[id] ?? state.photos[id]?.alt)?.zh ?? ''))),
   ];
   const ready = canPublish() && !busy;
   return `
@@ -553,7 +636,7 @@ function render() {
   editing = undefined;
   if (r.view === 'preview' || r.view === 'publish') { root.innerHTML = r.view === 'preview' ? previewView() : publishView(); return; }
   lastEdit = location.hash || '#/';
-  root.innerHTML = r.view === 'group' && group ? groupView(group) : r.view === 'slots' ? slotsView() : listView();
+  root.innerHTML = r.view === 'group' && group ? groupView(group) : r.view === 'slots' ? slotsView() : r.view === 'names' ? namesView() : listView();
 }
 
 const MAX_PICK = 10; // photos added in one pick (owner's decision, 2026-11-14); pick again for more
@@ -616,6 +699,7 @@ function clicked(e: MouseEvent) {
       commit(resetSlot(draft, slot.key));
       break;
     case 'close-notice': notice = ''; render(); break;
+    case 'name-reset': { const key = el.closest<HTMLElement>('[data-name]')?.dataset.name; if (key) commit(setName(draft, key, undefined)); break; }
     case 'done': closeEditor(true); break;
     case 'cancel': closeEditor(false); break;
     case 'recentre': if (editing) { editing.x = editing.y = 0.5; editing.z = 1; placePhoto(); } break;
@@ -654,6 +738,10 @@ export async function start(el: HTMLElement): Promise<void> {
   root.addEventListener('pointerdown', grabbed);
   root.addEventListener('pointermove', dragged);
   for (const end of ['pointerup', 'pointercancel'] as const) root.addEventListener(end, released);
+  root.addEventListener('change', (ev) => { // a name field left (or Enter): saved into the draft
+    const li = (ev.target as Element).closest<HTMLElement>('[data-name]');
+    if (li) nameEdited(li);
+  });
   root.addEventListener('input', (ev) => {
     const el = ev.target as HTMLInputElement;
     if (editing && el.matches('input[data-zoom]')) { editing.z = Number(el.value); placePhoto(); }

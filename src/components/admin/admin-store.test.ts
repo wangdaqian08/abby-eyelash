@@ -155,6 +155,8 @@ test('resume: once the snapshot has caught up it is the truth again', () => {
   assert.deepEqual(resume(edited, caughtUp).draft.data, edited.data); // unpublished edits survive, pending is over
   assert.equal(resume(edited, caughtUp).draft.pending, undefined);
   assert.deepEqual(resume(undefined, state()).draft, fresh());
+  const old = { ...fresh(), data: { groups: { styled: [] }, slots: {}, uploads: {}, labels: {} } } as never; // saved before the regrouping
+  assert.deepEqual(resume(old, state('base-9')), { draft: fromState(state('base-9')), stale: false });
 });
 test('resume: the site was changed by someone else — a clean phone follows it, a dirty draft is flagged stale', () => {
   const other = structuredClone(adminData); other.groups[S].reverse();
