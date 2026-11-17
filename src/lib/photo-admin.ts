@@ -1,6 +1,7 @@
 // Rules of the photo admin (/admin/), shared by its page, the publish API (functions/api/admin) and the site build.
 // Pure: no DOM, no network. Spec: docs/superpowers/specs/2026-11-14-admin-photos-design.md
-import { adminGroups, adminLabels, adminSlots, photos, videos, type AdminData, type AdminRatio, type Dir } from '../data/photos.ts';
+import { adminGroups, adminLabels, adminSlots, numberPrefixes, photos, videos, type AdminData, type AdminRatio, type Dir } from '../data/photos.ts';
+import { mainOptions, services } from '../data/services.ts';
 
 /** Master size per ratio: the values of scripts/photos.mjs. */
 export const OUT: Record<AdminRatio, [number, number]> = { '4:3': [1600, 1200], '3:4': [1200, 1600], '1.91:1': [1200, 630] }; // 1.91:1 = the og:image size
@@ -14,10 +15,11 @@ export const ADMIN_JSON = 'src/data/photo-admin.json';
 export interface AdminState {
   base: string; // gitBlobSha of photo-admin.json as built
   data: AdminData;
-  groups: { id: string; part: 'lashes' | 'nails' | 'brows'; name: string; dir: Dir; ratio: AdminRatio; visible: number; cols: 2 | 3 }[];
+  groups: { id: string; part: 'lashes' | 'nails' | 'brows'; service: string; serviceName: string; name: string; dir: Dir; ratio: AdminRatio; visible: number; cols: 2 | 3 }[];
   slots: { key: string; section: string; name: string; dir: Dir; ratio: AdminRatio; def: string; auto?: string }[]; // auto: thumbnail of a link preview's automatic cut
-  labels: { key: string; dir: Dir; styledOnly: boolean; name: string }[];
-  photos: Record<string, { thumb: string; video?: true; name?: string }>;
+  labels: { key: string; group: string; name: string }[];
+  names: { key: string; service: string; label: string; text: { en: string; zh: string } }[]; // services, then their styles; text: as written in the code
+  photos: Record<string, { thumb: string; video?: true; name?: string; alt: { en: string; zh: string } }>;
 }
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
@@ -46,9 +48,26 @@ for (const [id, v] of Object.entries(videos)) legacy.set(id, { ...legacy.get(v.p
 
 const isRecord = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 
-/** null when `next` may be published over `prev`; else 'groups' | 'item' | 'duplicate' | 'slot' | 'upload' | 'label'. */
+/** What the admin may rename: each service, and each style (main option) of it. */
+export const nameKeys = services.flatMap((s) => [s.id, ...mainOptions(s).map((o) => `${s.id}/${o.id}`)]);
+export const MAX_NAME = 80, MAX_ALT = 300; // characters
+const isText = (v: unknown, max: number) => isRecord(v) && Object.keys(v).sort().join() === 'en,zh'
+  && [v.en, v.zh].every((x) => typeof x === 'string' && x.trim().length > 0 && x.length <= max);
+
+/** `data` with every photo numbered: a photo keeps its number while its style stays; a new photo, or one whose style changed,
+ * gets the next number of its prefix ('gel-nails-cat-eye-3'). Counters only go up, so a number is never given twice. */
+export function withNumbers(data: AdminData): AdminData {
+  const numbers: Record<string, string> = {}, counters = { ...data.counters };
+  for (const [id, prefix] of numberPrefixes(data)) {
+    const was = data.numbers[id];
+    numbers[id] = was && new RegExp(`^${prefix}-[1-9]\\d*$`).test(was) ? was : `${prefix}-${(counters[prefix] = (counters[prefix] ?? 0) + 1)}`;
+  }
+  return { ...data, numbers, counters };
+}
+
+/** null when `next` may be published over `prev`; else 'groups' | 'item' | 'duplicate' | 'slot' | 'upload' | 'label' | 'name' | 'alt' | 'number'. */
 export function validateAdmin(next: AdminData, prev: AdminData, newBlobs: ReadonlySet<string>): string | null {
-  if (!isRecord(next) || !isRecord(next.groups) || !isRecord(next.slots) || !isRecord(next.uploads) || !isRecord(next.labels)) return 'groups';
+  if (!isRecord(next) || !['groups', 'slots', 'uploads', 'labels', 'names', 'alts', 'numbers', 'counters'].every((k) => isRecord(next[k as keyof AdminData]))) return 'groups';
   if (Object.keys(next.groups).sort().join() !== adminGroups.map((g) => g.id).sort().join()) return 'groups';
 
   for (const [id, u] of Object.entries(next.uploads)) {
@@ -59,17 +78,21 @@ export function validateAdmin(next: AdminData, prev: AdminData, newBlobs: Readon
   for (const id of newBlobs) if (!next.uploads[id] || prev.uploads[id]) return 'upload';
 
   // An id is usable in a group or place when it is a real (non-AI) legacy photo or video, or an upload, of that dir and ratio.
-  const fits = (id: unknown, dir: Dir, ratio: AdminRatio) => {
+  // A portfolio group takes either orientation (the site crops it to the group's shape): a photo can move to any style of its dir.
+  const fits = (id: unknown, dir: Dir, ratio: AdminRatio | 'portfolio') => {
     if (typeof id !== 'string') return false;
     const p = Object.hasOwn(next.uploads, id) ? next.uploads[id] : legacy.get(id);
-    return !!p && p.dir === dir && p.ratio === ratio && !(p as { ai?: boolean }).ai;
+    return !!p && p.dir === dir && (ratio === 'portfolio' ? p.ratio === '4:3' || p.ratio === '3:4' : p.ratio === ratio) && !(p as { ai?: boolean }).ai;
   };
   const used = new Set<string>();
   for (const g of adminGroups) {
     const ids = next.groups[g.id];
     if (!Array.isArray(ids)) return 'groups';
-    for (const id of ids) { if (!fits(id, g.dir, g.ratio)) return 'item'; used.add(id); }
-    if (new Set(ids).size !== ids.length) return 'duplicate';
+    for (const id of ids) {
+      if (!fits(id, g.dir, 'portfolio')) return 'item';
+      if (used.has(id)) return 'duplicate'; // one group per photo: its group is its style
+      used.add(id);
+    }
   }
   for (const [key, id] of Object.entries(next.slots)) {
     const s = adminSlots.find((x) => x.key === key);
@@ -79,10 +102,24 @@ export function validateAdmin(next: AdminData, prev: AdminData, newBlobs: Readon
   for (const id of Object.keys(next.uploads)) if (!used.has(id)) return 'upload';
 
   for (const [id, key] of Object.entries(next.labels)) {
-    const p = Object.hasOwn(next.uploads, id) ? next.uploads[id] : legacy.get(id);
     const l = adminLabels.find((x) => x.key === key);
-    if (!p || !used.has(id) || !l || l.dir !== p.dir || (l.styledOnly && !next.groups.styled.includes(id))) return 'label';
+    if (!l || !next.groups[l.group].includes(id)) return 'label'; // a style only in 整脸效果, a look name only in the styled set
   }
+  for (const [key, text] of Object.entries(next.names)) if (!nameKeys.includes(key) || !isText(text, MAX_NAME)) return 'name';
+  const shown = new Set([...adminGroups.flatMap((g) => next.groups[g.id]), ...adminSlots.map((s) => next.slots[s.key] ?? s.def)]);
+  for (const [id, text] of Object.entries(next.alts)) if (!shown.has(id) || !isText(text, MAX_ALT)) return 'alt';
+
+  // Numbers: exactly the photos shown, each under its style's prefix, never one given before (to another photo or style).
+  const want = numberPrefixes(next);
+  if (Object.keys(next.numbers).length !== want.size) return 'number';
+  if (Object.entries(next.counters).some(([, n]) => !Number.isSafeInteger(n) || n < 0)) return 'number';
+  if (Object.entries(prev.counters ?? {}).some(([k, n]) => !((next.counters[k] ?? 0) >= n))) return 'number';
+  for (const [id, prefix] of want) {
+    const num = next.numbers[id], n = typeof num === 'string' && num.startsWith(`${prefix}-`) ? num.slice(prefix.length + 1) : '';
+    if (!/^[1-9]\d*$/.test(n) || Number(n) > (next.counters[prefix] ?? 0)) return 'number';
+    if (prev.numbers?.[id] !== num && Number(n) <= (prev.counters?.[prefix] ?? 0)) return 'number'; // a number new to this photo is above every earlier one
+  }
+  if (new Set(Object.values(next.numbers)).size !== want.size) return 'number';
   return null;
 }
 

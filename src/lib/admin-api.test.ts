@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { AdminData } from '../data/photos.ts';
 import { fixture } from '../data/photo-admin.fixture.ts';
-import { ADMIN_JSON, gitBlobSha } from './photo-admin.ts';
+import { ADMIN_JSON, gitBlobSha, withNumbers } from './photo-admin.ts';
 import { buildState, publish, putBlob, respond } from './admin-api.ts';
 
 const adminData = fixture(); // never the live file: Abby's publishes change it
@@ -46,8 +46,11 @@ const reviewing = async (onBranch: AdminData) => repo(fixture(), {
   'PATCH git/refs/heads/admin/photos': { object: { sha: COMMIT } },
 });
 // The repository already holds one admin upload; the draft removes it and adds another.
-const prev = structuredClone(adminData); prev.uploads['u-oldoldold1'] = { dir: 'lash', ratio: '4:3', where: 'styled' }; prev.groups.styled.unshift('u-oldoldold1');
-const next = structuredClone(adminData); next.uploads['u-abcdefghij'] = { dir: 'lash', ratio: '4:3', where: 'styled' }; next.groups.styled.unshift('u-abcdefghij');
+const S = 'lash-extensions/styled';
+/** The data with `edit` applied, numbered as the admin sends it (admin-store.ts finalData). */
+const edited = (d: AdminData, edit: (d: AdminData) => void) => { const c = structuredClone(d); edit(c); return withNumbers(c); };
+const prev = edited(adminData, (d) => { d.uploads['u-oldoldold1'] = { dir: 'lash', ratio: '4:3', where: S }; d.groups[S].unshift('u-oldoldold1'); });
+const next = edited(prev, (d) => { delete d.uploads['u-oldoldold1']; d.groups[S][0] = 'u-abcdefghij'; d.uploads['u-abcdefghij'] = { dir: 'lash', ratio: '4:3', where: S }; });
 const body = async () => ({ base: await gitBlobSha(text(prev)), data: next, blobs: { 'u-abcdefghij': BLOB } });
 
 test('publish: one commit with the JSON, the new master and the removed master, opened as a PR for review', async () => {
@@ -119,7 +122,7 @@ test('publish: the other person opened an admin PR at the same moment → 409 co
 });
 test('publish: invalid data → 400 with the validateAdmin code, nothing written', async () => {
   const gh = github(await repo(prev));
-  const b = await body(); b.data = structuredClone(next); b.data.groups.styled.push('nail-6920');
+  const b = await body(); b.data = structuredClone(next); b.data.groups[S].push('nail-6920');
   assert.deepEqual(await publish(env, false, 'a@b.c', b, gh.fetcher), { status: 400, body: { error: 'item' } });
   assert.deepEqual(await publish(env, false, 'a@b.c', { ...(await body()), blobs: {} }, gh.fetcher), { status: 400, body: { error: 'upload' } });
   assert.deepEqual(gh.writes(), []);
@@ -136,18 +139,18 @@ test('publish: a malformed body, an unchanged draft, a GitHub failure, a missing
 });
 test('publish: demo mode validates and calls no fetch at all', async () => {
   const gh = github({});
-  const d = structuredClone(adminData); d.groups.styled.reverse();
+  const d = structuredClone(adminData); d.groups[S].reverse();
   assert.deepEqual(await publish({}, true, 'demo@localhost', { base: 'whatever', data: d, blobs: {} }, gh.fetcher), { status: 200, body: { pr: 1, base: await gitBlobSha(text(d)) } });
-  d.groups.styled.push('nope');
+  d.groups[S].push('nope');
   assert.equal((await publish({}, true, 'demo@localhost', { base: 'whatever', data: d, blobs: {} }, gh.fetcher)).status, 400);
   assert.deepEqual(gh.calls, []);
 });
 test('publish: demo mode has no repository, so a later publish may keep the photos an earlier one added', async () => {
   const first = await publish({}, true, 'demo@localhost', { base: 'x', data: next, blobs: { 'u-abcdefghij': BLOB } });
   assert.equal(first.status, 200);
-  const later = structuredClone(next); later.groups.styled.reverse(); // the first publish's photo stays; nothing new
+  const later = structuredClone(next); later.groups[S].reverse(); // the first publish's photo stays; nothing new
   assert.equal((await publish({}, true, 'demo@localhost', { base: first.body.base, data: later, blobs: {} })).status, 200);
-  later.groups.styled.push('nail-6920');
+  later.groups[S].push('nail-6920');
   assert.deepEqual(await publish({}, true, 'demo@localhost', { base: first.body.base, data: later, blobs: {} }), { status: 400, body: { error: 'item' } }); // still checked
 });
 test('putBlob: not a JPEG → 400; over the limit → 413; a JPEG → the blob sha', async () => {

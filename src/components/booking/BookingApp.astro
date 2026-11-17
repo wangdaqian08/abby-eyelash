@@ -25,7 +25,7 @@ try {
 
 // Traditional page: hand the app the Simplified texts; they are converted with the rest of the page after the build.
 // Look names by photo id, for a look photo's link (?look=<id>): the app puts the name into the notes.
-const looks = Object.fromEntries(photos.filter((p) => photoBooking(p.id, p.dir).look).map((p) => [p.id, lookName(p.id)![lang]]));
+const looks = Object.fromEntries(photos.filter((p) => photoBooking(p.id)?.look).map((p) => [p.id, lookName(p.id)![lang]]));
 const config = { lang, looks, ...(lang === 'zh-hant' && { hant: zhStrings(bookingText) }) };
 ---
 

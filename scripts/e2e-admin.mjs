@@ -9,6 +9,7 @@ import { cropRect } from '../src/lib/photo-admin.ts';
 import { fixture as fixedData } from '../src/data/photo-admin.fixture.ts';
 
 const BASE = process.env.BASE ?? 'http://localhost:8788';
+const S = 'lash-extensions/styled', STYLED = '#/g/lash-extensions%2Fstyled'; // group ids carry a '/', encoded in the address
 const fixture = (name) => fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url));
 const browser = await chromium.launch();
 // The admin starts from /admin/state.json, which is the live photo data: Abby's publishes change it, and this test runs on
@@ -44,13 +45,14 @@ const holdAndDrag = async (from, to, hold = 450) => {
 
 // 1 — the two lists
 await go();
-check((await page.$$('[data-group]')).length === 10, '1: the portfolio tab lists ten groups');
+check((await page.$$('[data-group]')).length === 19, `1: the portfolio tab lists every style of every service (got ${(await page.$$('[data-group]')).length})`);
+check((await text('[data-group="gel-nails/aurora"]')).includes('該款式還沒有圖片'), '1: an empty style is listed with a reminder');
 check((await text('[data-view]')).includes('圖片管理'), '1: the title is 圖片管理');
 await page.click('[data-tab="slots"]'); await view('slots');
 check((await page.$$('[data-slot]')).length === 24, '1: the fixed-places tab lists twenty-four places');
 
 // 2 — add a photo to a group
-await go('#/g/styled'); await view('group');
+await go(STYLED); await view('group');
 const before = await tiles();
 check(before.length === 12, `2: the styled group shows its 12 photos (got ${before.length})`);
 await page.click('[data-action="add"]'); await pick('admin-landscape.jpg');
@@ -62,7 +64,7 @@ await go();
 check((await text('[data-banner]')).includes('草稿：1 項更改尚未發佈'), `2: the banner counts one change (got "${await text('[data-banner]')}")`);
 
 // 3 — delete and restore
-await go('#/g/styled');
+await go(STYLED);
 await page.click(`[data-tile="${before[1]}"] [data-action="remove"]`);
 check(!!(await page.$(`[data-tile="${before[1]}"] [data-action="restore"]`)), '3: a deleted tile offers 還原');
 check((await tiles()).length === 13, '3: a deleted tile stays in place until publish');
@@ -120,7 +122,7 @@ const dragStage = async (dx, dy) => {
   const [x, y] = await centre('[data-stage]');
   await page.mouse.move(x, y); await page.mouse.down(); await page.mouse.move(x + dx, y + dy, { steps: 6 }); await page.mouse.up();
 };
-await go('#/g/styled'); await view('group');
+await go(STYLED); await view('group');
 await page.click(`[data-tile="${upload}"] [data-action="edit"]`); await view('edit'); // 2000 × 1500 into 4:3: nothing to move
 check((await text('[data-readout]')) === '', '7: a photo that already has the ratio shows no position read-out at 1x');
 await dragStage(0, 80); await page.click('[data-action="done"]'); await view('group');
@@ -185,7 +187,7 @@ await dragStage(0, 60);
 const pct = Number((await text('[data-readout]')).match(/(\d+)%/)?.[1]);
 check(pct < 50 && pct >= 0, `7: dragging the photo down shows more of its top (got ${pct}%)`);
 const options = await page.$$eval('select[data-label] option', (o) => o.map((x) => x.textContent));
-check(options.join('|') === '不選擇|仙子|單根層次|人魚|漫畫|眼線加濃|太陽花|小絨花|造型款', `7: the styled group offers its eight names (got ${options.join('|')})`);
+check(options.join('|') === '不選擇|仙子|單根層次|人魚|漫畫|眼線加濃|太陽花|小絨花', `7: the styled group offers its seven look names (got ${options.join('|')})`);
 await page.selectOption('select[data-label]', { label: '人魚' });
 await page.click('[data-action="done"]'); await view('group');
 check((await text(`[data-tile="${tall}"]`)).includes('人魚'), '7: 完成 keeps the style name');
@@ -207,9 +209,11 @@ check(!(await page.$('[data-action="guide"]')), '9: and no golden-spiral guide')
 await page.selectOption('select[data-label]', { label: '仙子' });
 await page.click('[data-action="done"]'); await view('group');
 check((await text(`[data-tile="${live}"]`)).includes('仙子'), '9: its style name can still be changed');
-await go('#/g/nude-french'); await view('group');
+await go('#/g/gel-nails%2Fsolid'); await view('group');
 await page.click('[data-tile] [data-action="edit"]'); await view('edit');
-check((await page.$$eval('select[data-label] option', (o) => o.map((x) => x.textContent))).join('|') === '不選擇|單色|貓眼|極光|法式|定製款', '9: a nail group offers the nail names');
+check(!(await page.$('select[data-label]')), '9: a nail photo has no style name to pick: its group is its style');
+const nailGroups = await page.$$eval('select[data-group-select] option', (o) => o.map((x) => x.textContent));
+check(nailGroups.join('|') === '凝膠美甲 · 單色|凝膠美甲 · 貓眼|凝膠美甲 · 極光|凝膠美甲 · 法式|凝膠美甲 · 其他|手繪造型 · 手繪造型|手繪造型 · 其他|延長甲 · 其他', `9: it can move to any nail style, never to lashes or brows (got ${nailGroups.join('|')})`);
 await page.click('[data-action="cancel"]'); await view('group');
 // a wide photo into a 3:4 place moves sideways
 await go('#/s'); await view('slots');
@@ -222,17 +226,16 @@ await page.click('[data-action="done"]'); await view('slots');
 check((await text(hero)).includes('已更換 · 未發佈'), '9: 完成 returns to the fixed places');
 
 // 10 — preview: the draft in the site's layout
-await go('#/g/styled'); await view('group');
+await go(STYLED); await view('group');
 const order = await tiles();
 const doomed = order.find((id) => !id.startsWith('u-') && id !== live && id !== 'styled-fairy');
 await page.click(`[data-tile="${doomed}"] [data-action="remove"]`);
 await page.click('[data-action="preview"]'); await view('preview');
-const home = await page.$$eval('[data-preview-group="styled"] [data-photo-id]', (els) => els.map((e) => e.dataset.photoId));
+const home = await page.$$eval(`[data-preview-group="${S}"] [data-photo-id]`, (els) => els.map((e) => e.dataset.photoId));
 check(home.length === 4 && home[0] === tall, `10: the home preview shows the first row, the newest upload first (got ${home})`);
-check(!home.includes('styled-fairy'), '10: the home preview leaves out the lash card photo');
-const lashPage = await page.$$eval('[data-preview-page="styled"] [data-photo-id]', (els) => els.map((e) => e.dataset.photoId));
+const lashPage = await page.$$eval(`[data-preview-page="${S}"] [data-photo-id]`, (els) => els.map((e) => e.dataset.photoId));
 check(lashPage.join() === order.filter((id) => id !== doomed).join(), '10: the lash-page preview has every photo in order, without the deleted one');
-check((await text('[data-preview-page="styled"]')).includes('人魚'), '10: with its style names');
+check((await text(`[data-preview-page="${S}"]`)).includes('人魚'), '10: with its style names');
 check(!!(await page.$('[data-preview-slot="home-hero"] img')), '10: a replaced place is previewed too');
 check((await text('[data-view]')).includes('尚未發佈'), '10: the preview says it is not published');
 
@@ -267,7 +270,7 @@ check(best < 4 && best < Math.min(...tinies.map((b) => distance(b, atCentre))) /
 }
 const ups = Object.keys(sent.data?.uploads ?? {});
 check(ups.length === 4 && ups.sort().join() === Object.keys(sent.blobs ?? {}).sort().join(), `11: the publish names its four new photos and their blobs (got ${ups.length})`);
-check(sent.data?.groups.styled[0] === tall && !sent.data.groups.styled.includes(doomed) && sent.data.labels[tall] === 'look:mermaid' && sent.data.labels[live] === 'look:fairy', '11: with the new order, the deletion and the style names');
+check(sent.data?.groups[S][0] === tall && !sent.data.groups[S].includes(doomed) && sent.data.labels[tall] === 'look:mermaid' && sent.data.labels[live] === 'look:fairy', '11: with the new order, the deletion and the style names');
 check(ups.includes(sent.data?.slots['home-hero']), '11: and the replaced place');
 const snapshot = await (await page.request.get(`${BASE}/admin/state.json`)).json();
 check(sent.base === snapshot.base, '11: on the base the draft was started from');
@@ -275,7 +278,7 @@ check(Object.values(sent.blobs ?? {}).every((sha) => /^[0-9a-f]{40}$/.test(sha))
 
 // Review Focus 1 — a second publish while the first is still waiting for review (it goes into the same PR)
 await page.route('**/api/admin/status*', (r) => r.fulfill({ json: { state: 'review' } }));
-await go('#/g/styled'); await view('group');
+await go(STYLED); await view('group');
 check((await tiles())[0] === tall && await page.$eval(`[data-tile="${tall}"] img`, (i) => i.complete && i.naturalWidth > 0), '11: after publishing, this phone still shows the published state (the site is not rebuilt yet)');
 check(!(await text(`[data-tile="${tall}"]`)).includes('新增'), '11: and the upload is no longer marked new');
 await page.click(`[data-tile="${tall}"] [data-action="edit"]`); await view('edit');
@@ -288,7 +291,7 @@ await page.click('[data-action="publish"]'); await view('publish'); await page.c
 const second = JSON.parse(posts.find((p) => p.path === '/api/admin/publish')?.body ?? '{}');
 check(second.base && second.base !== snapshot.base && Object.keys(second.blobs).length === 0, '11: the second publish is based on the first, not on the old site');
 check((await text('[data-banner]')).includes('等待管理員審核'), `11: while the PR waits the banner says 等待管理員審核 (got "${await text('[data-banner]')}")`);
-await go('#/g/styled'); await view('group');
+await go(STYLED); await view('group');
 await page.click(`[data-tile="${(await tiles()).at(-1)}"] [data-action="remove"]`);
 check(await page.$eval('[data-action="publish"]', (a) => a.getAttribute('aria-disabled') !== 'true'), '11: while the PR waits, more changes can be published into it');
 await page.reload(); await view('group');
@@ -301,8 +304,8 @@ await page.route('**/api/admin/status*', (r) => r.fulfill({ json: { state: 'reje
 await page.reload(); await view('list');
 await page.waitForFunction(() => document.querySelector('[data-banner]')?.textContent.includes('管理員沒有採用'), null, { timeout: 5000 }).catch(() => {});
 check((await text('[data-banner]')).includes('管理員沒有採用'), `11: a turned-down PR says so (got "${await text('[data-banner]')}")`);
-await go('#/g/styled'); await view('group');
-check((await tiles()).join() === fixedData().groups.styled.join(), '11: and the phone shows the site as it is again');
+await go(STYLED); await view('group');
+check((await tiles()).join() === fixedData().groups[S].join(), '11: and the phone shows the site as it is again');
 await page.unroute('**/api/admin/status*');
 
 // 12 — refused publishes (Review Focus 5), and 13 — discard, on a second phone
@@ -313,7 +316,7 @@ const open2 = async (hash) => { await p2.goto(`${BASE}/admin/${hash}`); await p2
 const tiles2 = () => p2.$$eval('[data-tile]', (els) => els.map((e) => e.dataset.tile));
 const text2 = (sel) => p2.$eval(sel, (e) => e.innerText).catch(() => '');
 const tryPublish = async () => { await open2('#/x'); await p2.click('[data-action="confirm"]'); await p2.waitForSelector('[data-notice], [data-banner] [data-action="drop-reload"]'); };
-await open2('#/g/styled');
+await open2(STYLED);
 const untouched = await tiles2();
 await p2.click(`[data-tile="${untouched[3]}"] [data-action="remove"]`);
 await p2.route('**/api/admin/publish', (r) => r.fulfill({ status: 401, json: { error: 'signin' } }));
@@ -330,13 +333,13 @@ await Promise.all([p2.waitForEvent('load'), p2.click('[data-action="drop-reload"
 check(!(await text2('[data-banner]')).includes('草稿') && !(await text2('[data-banner]')).includes('網站已被更新'), '12: its button drops the draft and starts again');
 await p2.unroute('**/api/admin/publish');
 await p2.route('**/api/admin/publish', (r) => r.fulfill({ status: 502, json: { error: 'github' } }));
-await open2('#/g/styled'); await p2.click(`[data-tile="${untouched[3]}"] [data-action="remove"]`);
+await open2(STYLED); await p2.click(`[data-tile="${untouched[3]}"] [data-action="remove"]`);
 await tryPublish();
 check((await text2('[data-notice]')).includes('發佈沒有成功，草稿仍然保留'), '12: any other failure keeps the draft and says so');
 p2.on('dialog', (d) => d.accept());
 await p2.click('[data-action="discard"]'); await p2.waitForSelector('[data-view="list"]');
 check(!(await text2('[data-banner]')).includes('草稿'), '13: 放棄全部更改 clears the draft');
-await open2('#/g/styled');
+await open2(STYLED);
 check((await tiles2()).join() === untouched.join() && !(await p2.$('[data-action="restore"]')), '13: and the group is the live one again');
 // Cloudflare Access answers an expired session with a redirect to its sign-in page, not with a 401
 await p2.unroute('**/api/admin/publish');
@@ -346,11 +349,11 @@ await tryPublish();
 check((await text2('[data-notice]')).includes('登入已過期，請重新整理頁面'), `12: a sign-in redirect is read as signed out (got "${await text2('[data-notice]')}")`);
 await p2.unroute('**/api/admin/publish');
 // while photos are being sent, the screen stays on the publish view: an edit made now would be lost
-await open2('#/g/styled'); await p2.click('[data-action="add"]');
+await open2(STYLED); await p2.click('[data-action="add"]');
 await p2.setInputFiles('[data-file]', fixture('admin-landscape.jpg')); await p2.waitForTimeout(250);
 await p2.route('**/api/admin/blob', async (r) => { await new Promise((done) => setTimeout(done, 900)); await r.continue(); });
 await open2('#/x'); await p2.click('[data-action="confirm"]');
-await p2.evaluate(() => { location.hash = '#/g/styled'; });
+await p2.evaluate(() => { location.hash = '#/g/lash-extensions%2Fstyled'; });
 await p2.waitForTimeout(250);
 check(!!(await p2.$('[data-view="publish"]')) && !(await p2.$('[data-tile]')), '11: no editing while a publish is being sent');
 check((await text2('[data-action="confirm"]')).includes('上傳中 1 / 1'), `11: the button shows the progress (got "${await text2('[data-action="confirm"]')}")`);
@@ -358,7 +361,7 @@ await p2.waitForSelector('[data-view="list"]');
 check((await text2('[data-banner]')).includes('已上線') || (await text2('[data-banner]')).includes('發佈中'), '11: and the publish completes');
 // several photos in one pick: at most 10, in the order picked; each checked on its own (a fresh group, nothing is published)
 await p2.unroute('**/api/admin/blob');
-await open2('#/g/nude-french');
+await open2('#/g/gel-nails%2Fsolid');
 const before2 = await tiles2();
 const widths2 = () => p2.$$eval('[data-tile] img', (imgs) => imgs.map((i) => i.naturalWidth));
 check(await p2.$eval('[data-file]', (i) => i.multiple), '5b: 新增圖片 lets several photos be picked');
@@ -426,9 +429,56 @@ await phone2.close();
   await phone3.close();
 }
 
+// 15 — move a photo to another style, write its description, rename a style; each goes into the publish (a fourth phone)
+{
+  const phone4 = await phone();
+  const p4 = await phone4.newPage();
+  p4.on('pageerror', (e) => errors.push(e.message));
+  const text4 = (sel) => p4.$eval(sel, (e) => e.innerText).catch(() => '');
+  const open4 = async (hash) => { await p4.goto(`${BASE}/admin/${hash}`); await p4.waitForSelector('[data-view]'); };
+  const live4 = fixedData();
+  await open4('#/e/nail-2020?g=gel-nails%2Fother'); await p4.waitForSelector('[data-view="edit"]');
+  check((await text4('[data-number]')) === `編號 ${live4.numbers['nail-2020']}`, `15: the editor shows the photo's number (got "${await text4('[data-number]')}")`);
+  check((await p4.$eval('[data-alt="zh"]', (e) => e.value)) === '银色镜面美甲，镶彩色小钻', '15: and its current description');
+  await p4.selectOption('select[data-group-select]', 'gel-nails/cat-eye');
+  await p4.fill('[data-alt="zh"]', '银色猫眼美甲，镶彩色小钻');
+  await p4.click('[data-action="done"]'); await p4.waitForSelector('[data-view="group"]');
+  check(!(await p4.$('[data-tile="nail-2020"]')), '15: 完成 moves it out of 其他');
+  await open4('#/g/gel-nails%2Fcat-eye');
+  check((await p4.$$eval('[data-tile]', (els) => els.map((e) => e.dataset.tile)))[0] === 'nail-2020', '15: first in 貓眼');
+  await open4('#/e/nail-2020?g=gel-nails%2Fcat-eye'); await p4.waitForSelector('[data-view="edit"]');
+  const next4 = `gel-nails-cat-eye-${live4.counters['gel-nails-cat-eye'] + 1}`;
+  check((await text4('[data-number]')).includes(`發佈後編號 ${next4}`), `15: the editor says the number it will have (got "${await text4('[data-number]')}")`);
+  await p4.click('[data-action="cancel"]');
+  await open4('#/n');
+  const cat = '[data-name="gel-nails/cat-eye"]';
+  await p4.fill(`${cat} [data-lang="zh"]`, '猫眼光'); await p4.fill(`${cat} [data-lang="en"]`, 'Cat eye glow');
+  await p4.click('[data-view="names"] > p'); // leaving the field saves it
+  await p4.waitForTimeout(100);
+  check((await text4(cat)).includes('已修改 · 未發佈'), `15: a renamed style is marked (got "${await text4(cat)}")`);
+  await p4.fill('[data-name="gel-nails"] [data-lang="en"]', '');
+  await p4.click('[data-view="names"] > p'); await p4.waitForTimeout(100);
+  check((await text4('[data-notice]')).includes('中英文都要填寫') && (await p4.$eval('[data-name="gel-nails"] [data-lang="en"]', (e) => e.value)) === 'Gel Nails', '15: a name left blank goes back to the written one, and says so');
+  check((await text4('[data-banner]')).includes('草稿：3 項更改尚未發佈'), `15: move, description and name count as three changes (got "${await text4('[data-banner]')}")`);
+  const posts4 = [];
+  p4.on('request', (r) => { if (r.method() === 'POST' && r.url().includes('/api/admin/publish')) posts4.push(JSON.parse(r.postData())); });
+  await open4('#/x');
+  const rows4 = await p4.$$eval('[data-change]', (els) => els.map((e) => e.innerText.replace(/\s+/g, ' ')));
+  check(rows4.some((r) => r.includes('移到其他款式') && r.includes('凝膠美甲 · 貓眼')) && rows4.some((r) => r.includes('更改名稱') && r.includes('猫眼光')) && rows4.some((r) => r.includes('更改圖片描述')), `15: the publish screen names each change (got ${rows4.join(' / ')})`);
+  await p4.click('[data-action="confirm"]'); await p4.waitForSelector('[data-view="list"]');
+  const d4 = posts4[0]?.data;
+  check(d4?.groups['gel-nails/cat-eye'][0] === 'nail-2020' && !d4.groups['gel-nails/other'].includes('nail-2020'), '15: the publish moves it');
+  check(d4?.numbers['nail-2020'] === next4 && d4.counters['gel-nails-cat-eye'] === live4.counters['gel-nails-cat-eye'] + 1, `15: with its new number (got ${d4?.numbers['nail-2020']})`);
+  check(d4?.alts['nail-2020']?.zh === '银色猫眼美甲，镶彩色小钻' && d4?.names['gel-nails/cat-eye']?.zh === '猫眼光' && !d4.names['gel-nails'], '15: with the description and the new name only');
+  await p4.waitForFunction(() => /已上線|等待/.test(document.querySelector('[data-banner]')?.textContent ?? ''), null, { timeout: 15000 }).catch(() => {});
+  check(/已上線|等待/.test(await text4('[data-banner]')), `15: and the publish is accepted (got "${await text4('[data-banner]')}")`);
+  check(!/undefined|NaN|null|\[object/.test(await text4('[data-admin]')), '15: nothing on its screens reads as a bug');
+  await phone4.close();
+}
+
 // nothing on the page may read as a bug, and every control must be large enough for a thumb
 check(!/undefined|NaN|null|\[object/.test(await text('[data-admin]')), 'the page shows undefined / NaN / null');
-await go('#/g/styled');
+await go(STYLED);
 const small = await page.$$eval('[data-admin] button, [data-admin] a', (els) => els.filter((e) => e.offsetParent && (e.getBoundingClientRect().width < 44 || e.getBoundingClientRect().height < 44)).map((e) => e.outerHTML.slice(0, 80)));
 check(small.length === 0, `controls smaller than 44 px: ${small.join(' | ')}`);
 check((await page.evaluate(() => document.documentElement.scrollWidth)) <= 375, 'the page scrolls sideways at 375 px');

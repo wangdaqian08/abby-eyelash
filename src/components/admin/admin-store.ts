@@ -1,7 +1,7 @@
 // The photo admin's draft: every change Abby makes before "發佈", kept on the phone.
 // Operations are pure (each returns a new Draft); `kv` is the small on-phone store they are saved in.
-import type { AdminData, Upload } from '../../data/photos.ts';
-import type { AdminState } from '../../lib/photo-admin.ts';
+import type { AdminData, Text, Upload } from '../../data/photos.ts';
+import { withNumbers, type AdminState } from '../../lib/photo-admin.ts';
 
 /** Where the crop sits (x, y in 0..1, 0.5 = centre) and how far it is zoomed in (z, 1–3). */
 export interface Focus { x: number; y: number; z: number }
@@ -23,7 +23,7 @@ const edit = (d: Draft, change: (next: Draft) => void): Draft => { const next = 
 const used = (data: AdminData) => new Set([...Object.values(data.groups).flat(), ...Object.values(data.slots)]);
 /** An upload made in this draft: it can still be re-cropped, and deleting it needs no "restore". */
 export const unpublished = (d: Draft, id: string) => id in d.data.uploads && !(id in d.clean.uploads);
-const forget = (d: Draft, id: string) => { delete d.data.uploads[id]; delete d.data.labels[id]; delete d.focus[id]; };
+const forget = (d: Draft, id: string) => { delete d.data.uploads[id]; delete d.data.labels[id]; delete d.data.alts[id]; delete d.focus[id]; };
 
 export const fromState = (s: AdminState): Draft => ({ base: s.base, data: copy(s.data), clean: copy(s.data), removed: [], focus: {} });
 
@@ -66,30 +66,57 @@ export const setLabel = (d: Draft, id: string, key: string): Draft => edit(d, (n
 
 export const setFocus = (d: Draft, id: string, x: number, y: number, z = 1): Draft => edit(d, (n) => { n.focus[id] = { x, y, z }; });
 
-/** What a publish sends: removals applied; uploads nothing shows any more, and their style names, dropped. */
+// A style label belongs to one group: 'option:' (a 整脸效果 photo's style) to face, 'look:' (a look name) to the styled set.
+const LABEL_GROUP = { option: 'face', look: 'lash-extensions/styled' } as Record<string, string>;
+/** Moves a photo to another style of its part (the caller offers only those), first in the new group. Its style label is kept only where it applies. */
+export const moveTo = (d: Draft, from: string, to: string, id: string): Draft => edit(d, (n) => {
+  if (from === to) return;
+  n.data.groups[from] = n.data.groups[from].filter((x) => x !== id);
+  n.data.groups[to].unshift(id);
+  n.removed = n.removed.filter((m) => m !== `${from}/${id}`);
+  const label = n.data.labels[id];
+  if (label && LABEL_GROUP[label.slice(0, label.indexOf(':'))] !== to) delete n.data.labels[id];
+});
+
+/** A name or description written in the admin. `text` undefined (or the same as `original`): back to the one in the code. */
+const setText = (map: 'names' | 'alts') => (d: Draft, key: string, text: Text | undefined, original?: Text): Draft => edit(d, (n) => {
+  const same = !text || (original && text.en === original.en && text.zh === original.zh);
+  if (same) delete n.data[map][key]; else n.data[map][key] = { en: text.en, zh: text.zh };
+});
+export const setName = setText('names');
+export const setAlt = setText('alts');
+
+/** What a publish sends: removals applied; uploads nothing shows any more, and their style names, dropped; every photo numbered. */
 export function finalData(d: Draft): AdminData {
   const out = copy(d.data);
   for (const g of Object.keys(out.groups)) out.groups[g] = out.groups[g].filter((id) => !d.removed.includes(`${g}/${id}`));
   const keep = used(out);
   for (const id of Object.keys(out.uploads)) if (!keep.has(id)) delete out.uploads[id];
   for (const id of Object.keys(out.labels)) if (!keep.has(id)) delete out.labels[id];
-  return out;
+  return withNumbers(out); // drops the numbers of photos no longer shown; their numbers are never given again
 }
 
-/** What a publish will change, for the banner and the publish screen: upload ids, `group/id` marks, group ids, place keys, photo ids. */
+/** What a publish will change, for the banner and the publish screen: upload ids, `group/id` marks, group ids, place keys, photo ids, name keys. */
 export function changes(d: Draft) {
   const now = finalData(d), was = d.clean, keep = used(now);
   const groups = Object.keys(now.groups);
   const isNew = (id: string) => id in now.uploads && !(id in was.uploads);
+  const groupIn = (data: AdminData, id: string) => groups.find((g) => data.groups[g]?.includes(id));
+  const moved = groups.flatMap((g) => now.groups[g].filter((id) => !isNew(id) && groupIn(was, id) && groupIn(was, id) !== g));
+  const differs = (a?: Text, b?: Text) => a?.en !== b?.en || a?.zh !== b?.zh;
+  const keys = (map: 'names' | 'alts') => [...new Set([...Object.keys(now[map]), ...Object.keys(was[map])])].filter((k) => differs(now[map][k], was[map][k]));
   return {
     added: groups.flatMap((g) => now.groups[g].filter(isNew)),
-    removed: groups.flatMap((g) => (was.groups[g] ?? []).filter((id) => !now.groups[g].includes(id)).map((id) => `${g}/${id}`)),
+    removed: groups.flatMap((g) => (was.groups[g] ?? []).filter((id) => !now.groups[g].includes(id) && !moved.includes(id)).map((id) => `${g}/${id}`)),
+    moved,
     reordered: groups.filter((g) => {
       const before = (was.groups[g] ?? []).filter((id) => now.groups[g].includes(id));
       return before.join() !== now.groups[g].filter((id) => before.includes(id)).join();
     }),
     replaced: [...new Set([...Object.keys(now.slots), ...Object.keys(was.slots)])].filter((k) => now.slots[k] !== was.slots[k]),
-    relabelled: [...new Set([...Object.keys(now.labels), ...Object.keys(was.labels)])].filter((id) => keep.has(id) && !isNew(id) && now.labels[id] !== was.labels[id]),
+    relabelled: [...new Set([...Object.keys(now.labels), ...Object.keys(was.labels)])].filter((id) => keep.has(id) && !isNew(id) && !moved.includes(id) && now.labels[id] !== was.labels[id]),
+    renamed: keys('names'),
+    described: keys('alts').filter((id) => keep.has(id)),
   };
 }
 export const changeCount = (d: Draft) => Object.values(changes(d)).reduce((n, list) => n + list.length, 0);
@@ -109,7 +136,8 @@ export function afterPublish(d: Draft, pr: number, base: string): Draft {
  * `stale`: the draft was started on a site that someone else has changed since; a publish would be refused.
  */
 export function resume(stored: Draft | undefined, s: AdminState): { draft: Draft; stale: boolean } {
-  if (!stored) return { draft: fromState(s), stale: false };
+  // none, or saved before the portfolio was regrouped by style (2026-11-17): its group lists no longer exist, so it cannot be published
+  if (!stored?.data?.numbers) return { draft: fromState(s), stale: false };
   const dirty = isDirty(stored);
   if (stored.base === s.base) { // the site is what this draft was started on (or has caught up with our publish)
     if (!dirty) return { draft: fromState(s), stale: false };

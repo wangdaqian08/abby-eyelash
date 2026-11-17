@@ -1,7 +1,7 @@
 ---
 // GA4 + conversion events (docs/GEO-STRATEGY.md §4). Renders nothing until a GA4 ID is set
 // (PUBLIC_GA4_ID build env, or site.google.ga4Id). Events:
-//   click on any [data-track="<event>"] → gtag event <event> {link_url, page_location, lang}, plus photo (its id) on a
+//   click on any [data-track="<event>"] → gtag event <event> {link_url, page_location, lang}, plus photo (its number, e.g. gel-nails-cat-eye-1; src/data/photos.ts photoNumber) on a
 //   portfolio photo link [data-photo], so GA4 shows which photos people tap to book (custom dimension `photo`)
 //   window CustomEvents booking_start {service} / booking_submitted {service, option, value, currency, via: whatsapp | sms | copy}
 // Every event carries style_variant (A/B look, from the `style` cookie set by functions/_middleware.ts; A when no test runs).
