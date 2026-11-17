@@ -56,7 +56,8 @@ export async function publish(env: AdminEnv, demo: boolean, email: string, body:
   if (demo) { // local preview and E2E: same checks, nothing is written
     // There is no repository to compare with: an upload that comes without a blob counts as published by an earlier demo publish.
     const earlier = Object.fromEntries(Object.entries(isRecord(data.uploads) ? data.uploads : {}).filter(([id]) => !(id in blobs)));
-    const bad = check({ ...adminData, uploads: { ...adminData.uploads, ...earlier } });
+    // Nor any history of numbers: they are checked for shape (each photo under its style, none twice), not against earlier publishes.
+    const bad = check({ ...adminData, uploads: { ...adminData.uploads, ...earlier }, numbers: isRecord(data.numbers) ? data.numbers : {}, counters: isRecord(data.counters) ? data.counters as Record<string, number> : {} });
     return bad ? reply(400, { error: bad }) : reply(200, { pr: 1, base: await gitBlobSha(text(data)) });
   }
   if (!configured(env)) return reply(503, { error: 'not-configured' });

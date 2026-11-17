@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { bookable, bookableWith, depositFor, findOption, itemsParam, parseAddons, parseItems, priceText, quote, quoteAll, quoteAllText, quoteText, addonsParam, services } from './services.ts';
+import { bookable, bookableWith, depositFor, findOption, itemsParam, parseAddons, parseItems, priceText, quote, quoteAll, quoteAllText, quoteText, addonsParam, renamed, services } from './services.ts';
 
 const L = 'lash-extensions';
 
@@ -165,4 +165,12 @@ test('every subset of bookable services adds up (minutes, dollars, deposit)', ()
   }
   // removal alone combines with other services too
   assert.ok(quoteAll([{ service: L, option: 'removal', addons: {} }, { service: 'gel-nails', option: 'solid', addons: { extension: 3 } }]));
+});
+
+test('renamed: a name changed in the admin replaces the service or style name; ids and the rest stay', () => {
+  const d = { id: 'gel-nails', slug: 'gel-nails-burwood', name: { en: 'Gel Nails', zh: '凝胶美甲' }, summary: { en: 's', zh: 's' },
+    options: [{ id: 'cat-eye', name: { en: 'Cat-eye', zh: '猫眼' } }, { id: 'solid', name: { en: 'Solid', zh: '单色' } }] };
+  const r = renamed(d as never, { 'gel-nails': { en: 'Gel', zh: '凝胶' }, 'gel-nails/cat-eye': { en: 'Cat eye', zh: '猫眼光' }, 'lash-lift': { en: 'x', zh: 'x' } });
+  assert.deepEqual([r.id, r.slug, r.name.zh, r.options.map((o) => `${o.id}:${o.name.zh}`)], ['gel-nails', 'gel-nails-burwood', '凝胶', ['cat-eye:猫眼光', 'solid:单色']]);
+  assert.equal(d.options[0].name.zh, '猫眼'); // the menu as written is not changed
 });
