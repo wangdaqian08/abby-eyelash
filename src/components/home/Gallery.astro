@@ -1,10 +1,12 @@
 ---
-// Home portfolio: a lash part (grouped by look), a nail part (grouped by colour) and a brows part. Every photo is in the HTML;
+// Home portfolio: three parts (lashes, nails, brows), each by service, then by style (src/data/photos.ts adminGroups; Abby edits the
+// lists in /admin/). Lashes start with 整脸效果. A group with no photos, and a service with none, is not shown. Every photo is in the HTML;
 // photos past the first row of a group sit in a grid-collapse opened by that part's "Show all" button.
 import { Picture, getImage } from 'astro:assets';
 import type { Lang } from '../../data/services';
 import { site } from '../../data/site';
-import { BROW_VISIBLE, LASH_VISIBLE, NAIL_VISIBLE, bookingHref, browGroups, lashGroups, nailGroups, photo, photoBooking, videos } from '../../data/photos';
+import { FACE, adminData, adminGroups, bookingHref, photo, photoBooking, photoNumber, videos, type AdminGroup, type Dir } from '../../data/photos';
+import { services } from '../../data/services';
 import { common, fill } from '../../i18n/common';
 import { localePath } from '../../lib/i18n';
 import { photoSrc } from '../../lib/photo-src';
@@ -17,18 +19,29 @@ const { lang } = Astro.props;
 const t = common[lang].gallery;
 const posterUrl = Object.fromEntries(await Promise.all(Object.entries(videos).map(async ([id, v]) => [id, (await getImage({ src: photoSrc(v.poster), width: 480, format: 'webp' })).src])));
 
-type Group = { id: string; name: { en: string; zh: string }; swatch?: string; ratio: '3:4' | '4:3'; items: string[] };
-const parts: { id: string; title: string; groups: Group[]; visible: number; book: string; bookLabel: string }[] = [
-  { id: 'lashes', title: t.lashes, groups: lashGroups, visible: LASH_VISIBLE, book: `${localePath(lang, '/book')}?service=lash-extensions`, bookLabel: t.bookLashes },
-  { id: 'nails', title: t.nails, groups: nailGroups.map((g) => ({ ...g, ratio: '3:4' as const })), visible: NAIL_VISIBLE, book: `${localePath(lang, '/book')}?service=gel-nails`, bookLabel: t.bookNails },
-  { id: 'brows', title: t.brows, groups: browGroups, visible: BROW_VISIBLE, book: `${localePath(lang, '/book')}?service=powder-brows`, bookLabel: t.bookBrows },
+type Group = AdminGroup & { items: string[] };
+// One section per service (整脸效果 is its own, first): its heading, then its style groups. A style heading is shown only when the
+// service has more than one group (nail extensions has only "Other", 整脸效果 only itself).
+const sectionsOf = (dir: Dir) => {
+  const groups = adminGroups.filter((g) => g.dir === dir).map((g) => ({ ...g, items: adminData.groups[g.id] }));
+  const keys = [...new Set(groups.map((g) => (g.id === 'face' ? 'face' : g.service)))];
+  return keys.map((k) => {
+    const all = groups.filter((g) => (g.id === 'face' ? 'face' : g.service) === k);
+    return { title: k === 'face' ? FACE : services.find((s) => s.id === k)!.name, styled: all.length > 1, groups: all.filter((g) => g.items.length) };
+  }).filter((s) => s.groups.length);
+};
+const parts = [
+  { id: 'lashes', title: t.lashes, sections: sectionsOf('lash'), book: `${localePath(lang, '/book')}?service=lash-extensions`, bookLabel: t.bookLashes },
+  { id: 'nails', title: t.nails, sections: sectionsOf('nails'), book: `${localePath(lang, '/book')}?service=gel-nails`, bookLabel: t.bookNails },
+  { id: 'brows', title: t.brows, sections: sectionsOf('brows'), book: `${localePath(lang, '/book')}?service=powder-brows`, bookLabel: t.bookBrows },
 ];
 // Nails and brows: three portrait tiles per row. Lashes: two per row on phones, four on desktop.
 const grid = (p: string) => (p === 'nails' || p === 'brows' ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-2 gap-2 lg:grid-cols-4');
 const sizes = (p: string) => (p === 'nails' || p === 'brows' ? '(min-width: 1152px) 360px, 31vw' : '(min-width: 1024px) 270px, 47vw');
 const aspect = { '3:4': 'aspect-[3/4]', '4:3': 'aspect-[4/3]' };
-// Each photo opens its booking (photoBooking); lash and nail cards show the style in a bar under the photo, brows show none.
-const booking = (id: string) => photoBooking(id, photo(videos[id]?.poster ?? id).dir);
+// Each photo opens its booking (photoBooking) and shows its style in a bar under the photo ("Other": the service name, muted).
+// data-photo is its number (gel-nails-cat-eye-1): GA4 reports which photos people tap to book; visitors never see it.
+const booking = (id: string) => photoBooking(id)!;
 const href = (id: string) => bookingHref(lang, id, booking(id));
 // The card is the link itself, so its focus ring is not clipped and a tap presses it (data-pressed); a video tile keeps it on the <li>.
 // @container: the bar text follows the card's width (cqi), 12px on the smallest phone card up to 15px on the wide desktop one.
@@ -44,12 +57,12 @@ const BAR = 'flex items-center justify-between gap-[.382em] px-[.618em] py-[.382
     </div>
 
     {parts.map((part) => {
-      const count = part.groups.reduce((n, g) => n + g.items.length, 0);
+      const count = part.sections.flatMap((s) => s.groups).reduce((n, g) => n + g.items.length, 0);
       const bar = (id: string) => {
         const b = booking(id);
         return (
           <>
-            <span class:list={['min-w-0 truncate transition-colors duration-200 group-hover/card:text-primary', b.muted ? 'text-muted' : 'font-medium']}>{b.name![lang]}</span>
+            <span class:list={['min-w-0 truncate transition-colors duration-200 group-hover/card:text-primary', b.muted ? 'text-muted' : 'font-medium']}>{b.name[lang]}</span>
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="size-[.786em] shrink-0 text-accent-ink transition-transform duration-200 group-hover/card:translate-x-0.5"><path d="m9 6 6 6-6 6" /></svg>
           </>
         );
@@ -70,14 +83,15 @@ const BAR = 'flex items-center justify-between gap-[.382em] px-[.618em] py-[.382
                       </span>
                     </button>
                   </div>
-                  {booking(id).name && <a href={href(id)} data-track="book_click" data-photo={id} class={BAR} data-bar>{bar(id)}</a>}
+                  <a href={href(id)} data-track="book_click" data-photo={photoNumber(id)} class={BAR} data-bar>{bar(id)}</a>
                 </>
               ) : (
-                <a href={href(id)} data-track="book_click" data-photo={id} class:list={['block', CARD]}>
+                <a href={href(id)} data-track="book_click" data-photo={photoNumber(id)} class:list={['block', CARD]}>
                   <span class:list={['block overflow-hidden bg-fg/5', aspect[g.ratio]]}>
-                    <Picture src={photoSrc(id)} alt={photo(id).alt[lang]} formats={['avif', 'webp']} widths={[240, 480, 720]} sizes={sizes(part.id)} loading="lazy" class="size-full object-cover transition-transform duration-700 ease-soft group-hover/card:scale-[1.04]" />
+                    {/* a photo moved from a group of the other shape is cropped from its top, where the eyes or nails are */}
+                    <Picture src={photoSrc(id)} alt={photo(id).alt[lang]} formats={['avif', 'webp']} widths={[240, 480, 720]} sizes={sizes(part.id)} loading="lazy" class:list={['size-full object-cover transition-transform duration-700 ease-soft group-hover/card:scale-[1.04]', photo(id).ratio !== g.ratio && 'object-top']} />
                   </span>
-                  {booking(id).name && <span class={BAR} data-bar>{bar(id)}</span>}
+                  <span class={BAR} data-bar>{bar(id)}</span>
                 </a>
               )}
             </li>
@@ -87,19 +101,23 @@ const BAR = 'flex items-center justify-between gap-[.382em] px-[.618em] py-[.382
       return (
         <div data-part class="mt-12 md:mt-16">
           <h3 class="text-2xl md:text-3xl">{part.title}</h3>
-          <div class="mt-6 space-y-8">
-            {part.groups.filter((g) => g.items.length).map((g) => ( // a group emptied in the admin is hidden
-              <div>
-                <h4 class="mb-3 flex items-center gap-2 text-sm font-medium">
-                  {g.swatch && <span class="size-2.5 rounded-full" style={`background:${g.swatch}`} aria-hidden="true"></span>}
-                  {g.name[lang]}
-                </h4>
-                {tiles(g, g.items.slice(0, part.visible))}
-                {g.items.length > part.visible && (
-                  <div data-more class="grid-collapse">
-                    <div><div class="pt-2">{tiles(g, g.items.slice(part.visible))}</div></div>
-                  </div>
-                )}
+          <div class="mt-6 space-y-10">
+            {part.sections.map((sec) => (
+              <div data-service>
+                <h4 class="text-[17px] font-semibold">{sec.title[lang]}</h4>
+                <div class="mt-3 space-y-6">
+                  {sec.groups.map((g) => (
+                    <div data-group={g.id}>
+                      {sec.styled && <h5 class="mb-2.5 text-sm font-medium text-muted">{g.name[lang]}</h5>}
+                      {tiles(g, g.items.slice(0, g.visible))}
+                      {g.items.length > g.visible && (
+                        <div data-more class="grid-collapse">
+                          <div><div class="pt-2">{tiles(g, g.items.slice(g.visible))}</div></div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
