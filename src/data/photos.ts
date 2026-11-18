@@ -305,10 +305,20 @@ export function numberPrefixes(data: AdminData): Map<string, string> {
   return out;
 }
 const NOUN: Record<Dir, L10n> = { lash: { en: 'lash extensions', zh: '嫁接睫毛' }, nails: { en: 'nails', zh: '美甲' }, brows: { en: 'powder brows', zh: '雾眉' } };
+// What the photo shows, by service: a lash lift is not lash extensions (alt text is read by image search and screen readers).
+const SERVICE_NOUN: Record<string, L10n> = {
+  'lash-extensions': NOUN.lash, 'lash-lift': { en: 'lash lift', zh: '翘睫' }, 'gel-nails': { en: 'gel nails', zh: '凝胶美甲' },
+  'handcrafted-nails': { en: 'hand-painted nails', zh: '手绘美甲' }, 'nail-extensions': { en: 'nail extensions', zh: '延长甲' }, 'powder-brows': NOUN.brows,
+};
+/** The service a photo was uploaded for: its portfolio group's, else the one its place names ('page:<service>:…', 'card:<service>/…'). */
+const uploadService = (id: string, u: Upload, data: AdminData) =>
+  photoBooking(id, data)?.service ?? u.where.match(/^(?:page:|card:)?([a-z-]+)[:/]/)?.[1];
 /** Alt text of an admin upload until one is written for it: its style name, else the name of the place it was uploaded to. */
 export function uploadAlt(id: string, u: Upload, data: AdminData = adminData): L10n {
   const x = photoBooking(id, data)?.name ?? adminSlots.find((p) => p.key === u.where)?.name ?? NOUN[u.dir];
-  return { en: `${x.en} – ${NOUN[u.dir].en} by Abby, Burwood`, zh: `${x.zh}，Abby ${NOUN[u.dir].zh}，Burwood` };
+  const noun = SERVICE_NOUN[uploadService(id, u, data) ?? ''] ?? NOUN[u.dir];
+  if (x.zh === noun.zh) return { en: `${x.en} by Abby, Burwood`, zh: `Abby ${noun.zh}，Burwood` }; // the service itself: say it once
+  return { en: `${x.en} – ${noun.en} by Abby, Burwood`, zh: `${x.zh}，Abby ${noun.zh}，Burwood` };
 }
 // Admin uploads join the manifest (no source file: their master is committed by the admin, scripts/photos.mjs skips them).
 for (const [id, u] of Object.entries(adminData.uploads)) {
