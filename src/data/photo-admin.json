@@ -56,30 +56,36 @@
     ],
     "lash-lift/other": [],
     "gel-nails/solid": [
+      "u-of1jo7rrr1",
+      "u-q1xo3t8rpe",
       "nail-6920",
       "nail-4067",
       "nail-2112",
       "nail-2441"
     ],
     "gel-nails/cat-eye": [
+      "nail-3029",
       "nail-fc1a"
     ],
-    "gel-nails/aurora": [],
+    "gel-nails/aurora": [
+      "u-j3zh321i3g"
+    ],
     "gel-nails/french": [
+      "u-p1a05o3t2m",
+      "nail-2020",
       "nail-3406",
       "nail-video",
       "nail-7334"
     ],
-    "gel-nails/other": [
-      "nail-2223",
-      "nail-4915",
-      "nail-2020",
-      "nail-9011",
-      "nail-3029",
-      "nail-9024",
-      "nail-2473"
-    ],
+    "gel-nails/other": [],
     "handcrafted-nails/nail-art": [
+      "nail-9011",
+      "nail-4915",
+      "u-b9as0n351n",
+      "u-1a8e3ealtl",
+      "u-24ybojjjv4",
+      "u-mikoepgja2",
+      "nail-2473",
       "nail-b029",
       "u-3v0eykbptg",
       "u-5c15t9jbiu",
@@ -93,7 +99,10 @@
       "nail-9264",
       "nail-7242"
     ],
-    "handcrafted-nails/other": [],
+    "handcrafted-nails/other": [
+      "nail-9024",
+      "nail-2223"
+    ],
     "nail-extensions/other": [],
     "powder-brows/powder": [
       "brow-video",
@@ -249,6 +258,46 @@
       "dir": "lash",
       "ratio": "3:4",
       "where": "face"
+    },
+    "u-b9as0n351n": {
+      "dir": "nails",
+      "ratio": "3:4",
+      "where": "gel-nails/other"
+    },
+    "u-of1jo7rrr1": {
+      "dir": "nails",
+      "ratio": "3:4",
+      "where": "gel-nails/other"
+    },
+    "u-24ybojjjv4": {
+      "dir": "nails",
+      "ratio": "3:4",
+      "where": "gel-nails/other"
+    },
+    "u-j3zh321i3g": {
+      "dir": "nails",
+      "ratio": "3:4",
+      "where": "gel-nails/other"
+    },
+    "u-p1a05o3t2m": {
+      "dir": "nails",
+      "ratio": "3:4",
+      "where": "gel-nails/other"
+    },
+    "u-1a8e3ealtl": {
+      "dir": "nails",
+      "ratio": "3:4",
+      "where": "gel-nails/other"
+    },
+    "u-mikoepgja2": {
+      "dir": "nails",
+      "ratio": "3:4",
+      "where": "gel-nails/other"
+    },
+    "u-q1xo3t8rpe": {
+      "dir": "nails",
+      "ratio": "3:4",
+      "where": "gel-nails/other"
     }
   },
   "labels": {
@@ -305,21 +354,27 @@
     "u-pmdvigeru3": "lash-lift-keratin-lift-5",
     "u-1f6ltcv09m": "lash-lift-keratin-lift-6",
     "u-x7jyggxjnm": "lash-lift-keratin-lift-7",
+    "u-of1jo7rrr1": "gel-nails-solid-5",
+    "u-q1xo3t8rpe": "gel-nails-solid-6",
     "nail-6920": "gel-nails-solid-1",
     "nail-4067": "gel-nails-solid-2",
     "nail-2112": "gel-nails-solid-3",
     "nail-2441": "gel-nails-solid-4",
+    "nail-3029": "gel-nails-cat-eye-2",
     "nail-fc1a": "gel-nails-cat-eye-1",
+    "u-j3zh321i3g": "gel-nails-aurora-1",
+    "u-p1a05o3t2m": "gel-nails-french-4",
+    "nail-2020": "gel-nails-french-5",
     "nail-3406": "gel-nails-french-1",
     "nail-video": "gel-nails-french-2",
     "nail-7334": "gel-nails-french-3",
-    "nail-2223": "gel-nails-1",
-    "nail-4915": "gel-nails-2",
-    "nail-2020": "gel-nails-3",
-    "nail-9011": "gel-nails-4",
-    "nail-3029": "gel-nails-5",
-    "nail-9024": "gel-nails-6",
-    "nail-2473": "gel-nails-7",
+    "nail-9011": "handcrafted-nails-nail-art-13",
+    "nail-4915": "handcrafted-nails-nail-art-14",
+    "u-b9as0n351n": "handcrafted-nails-nail-art-15",
+    "u-1a8e3ealtl": "handcrafted-nails-nail-art-16",
+    "u-24ybojjjv4": "handcrafted-nails-nail-art-17",
+    "u-mikoepgja2": "handcrafted-nails-nail-art-18",
+    "nail-2473": "handcrafted-nails-nail-art-19",
     "nail-b029": "handcrafted-nails-nail-art-1",
     "u-3v0eykbptg": "handcrafted-nails-nail-art-9",
     "u-5c15t9jbiu": "handcrafted-nails-nail-art-10",
@@ -332,6 +387,8 @@
     "nail-4630": "handcrafted-nails-nail-art-6",
     "nail-9264": "handcrafted-nails-nail-art-7",
     "nail-7242": "handcrafted-nails-nail-art-8",
+    "nail-9024": "handcrafted-nails-1",
+    "nail-2223": "handcrafted-nails-2",
     "brow-video": "powder-brows-powder-1",
     "brow-8979": "powder-brows-powder-2",
     "brow-8645": "powder-brows-powder-3",
@@ -355,15 +412,17 @@
     "lash-extensions-styled": 20,
     "lash-extensions-classic-full": 5,
     "lash-extensions": 3,
-    "gel-nails-solid": 4,
-    "gel-nails-cat-eye": 1,
-    "gel-nails-french": 3,
+    "gel-nails-solid": 6,
+    "gel-nails-cat-eye": 2,
+    "gel-nails-french": 5,
     "gel-nails": 7,
-    "handcrafted-nails-nail-art": 12,
+    "handcrafted-nails-nail-art": 19,
     "powder-brows-powder": 5,
     "lash-extensions-hybrid-natural": 6,
     "lash-lift-keratin-lift": 7,
     "lash-lift": 1,
-    "powder-brows": 2
+    "powder-brows": 2,
+    "gel-nails-aurora": 1,
+    "handcrafted-nails": 2
   }
 }
