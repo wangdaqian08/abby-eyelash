@@ -5,10 +5,10 @@
       "u-7ole7as5cq",
       "u-0w5i41u163",
       "u-o454d6j065",
+      "u-1jez2cqn1s",
       "styled-half-face",
       "selfie",
-      "face-smile",
-      "styled-mermaid-selfie"
+      "face-smile"
     ],
     "lash-extensions/classic-natural": [
       "classic-natural-2",
@@ -244,6 +244,11 @@
       "dir": "nails",
       "ratio": "3:4",
       "where": "handcrafted-nails/nail-art"
+    },
+    "u-1jez2cqn1s": {
+      "dir": "lash",
+      "ratio": "3:4",
+      "where": "face"
     }
   },
   "labels": {
@@ -253,10 +258,10 @@
     "u-o454d6j065": "option:lash-extensions/classic-natural",
     "styled-half-face": "option:lash-extensions/classic-full",
     "selfie": "option:lash-extensions/styled",
-    "styled-mermaid-selfie": "option:lash-extensions/styled",
     "u-00dnz3ljks": "look:manga",
     "u-jjo5o3z78g": "look:layered",
-    "u-a97i85j4a7": "look:fairy"
+    "u-a97i85j4a7": "look:fairy",
+    "u-1jez2cqn1s": "option:lash-extensions/styled"
   },
   "names": {},
   "alts": {},
@@ -265,10 +270,10 @@
     "u-7ole7as5cq": "lash-extensions-hybrid-full-1",
     "u-0w5i41u163": "lash-extensions-styled-1",
     "u-o454d6j065": "lash-extensions-classic-natural-2",
+    "u-1jez2cqn1s": "lash-extensions-styled-20",
     "styled-half-face": "lash-extensions-classic-full-1",
     "selfie": "lash-extensions-styled-2",
     "face-smile": "lash-extensions-1",
-    "styled-mermaid-selfie": "lash-extensions-styled-3",
     "classic-natural-2": "lash-extensions-classic-natural-3",
     "classic-natural-colour": "lash-extensions-classic-natural-4",
     "u-gez2d853my": "lash-extensions-classic-full-3",
@@ -339,6 +344,7 @@
     "hybrid-full-2": "lash-extensions-hybrid-full-4",
     "u-w1ogv6ngm0": "lash-extensions-styled-19",
     "lift-1": "lash-lift-keratin-lift-1",
+    "styled-mermaid-selfie": "lash-extensions-3",
     "lift-3": "lash-lift-1",
     "brow-9795": "powder-brows-1",
     "brow-6863": "powder-brows-2"
@@ -346,9 +352,9 @@
   "counters": {
     "lash-extensions-classic-natural": 6,
     "lash-extensions-hybrid-full": 4,
-    "lash-extensions-styled": 19,
+    "lash-extensions-styled": 20,
     "lash-extensions-classic-full": 5,
-    "lash-extensions": 2,
+    "lash-extensions": 3,
     "gel-nails-solid": 4,
     "gel-nails-cat-eye": 1,
     "gel-nails-french": 3,
