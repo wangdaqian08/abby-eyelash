@@ -14,14 +14,19 @@
       "classic-natural-2",
       "classic-natural-colour"
     ],
-    "lash-extensions/classic-full": [],
+    "lash-extensions/classic-full": [
+      "u-gez2d853my",
+      "u-mu3xgps79h"
+    ],
     "lash-extensions/hybrid-natural": [],
     "lash-extensions/hybrid-full": [
       "hybrid-full-eye",
       "hybrid-full-bottom"
     ],
     "lash-extensions/styled": [
-      "styled-fairy",
+      "u-a97i85j4a7",
+      "u-00dnz3ljks",
+      "u-jjo5o3z78g",
       "styled-layered",
       "styled-mermaid",
       "styled-manga",
@@ -140,6 +145,31 @@
       "dir": "lash",
       "ratio": "4:3",
       "where": "lash-lift/keratin-lift"
+    },
+    "u-a97i85j4a7": {
+      "dir": "lash",
+      "ratio": "4:3",
+      "where": "lash-extensions/styled"
+    },
+    "u-gez2d853my": {
+      "dir": "lash",
+      "ratio": "4:3",
+      "where": "lash-extensions/styled"
+    },
+    "u-jjo5o3z78g": {
+      "dir": "lash",
+      "ratio": "4:3",
+      "where": "lash-extensions/styled"
+    },
+    "u-mu3xgps79h": {
+      "dir": "lash",
+      "ratio": "4:3",
+      "where": "lash-extensions/styled"
+    },
+    "u-00dnz3ljks": {
+      "dir": "lash",
+      "ratio": "4:3",
+      "where": "lash-extensions/styled"
     }
   },
   "labels": {
@@ -149,7 +179,10 @@
     "u-o454d6j065": "option:lash-extensions/classic-natural",
     "styled-half-face": "option:lash-extensions/classic-full",
     "selfie": "option:lash-extensions/styled",
-    "styled-mermaid-selfie": "option:lash-extensions/styled"
+    "styled-mermaid-selfie": "option:lash-extensions/styled",
+    "u-00dnz3ljks": "look:manga",
+    "u-jjo5o3z78g": "look:layered",
+    "u-a97i85j4a7": "look:fairy"
   },
   "names": {},
   "alts": {},
@@ -164,9 +197,13 @@
     "styled-mermaid-selfie": "lash-extensions-styled-3",
     "classic-natural-2": "lash-extensions-classic-natural-3",
     "classic-natural-colour": "lash-extensions-classic-natural-4",
+    "u-gez2d853my": "lash-extensions-classic-full-3",
+    "u-mu3xgps79h": "lash-extensions-classic-full-4",
     "hybrid-full-eye": "lash-extensions-hybrid-full-2",
     "hybrid-full-bottom": "lash-extensions-hybrid-full-3",
-    "styled-fairy": "lash-extensions-styled-4",
+    "u-a97i85j4a7": "lash-extensions-styled-16",
+    "u-00dnz3ljks": "lash-extensions-styled-17",
+    "u-jjo5o3z78g": "lash-extensions-styled-18",
     "styled-layered": "lash-extensions-styled-5",
     "styled-mermaid": "lash-extensions-styled-6",
     "styled-manga": "lash-extensions-styled-7",
@@ -217,6 +254,7 @@
     "classic-full-bottom": "lash-extensions-classic-full-2",
     "hybrid-natural": "lash-extensions-hybrid-natural-1",
     "hybrid-full-2": "lash-extensions-hybrid-full-4",
+    "styled-fairy": "lash-extensions-styled-4",
     "lift-1": "lash-lift-keratin-lift-1",
     "lift-3": "lash-lift-1",
     "brow-9795": "powder-brows-1",
@@ -225,8 +263,8 @@
   "counters": {
     "lash-extensions-classic-natural": 5,
     "lash-extensions-hybrid-full": 4,
-    "lash-extensions-styled": 15,
-    "lash-extensions-classic-full": 2,
+    "lash-extensions-styled": 18,
+    "lash-extensions-classic-full": 4,
     "lash-extensions": 2,
     "gel-nails-solid": 4,
     "gel-nails-cat-eye": 1,
