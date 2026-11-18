@@ -22,6 +22,9 @@ const look = lookOf(Astro.url);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Page-to-page crossfade (cross-document view transition). Inline, not in global.css: Chrome reads the opt-in before a
+         stylesheet that arrives late is applied, and then aborts the crossfade ("ViewTransition opt-in disabled"). -->
+    <style is:inline>@view-transition { navigation: auto; } @media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }</style>
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />

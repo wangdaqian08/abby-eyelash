@@ -51,7 +51,13 @@ test('an upload is a photo with a generated alt; a place override wins and drops
   assert.deepEqual({ en: uploadAlt('u-abcdefghij', u, d).en, zh: uploadAlt('u-abcdefghij', u, d).zh }, { en: 'Mermaid – lash extensions by Abby, Burwood', zh: '人鱼，Abby 嫁接睫毛，Burwood' });
   delete d.labels['u-abcdefghij'];
   assert.equal(uploadAlt('u-abcdefghij', u, d).en, 'Styled set – lash extensions by Abby, Burwood');
-  assert.equal(uploadAlt('u-0000000000', { dir: 'nails', ratio: '3:4', where: 'page:gel-nails:hero' }, d).zh, '凝胶美甲，Abby 美甲，Burwood');
+  assert.deepEqual({ ...uploadAlt('u-0000000000', { dir: 'nails', ratio: '3:4', where: 'page:gel-nails:hero' }, d) }, { en: 'Gel Nails by Abby, Burwood', zh: 'Abby 凝胶美甲，Burwood' }); // the service once
+  // the noun is the photo's service, not its folder: a lash lift is not lash extensions
+  d.groups['lash-lift/keratin-lift'].push('u-1111111111');
+  assert.deepEqual({ ...uploadAlt('u-1111111111', { dir: 'lash', ratio: '4:3', where: 'lash-lift/keratin-lift' }, d) }, { en: 'Keratin lash lift – lash lift by Abby, Burwood', zh: '角蛋白翘睫，Abby 翘睫，Burwood' });
+  d.groups['gel-nails/aurora'].push('u-2222222222');
+  assert.equal(uploadAlt('u-2222222222', { dir: 'nails', ratio: '3:4', where: 'gel-nails/aurora' }, d).en, 'Aurora – gel nails by Abby, Burwood');
+  assert.equal(uploadAlt('u-3333333333', { dir: 'lash', ratio: '3:4', where: 'home-hero' }, d).en, 'Home – lash extensions by Abby, Burwood'); // no service: the folder's noun
   // the name it had before the admin, unless a look name has been chosen for it in the admin since
   assert.equal(lookName('styled-fairy', d)!.en, 'Fairy');
   d.labels['styled-fairy'] = 'look:mermaid';

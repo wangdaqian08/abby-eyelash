@@ -357,8 +357,7 @@ label[data-pop]:has([data-radio])::after { inset: 0 -0.25rem; border-radius: 0.8
 .bar-line-fill { animation: bar-line-fill 650ms cubic-bezier(0.45, 0, 0.25, 1) calc(var(--k, 0) * 700ms) both; }
 .bar-line-empty { animation: bar-line-fill 500ms cubic-bezier(0.45, 0, 0.25, 1) calc(var(--k, 0) * 550ms + 250ms) reverse both; }
 
-/* Page-to-page crossfade (cross-document view transition; CSS only, no router). */
-@view-transition { navigation: auto; }
+/* The page-to-page crossfade (@view-transition) is inline in src/layouts/BaseLayout.astro: see the note there. */
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -368,7 +367,6 @@ label[data-pop]:has([data-radio])::after { inset: 0 -0.25rem; border-radius: 0.8
   }
   .js [data-reveal], .js [data-reveal][data-stagger] > *, .js [data-reveal][data-late] :is(img, video) { opacity: 1; transform: none; transition: none; }
   .rail-line-fill, .rail-dot-fill, .rail-dot-empty, .rail-line-empty, .bar-line-fill, .bar-line-empty { animation-delay: 0s !important; }
-  @view-transition { navigation: none; }
 }
 
 /* Expandable rows: grid-template-rows 0fr -> 1fr. Without .js the rows stay fully open. */
