@@ -358,7 +358,9 @@ await p2.waitForTimeout(250);
 check(!!(await p2.$('[data-view="publish"]')) && !(await p2.$('[data-tile]')), '11: no editing while a publish is being sent');
 check((await text2('[data-action="confirm"]')).includes('上傳中 1 / 1'), `11: the button shows the progress (got "${await text2('[data-action="confirm"]')}")`);
 await p2.waitForSelector('[data-view="list"]');
-check((await text2('[data-banner]')).includes('已上線') || (await text2('[data-banner]')).includes('發佈中'), '11: and the publish completes');
+// The banner says 等待管理員審核 first and 已上線 once the status reply arrives: wait for either (a slow reply failed this on CI).
+await p2.waitForFunction(() => /已上線|等待/.test(document.querySelector('[data-banner]')?.textContent ?? ''), null, { timeout: 15000 }).catch(() => {});
+check(/已上線|等待/.test(await text2('[data-banner]')), `11: and the publish completes (got "${await text2('[data-banner]')}")`);
 // several photos in one pick: at most 10, in the order picked; each checked on its own (a fresh group, nothing is published)
 await p2.unroute('**/api/admin/blob');
 await open2('#/g/gel-nails%2Fsolid');
