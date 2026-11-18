@@ -18,7 +18,13 @@
       "u-gez2d853my",
       "u-mu3xgps79h"
     ],
-    "lash-extensions/hybrid-natural": [],
+    "lash-extensions/hybrid-natural": [
+      "u-fk5z7tonz1",
+      "u-sqllxiw1wz",
+      "u-axdszfiqdl",
+      "u-1853pzh3cb",
+      "u-izi815at1j"
+    ],
     "lash-extensions/hybrid-full": [
       "hybrid-full-eye",
       "hybrid-full-bottom"
@@ -170,6 +176,31 @@
       "dir": "lash",
       "ratio": "4:3",
       "where": "lash-extensions/styled"
+    },
+    "u-axdszfiqdl": {
+      "dir": "lash",
+      "ratio": "4:3",
+      "where": "lash-extensions/hybrid-natural"
+    },
+    "u-izi815at1j": {
+      "dir": "lash",
+      "ratio": "4:3",
+      "where": "lash-extensions/hybrid-natural"
+    },
+    "u-1853pzh3cb": {
+      "dir": "lash",
+      "ratio": "4:3",
+      "where": "lash-extensions/hybrid-natural"
+    },
+    "u-sqllxiw1wz": {
+      "dir": "lash",
+      "ratio": "4:3",
+      "where": "lash-extensions/hybrid-natural"
+    },
+    "u-fk5z7tonz1": {
+      "dir": "lash",
+      "ratio": "4:3",
+      "where": "lash-extensions/hybrid-natural"
     }
   },
   "labels": {
@@ -199,6 +230,11 @@
     "classic-natural-colour": "lash-extensions-classic-natural-4",
     "u-gez2d853my": "lash-extensions-classic-full-3",
     "u-mu3xgps79h": "lash-extensions-classic-full-4",
+    "u-fk5z7tonz1": "lash-extensions-hybrid-natural-2",
+    "u-sqllxiw1wz": "lash-extensions-hybrid-natural-3",
+    "u-axdszfiqdl": "lash-extensions-hybrid-natural-4",
+    "u-1853pzh3cb": "lash-extensions-hybrid-natural-5",
+    "u-izi815at1j": "lash-extensions-hybrid-natural-6",
     "hybrid-full-eye": "lash-extensions-hybrid-full-2",
     "hybrid-full-bottom": "lash-extensions-hybrid-full-3",
     "u-a97i85j4a7": "lash-extensions-styled-16",
@@ -272,7 +308,7 @@
     "gel-nails": 7,
     "handcrafted-nails-nail-art": 8,
     "powder-brows-powder": 5,
-    "lash-extensions-hybrid-natural": 1,
+    "lash-extensions-hybrid-natural": 6,
     "lash-lift-keratin-lift": 7,
     "lash-lift": 1,
     "powder-brows": 2
