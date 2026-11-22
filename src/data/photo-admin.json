@@ -1,6 +1,7 @@
 {
   "groups": {
     "face": [
+      "u-4p120tfa22",
       "u-agtd2qkfqp",
       "u-7ole7as5cq",
       "u-0w5i41u163",
@@ -365,6 +366,11 @@
       "dir": "lash",
       "ratio": "4:3",
       "where": "lash-extensions/classic-natural"
+    },
+    "u-4p120tfa22": {
+      "dir": "lash",
+      "ratio": "3:4",
+      "where": "face"
     }
   },
   "labels": {
@@ -377,11 +383,13 @@
     "u-00dnz3ljks": "look:manga",
     "u-jjo5o3z78g": "look:layered",
     "u-a97i85j4a7": "look:fairy",
-    "u-1jez2cqn1s": "option:lash-extensions/styled"
+    "u-1jez2cqn1s": "option:lash-extensions/styled",
+    "u-4p120tfa22": "option:lash-extensions/styled"
   },
   "names": {},
   "alts": {},
   "numbers": {
+    "u-4p120tfa22": "lash-extensions-styled-23",
     "u-agtd2qkfqp": "lash-extensions-classic-natural-1",
     "u-7ole7as5cq": "lash-extensions-hybrid-full-1",
     "u-0w5i41u163": "lash-extensions-styled-1",
@@ -487,7 +495,7 @@
   "counters": {
     "lash-extensions-classic-natural": 7,
     "lash-extensions-hybrid-full": 7,
-    "lash-extensions-styled": 22,
+    "lash-extensions-styled": 23,
     "lash-extensions-classic-full": 6,
     "lash-extensions": 3,
     "gel-nails-solid": 6,
