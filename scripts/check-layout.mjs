@@ -106,6 +106,9 @@ for (const width of WIDTHS) {
     await page.selectOption('select[data-service="gel-nails"]', '10');
     report(`${width}px ${lang}/book step 1`, await scanPage(page));
     await page.click('[data-action="to-date"]');
+    // Late in a month every day left can be full or closed: then use the next month.
+    await page.waitForSelector('[data-grid]:not([aria-busy])');
+    if (!(await page.$('[data-grid] button[data-date]:not([aria-disabled])'))) await page.click('[data-action="next"]');
     await page.waitForSelector('[data-grid] button[data-date]:not([aria-disabled])');
     report(`${width}px ${lang}/book step 2`, await scanPage(page));
     await page.click('[data-grid] button[data-date]:not([aria-disabled])');

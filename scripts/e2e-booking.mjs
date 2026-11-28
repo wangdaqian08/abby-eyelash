@@ -40,12 +40,21 @@ const noJunk = async (ctx) => {
   check(!/undefined|NaN|null/.test(text), `${ctx}: page shows undefined/NaN/null`);
 };
 
+const FREE = '[data-grid] button[data-date]:not([aria-disabled])';
+// Late in a month every day left can be full or closed (28 Nov 2026: Sunday closed, 30th fully booked in demo mode): then use the next month.
+const freeDay = async () => {
+  await page.waitForSelector('[data-grid]:not([aria-busy])');
+  if (await page.$(FREE)) return;
+  await page.click('[data-action="next"]');
+  await page.waitForSelector(FREE);
+};
+
 // Walks steps 2-5 and checks the message against the shared quote.
 async function finish(ctx, items, label) {
   await page.click('[data-action="to-date"]');
-  await page.waitForSelector('[data-grid] button[data-date]:not([aria-disabled])');
+  await freeDay();
   check((await page.textContent('[data-stepper] li:first-child')).includes(label), `${ctx}: step-1 summary should read "${label}"`);
-  await page.click('[data-grid] button[data-date]:not([aria-disabled])');
+  await page.click(FREE);
   await page.click('button[data-time]');
   await page.click('[data-action="to-details"]');
   await page.fill('#bk-name', 'Test Client');
@@ -238,8 +247,8 @@ if (mine()) {
   let p = await panel();
   check(r[1].line?.cls.includes('rail-line-fill') && r[1].dot?.cls.includes('rail-dot-fill') && r[1].dot.delay > r[1].line.delay, 'motion: Continue should fill the line, then the step-2 dot');
   check(p.length >= 2 && new Set(p).size >= 2, `motion: step-2 panel blocks should fade in one after another (delays ${p})`);
-  await page.waitForSelector('[data-grid] button[data-date]:not([aria-disabled])');
-  await page.click('[data-grid] button[data-date]:not([aria-disabled])');
+  await freeDay();
+  await page.click(FREE);
   await page.waitForSelector('[data-stepper] li[aria-current="step"]:nth-child(3)');
   await page.$eval('[data-stepper] li:nth-child(3) .rail-line', (e) => (e.dataset.mark = '1'));
   await page.click('button[data-time]');
@@ -268,7 +277,7 @@ if (mine()) {
   await page.waitForSelector('[data-progress] .bar-line.is-on');
   let b = await bar(); // dot 1, line 2, dot 2, …
   check(b[1].includes('bar-line-fill') && b[2].includes('rail-dot-fill') && !b[3].includes('bar-line-fill'), `motion (phone): Continue should grow line 1→2, then fill dot 2 (${b.slice(0, 4)})`);
-  await page.waitForSelector('[data-grid] button[data-date]:not([aria-disabled])');
+  await freeDay();
   await page.click('[data-action="back"]');
   await page.waitForSelector('[data-progress] .bar-line-empty');
   b = await bar();
@@ -283,8 +292,8 @@ if (mine()) {
     await open(`/book/?service=${L}&option=styled&look=${look}`);
     check(await isChecked(`input[name="bk-option-${L}"][value="styled"]`), `look=${look}: styled should be chosen`);
     await page.click('[data-action="to-date"]');
-    await page.waitForSelector('[data-grid] button[data-date]:not([aria-disabled])');
-    await page.click('[data-grid] button[data-date]:not([aria-disabled])');
+    await freeDay();
+    await page.click(FREE);
     await page.click('button[data-time]');
     await page.click('[data-action="to-details"]');
     return page.inputValue('#bk-notes');
